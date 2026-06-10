@@ -1,91 +1,159 @@
 <template>
-  <div class="canvas-area">
-    <draggable
-      tag="div"
-      class="canvas-grid"
-      :style="gridStyle"
-      :list="store.components"
-      item-key="id"
-      :sort="false"
-      :group="{ name: 'canvas', pull: false, put: true }"
-      @change="onDraggableChange"
-      @click.self="store.selectComponent(null)"
+  <div ref="containerRef" class="canvas-area">
+    <SketchRule
+      :width="containerWidth || 800"
+      :height="containerHeight || 600"
+      :canvas-width="store.editCanvasConfig.width"
+      :canvas-height="store.editCanvasConfig.height"
+      v-model:scale="scale"
+      v-model:lines="lines"
+      :thick="16"
+      :min-zoom="0.1"
+      :max-zoom="10"
+      :zoom-mode="'pointer'"
+      :show-ruler="showRuler"
+      :is-show-refer-line="showReferLine"
+      :palette="rulerPalette"
+      :auto-center="true"
+      :snap-threshold="5"
     >
-      <template #item="{ element: comp }">
-        <div
-          v-if="comp && comp.id && !comp.parentId"
-          class="canvas-component"
-          :class="{
-            selected: comp.id === store.selectedId,
-            locked: comp.status.lock,
-            hidden: comp.status.hide,
-          }"
-          :style="componentStyle(comp)"
-          @mousedown.stop="onMouseDown($event, comp.id)"
-          @dragstart.prevent
-          @click.stop="store.selectComponent(comp.id)"
-        >
-          <div class="comp-header">
-            <span class="comp-label">{{ comp.chartConfig.title }}</span>
-            <div class="header-badges">
-              <span v-if="comp.status.lock" class="badge lock-badge">🔒</span>
-              <button class="remove-btn" @click.stop="store.removeComponent(comp.id)">✕</button>
-            </div>
-          </div>
-          <div class="comp-body">
-            <Container
-              v-if="comp.key === 'container'"
-              :bg-color="comp.props?.bgColor"
-              :border-color="comp.props?.borderColor"
-              :parent-id="comp.id"
-            />
-            <BarChart
-              v-else-if="comp.key === 'BarCommon'"
-              :option="comp.option"
-              :width="comp.attr.w"
-              :height="comp.attr.h - 32"
-              :bg-color="comp.props?.bgColor"
-            />
-            <LineChart
-              v-else-if="comp.key === 'LineCommon'"
-              :option="comp.option"
-              :width="comp.attr.w"
-              :height="comp.attr.h - 32"
-              :bg-color="comp.props?.bgColor"
-            />
-          </div>
+      <template #toolbar="{ tools, state }">
+        <div class="ruler-toolbar">
+          <button title="缩小" @click="tools.zoomOut">−</button>
+          <span class="zoom-pct">{{ Math.round(state.scale * 100) }}%</span>
+          <button title="放大" @click="tools.zoomIn">+</button>
+          <button title="重置缩放" @click="tools.reset">1:1</button>
+        </div>
+      </template>
+
+      <draggable
+        tag="div"
+        class="canvas-grid"
+        :style="gridStyle"
+        :list="store.components"
+        item-key="id"
+        :sort="false"
+        :group="{ name: 'canvas', pull: false, put: true }"
+        @change="onDraggableChange"
+        @click.self="store.selectComponent(null)"
+      >
+        <template #item="{ element: comp }">
           <div
-            v-if="!comp.status.lock"
-            class="resize-handle"
-            @mousedown.stop="onResizeStart($event, comp.id)"
-          ></div>
-        </div>
-      </template>
-      <template #footer>
-        <div v-if="store.components.length === 0" class="empty-hint">
-          <div class="empty-icon">📋</div>
-          <p>从左侧组件库拖拽或点击添加组件</p>
-        </div>
-      </template>
-    </draggable>
+            v-if="comp && comp.id && !comp.parentId"
+            class="canvas-component"
+            :class="{
+              selected: comp.id === store.selectedId,
+              locked: comp.status.lock,
+              hidden: comp.status.hide,
+            }"
+            :style="componentStyle(comp)"
+            @mousedown.stop="onMouseDown($event, comp.id)"
+            @dragstart.prevent
+            @click.stop="store.selectComponent(comp.id)"
+          >
+            <div class="comp-header">
+              <span class="comp-label">{{ comp.chartConfig.title }}</span>
+              <div class="header-badges">
+                <span v-if="comp.status.lock" class="badge lock-badge">🔒</span>
+                <button class="remove-btn" @click.stop="store.removeComponent(comp.id)">✕</button>
+              </div>
+            </div>
+            <div class="comp-body">
+              <Container
+                v-if="comp.key === 'container'"
+                :bg-color="comp.props?.bgColor"
+                :border-color="comp.props?.borderColor"
+                :parent-id="comp.id"
+              />
+              <BarChart
+                v-else-if="comp.key === 'BarCommon'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h - 32"
+                :bg-color="comp.props?.bgColor"
+              />
+              <LineChart
+                v-else-if="comp.key === 'LineCommon'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h - 32"
+                :bg-color="comp.props?.bgColor"
+              />
+            </div>
+            <div
+              v-if="!comp.status.lock"
+              class="resize-handle"
+              @mousedown.stop="onResizeStart($event, comp.id)"
+            ></div>
+          </div>
+        </template>
+        <template #footer>
+          <div v-if="store.components.length === 0" class="empty-hint">
+            <div class="empty-icon">📋</div>
+            <p>从左侧组件库拖拽或点击添加组件</p>
+          </div>
+        </template>
+      </draggable>
+    </SketchRule>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useDashboardStore } from '../stores/dashboard'
 import type { CanvasComponent } from '../stores/dashboard'
 import draggable from 'vuedraggable'
+import SketchRule from 'vue3-sketch-ruler'
+import 'vue3-sketch-ruler/lib/style.css'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import Container from './charts/Container.vue'
 
 const store = useDashboardStore()
 
+const containerRef = ref<HTMLElement | null>(null)
+const containerWidth = ref(0)
+const containerHeight = ref(0)
+const scale = ref(1)
+const showRuler = ref(true)
+const showReferLine = ref(true)
+const lines = ref<{ h: number[]; v: number[] }>({ h: [], v: [] })
+
+const rulerPalette = {
+  bgColor: '#11111b',
+  tickColor: '#585b70',
+  labelColor: '#a6adc8',
+  guideLineColor: '#89b4fa',
+  guideLineLockedColor: '#45475a',
+  hoverBg: 'transparent',
+  hoverColor: '#cdd6f4',
+  borderColor: '#313244',
+  shadowColor: '#1e1e2e',
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (entry) {
+        containerWidth.value = Math.floor(entry.contentRect.width)
+        containerHeight.value = Math.floor(entry.contentRect.height)
+      }
+    })
+    resizeObserver.observe(containerRef.value)
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+})
+
 const gridStyle = computed((): CSSProperties => ({
-  width: store.editCanvasConfig.width + 'px',
-  minHeight: store.editCanvasConfig.height + 'px',
+  width: '100%',
+  height: '100%',
   backgroundColor: store.editCanvasConfig.background,
   backgroundImage: store.editCanvasConfig.backgroundImage
     ? `url(${store.editCanvasConfig.backgroundImage}), radial-gradient(circle, #313244 1px, transparent 1px)`
@@ -133,8 +201,8 @@ function onMouseDown(event: MouseEvent, id: string) {
 
 function onMouseMove(event: MouseEvent) {
   if (!dragState) return
-  const dx = event.clientX - dragState.startX
-  const dy = event.clientY - dragState.startY
+  const dx = (event.clientX - dragState.startX) / scale.value
+  const dy = (event.clientY - dragState.startY) / scale.value
   const comp = store.components.find(c => c.id === dragState!.id)
   if (!comp) return
   const pageW = store.editCanvasConfig.width
@@ -165,8 +233,8 @@ function onResizeStart(event: MouseEvent, id: string) {
 
 function onResizeMove(event: MouseEvent) {
   if (!resizeState) return
-  const dx = event.clientX - resizeState.startX
-  const dy = event.clientY - resizeState.startY
+  const dx = (event.clientX - resizeState.startX) / scale.value
+  const dy = (event.clientY - resizeState.startY) / scale.value
   const comp = store.components.find(c => c.id === resizeState!.id)
   if (!comp) return
   const pageW = store.editCanvasConfig.width
@@ -197,7 +265,7 @@ function onDraggableChange(evt: any) {
   flex: 1;
   background: #11111b;
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   min-height: 0;
 }
 
@@ -317,5 +385,43 @@ function onDraggableChange(evt: any) {
 .empty-hint p {
   font-size: 14px;
   margin: 0;
+}
+
+.ruler-toolbar {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.ruler-toolbar button {
+  background: none;
+  border: 1px solid #45475a;
+  color: #cdd6f4;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.ruler-toolbar button:hover {
+  background: #45475a;
+}
+
+.zoom-pct {
+  color: #a6adc8;
+  font-size: 12px;
+  min-width: 48px;
+  text-align: center;
+  user-select: none;
 }
 </style>
