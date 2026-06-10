@@ -27,7 +27,7 @@ import { useDashboardStore } from './stores/dashboard'
 import type { ChartEditStorage } from './types'
 import LeftPanel from './components/LeftPanel.vue'
 import CanvasArea from './components/CanvasArea.vue'
-import RightPanel from './components/RightPanel.vue'
+import RightPanel from './components/RightPanel/index.vue'
 import PreviewRenderer from './components/PreviewRenderer.vue'
 
 const store = useDashboardStore()
