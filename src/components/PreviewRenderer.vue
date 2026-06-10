@@ -25,11 +25,15 @@
         />
         <BarChart
           v-else-if="comp.key === 'BarCommon'"
-          :title="comp.option.title"
+          :option="comp.option"
           :width="comp.attr.w"
           :height="comp.attr.h"
-          :bg-color="comp.option.bgColor"
-          :data="comp.option.dataset"
+        />
+        <LineChart
+          v-else-if="comp.key === 'LineCommon'"
+          :option="comp.option"
+          :width="comp.attr.w"
+          :height="comp.attr.h"
         />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -43,6 +47,7 @@
 import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
 import BarChart from './charts/BarChart.vue'
+import LineChart from './charts/LineChart.vue'
 import ContainerPreview from './charts/ContainerPreview.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'
 

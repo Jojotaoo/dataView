@@ -36,11 +36,17 @@
           />
           <BarChart
             v-else-if="comp.key === 'BarCommon'"
-            :title="comp.option.title"
+            :option="comp.option"
             :width="comp.attr.w"
             :height="comp.attr.h - 32"
             :bg-color="comp.props?.bgColor"
-            :data="comp.option.dataset"
+          />
+          <LineChart
+            v-else-if="comp.key === 'LineCommon'"
+            :option="comp.option"
+            :width="comp.attr.w"
+            :height="comp.attr.h - 32"
+            :bg-color="comp.props?.bgColor"
           />
         </div>
         <div
@@ -63,6 +69,7 @@ import type { CSSProperties } from 'vue'
 import { useDashboardStore } from '../stores/dashboard'
 import type { CanvasComponent } from '../stores/dashboard'
 import BarChart from './charts/BarChart.vue'
+import LineChart from './charts/LineChart.vue'
 import Container from './charts/Container.vue'
 
 const store = useDashboardStore()

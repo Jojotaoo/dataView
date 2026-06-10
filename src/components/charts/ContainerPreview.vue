@@ -16,11 +16,15 @@
     >
       <BarChart
         v-if="child.key === 'BarCommon'"
-        :title="child.option.title"
+        :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"
-        :bg-color="child.option.bgColor"
-        :data="child.option.dataset"
+      />
+      <LineChart
+        v-else-if="child.key === 'LineCommon'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
       />
     </div>
   </div>
@@ -29,6 +33,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BarChart from './BarChart.vue'
+import LineChart from './LineChart.vue'
 import type { CreateComponentType } from '../../types'
 
 const props = withDefaults(defineProps<{

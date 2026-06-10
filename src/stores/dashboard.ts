@@ -91,14 +91,45 @@ export const useDashboardStore = defineStore('dashboard', () => {
       icon: '📊',
       defaultOption: {
         title: '柱状图',
-        dataset: [
-          { label: '一月', value: 120 },
-          { label: '二月', value: 200 },
-          { label: '三月', value: 150 },
-          { label: '四月', value: 80 },
-          { label: '五月', value: 70 },
-          { label: '六月', value: 110 },
-        ],
+        dataset: {
+          dimensions: ['类别', '销量'],
+          source: [
+            ['一月', 120],
+            ['二月', 200],
+            ['三月', 150],
+            ['四月', 80],
+            ['五月', 70],
+            ['六月', 110],
+          ],
+        },
+      },
+      defaultProps: {},
+    },
+    {
+      key: 'LineCommon',
+      chartKey: 'VLineCommon',
+      conKey: 'VCLineCommon',
+      title: '折线图',
+      name: '折线图',
+      category: 'Lines',
+      categoryName: '折线图',
+      package: 'Charts',
+      chartFrame: 'echarts',
+      image: 'line.png',
+      icon: '📈',
+      defaultOption: {
+        title: '折线图',
+        dataset: {
+          dimensions: ['月份', '访问量'],
+          source: [
+            ['一月', 820],
+            ['二月', 932],
+            ['三月', 901],
+            ['四月', 1290],
+            ['五月', 1330],
+            ['六月', 1320],
+          ],
+        },
       },
       defaultProps: {},
     },
@@ -126,7 +157,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       id,
       key: def.key,
       parentId: parentId ?? null,
-      props: { ...def.defaultProps },
+      props: JSON.parse(JSON.stringify(def.defaultProps)),
       chartConfig: {
         key: def.key,
         chartKey: def.chartKey,
@@ -150,7 +181,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       styles: { ...DEFAULT_STYLES },
       status: { ...DEFAULT_STATUS },
       preview: { ...DEFAULT_PREVIEW },
-      option: { ...def.defaultOption },
+      option: JSON.parse(JSON.stringify(def.defaultOption)),
     }
     components.value.push(comp)
     selectedId.value = comp.id
