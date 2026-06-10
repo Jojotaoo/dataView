@@ -1,65 +1,73 @@
 <template>
   <div class="canvas-area">
-    <div
+    <draggable
+      tag="div"
       class="canvas-grid"
       :style="gridStyle"
-      @dragover.prevent
-      @drop="onDrop"
+      :list="store.components"
+      item-key="id"
+      :sort="false"
+      :group="{ name: 'canvas', pull: false, put: true }"
+      @change="onDraggableChange"
       @click.self="store.selectComponent(null)"
     >
-      <div
-        v-for="comp in store.rootComponents"
-        :key="comp.id"
-        class="canvas-component"
-        :class="{
-          selected: comp.id === store.selectedId,
-          locked: comp.status.lock,
-          hidden: comp.status.hide,
-        }"
-        :style="componentStyle(comp)"
-        @mousedown.stop="onMouseDown($event, comp.id)"
-        @click.stop="store.selectComponent(comp.id)"
-      >
-        <div class="comp-header">
-          <span class="comp-label">{{ comp.chartConfig.title }}</span>
-          <div class="header-badges">
-            <span v-if="comp.status.lock" class="badge lock-badge">🔒</span>
-            <button class="remove-btn" @click.stop="store.removeComponent(comp.id)">✕</button>
-          </div>
-        </div>
-        <div class="comp-body">
-          <Container
-            v-if="comp.key === 'container'"
-            :bg-color="comp.props?.bgColor"
-            :border-color="comp.props?.borderColor"
-            :parent-id="comp.id"
-          />
-          <BarChart
-            v-else-if="comp.key === 'BarCommon'"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h - 32"
-            :bg-color="comp.props?.bgColor"
-          />
-          <LineChart
-            v-else-if="comp.key === 'LineCommon'"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h - 32"
-            :bg-color="comp.props?.bgColor"
-          />
-        </div>
+      <template #item="{ element: comp }">
         <div
-          v-if="!comp.status.lock"
-          class="resize-handle"
-          @mousedown.stop="onResizeStart($event, comp.id)"
-        ></div>
-      </div>
-      <div v-if="store.components.length === 0" class="empty-hint">
-        <div class="empty-icon">📋</div>
-        <p>从左侧组件库拖拽或点击添加组件</p>
-      </div>
-    </div>
+          v-if="comp && comp.id && !comp.parentId"
+          class="canvas-component"
+          :class="{
+            selected: comp.id === store.selectedId,
+            locked: comp.status.lock,
+            hidden: comp.status.hide,
+          }"
+          :style="componentStyle(comp)"
+          @mousedown.stop="onMouseDown($event, comp.id)"
+          @dragstart.prevent
+          @click.stop="store.selectComponent(comp.id)"
+        >
+          <div class="comp-header">
+            <span class="comp-label">{{ comp.chartConfig.title }}</span>
+            <div class="header-badges">
+              <span v-if="comp.status.lock" class="badge lock-badge">🔒</span>
+              <button class="remove-btn" @click.stop="store.removeComponent(comp.id)">✕</button>
+            </div>
+          </div>
+          <div class="comp-body">
+            <Container
+              v-if="comp.key === 'container'"
+              :bg-color="comp.props?.bgColor"
+              :border-color="comp.props?.borderColor"
+              :parent-id="comp.id"
+            />
+            <BarChart
+              v-else-if="comp.key === 'BarCommon'"
+              :option="comp.option"
+              :width="comp.attr.w"
+              :height="comp.attr.h - 32"
+              :bg-color="comp.props?.bgColor"
+            />
+            <LineChart
+              v-else-if="comp.key === 'LineCommon'"
+              :option="comp.option"
+              :width="comp.attr.w"
+              :height="comp.attr.h - 32"
+              :bg-color="comp.props?.bgColor"
+            />
+          </div>
+          <div
+            v-if="!comp.status.lock"
+            class="resize-handle"
+            @mousedown.stop="onResizeStart($event, comp.id)"
+          ></div>
+        </div>
+      </template>
+      <template #footer>
+        <div v-if="store.components.length === 0" class="empty-hint">
+          <div class="empty-icon">📋</div>
+          <p>从左侧组件库拖拽或点击添加组件</p>
+        </div>
+      </template>
+    </draggable>
   </div>
 </template>
 
@@ -68,6 +76,7 @@ import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useDashboardStore } from '../stores/dashboard'
 import type { CanvasComponent } from '../stores/dashboard'
+import draggable from 'vuedraggable'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import Container from './charts/Container.vue'
@@ -172,10 +181,13 @@ function onResizeUp() {
   window.removeEventListener('mouseup', onResizeUp)
 }
 
-function onDrop(event: DragEvent) {
-  const key = event.dataTransfer?.getData('text/plain')
-  if (key) {
-    store.addComponent(key)
+function onDraggableChange(evt: any) {
+  if (evt.added) {
+    const item = evt.added.element
+    if (item && item._clone) {
+      store.components.splice(evt.added.newIndex, 1)
+      store.addComponent(item.key)
+    }
   }
 }
 </script>

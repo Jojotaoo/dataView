@@ -1,30 +1,34 @@
 <template>
   <div class="left-panel">
     <h3 class="panel-title">组件库</h3>
-    <div class="component-list">
-      <div
-        v-for="def in store.componentDefinitions"
-        :key="def.key"
-        class="component-item"
-        draggable="true"
-        @dragstart="onDragStart($event, def.key)"
-        @click="store.addComponent(def.key)"
-      >
-        <span class="component-icon">{{ def.icon }}</span>
-        <span class="component-name">{{ def.name }}</span>
-        <span class="component-badge">{{ def.package }}</span>
-      </div>
-    </div>
+    <draggable
+      tag="div"
+      class="component-list"
+      :list="store.componentDefinitions"
+      :group="{ name: 'canvas', pull: 'clone', put: false }"
+      :clone="cloneDefinition"
+      item-key="key"
+      :sort="false"
+    >
+      <template #item="{ element: def }">
+        <div class="component-item" @click="store.addComponent(def.key)">
+          <span class="component-icon">{{ def.icon }}</span>
+          <span class="component-name">{{ def.name }}</span>
+          <span class="component-badge">{{ def.package }}</span>
+        </div>
+      </template>
+    </draggable>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useDashboardStore } from '../stores/dashboard'
+import draggable from 'vuedraggable'
 
 const store = useDashboardStore()
 
-function onDragStart(event: DragEvent, key: string) {
-  event.dataTransfer?.setData('text/plain', key)
+function cloneDefinition(def: any) {
+  return { _clone: true, key: def.key, id: '' }
 }
 </script>
 
