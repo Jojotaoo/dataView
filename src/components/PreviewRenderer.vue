@@ -1,47 +1,35 @@
 <template>
   <div class="preview-overlay" @keydown.escape="$emit('close')">
     <div class="preview-header">
-      <h2 class="preview-title">{{ schema.page }} - 预览</h2>
+      <h2 class="preview-title">{{ schema.editCanvasConfig.projectName }} - 预览</h2>
       <button class="exit-btn" @click="$emit('close')">
         ✕ 退出预览
       </button>
     </div>
     <div
       class="preview-stage"
-      :style="{
-        backgroundColor: schema.pageConfig?.bgColor ?? '#11111b',
-        backgroundImage: schema.pageConfig?.bgImage
-          ? `url(${schema.pageConfig.bgImage})`
-          : undefined,
-        backgroundSize: schema.pageConfig?.bgImage ? 'cover' : undefined,
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }"
+      :style="canvasStyle"
     >
       <div
         v-for="comp in rootComponents"
         :key="comp.id"
         class="preview-component"
-        :style="{
-          left: comp.position.x + 'px',
-          top: comp.position.y + 'px',
-          width: comp.size.width + 'px',
-          height: comp.size.height + 'px',
-        }"
+        :class="{ hidden: comp.status.hide }"
+        :style="componentStyle(comp)"
       >
         <ContainerPreview
-          v-if="comp.type === 'container'"
-          :bg-color="comp.props.bgColor"
+          v-if="comp.key === 'container'"
+          :bg-color="comp.option.bgColor"
           :parent-id="comp.id"
-          :all-components="schema.components"
+          :all-components="schema.componentList"
         />
         <BarChart
-          v-else-if="comp.type === 'bar-chart'"
-          :title="comp.props.title"
-          :width="comp.size.width"
-          :height="comp.size.height"
-          :bg-color="comp.props.bgColor"
-          :data="comp.props.data"
+          v-else-if="comp.key === 'BarCommon'"
+          :title="comp.option.title"
+          :width="comp.attr.w"
+          :height="comp.attr.h"
+          :bg-color="comp.option.bgColor"
+          :data="comp.option.dataset"
         />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -53,38 +41,60 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { CSSProperties } from 'vue'
 import BarChart from './charts/BarChart.vue'
 import ContainerPreview from './charts/ContainerPreview.vue'
-
-type SchemaComponent = {
-  id: string
-  type: string
-  name: string
-  parentId?: string | null
-  props: Record<string, any>
-  position: { x: number; y: number }
-  size: { width: number; height: number }
-}
+import type { ChartEditStorage, CreateComponentType } from '../types'
 
 const props = defineProps<{
-  schema: {
-    page: string
-    pageConfig?: {
-      width: number
-      height: number
-      bgColor: string
-      bgImage: string
-    }
-    components: SchemaComponent[]
-  }
+  schema: ChartEditStorage
 }>()
 
 defineEmits<{
   close: []
 }>()
 
+const canvasStyle = computed((): CSSProperties => ({
+  width: props.schema.editCanvasConfig.width + 'px',
+  height: props.schema.editCanvasConfig.height + 'px',
+  backgroundColor: props.schema.editCanvasConfig.background,
+  backgroundImage: props.schema.editCanvasConfig.backgroundImage
+    ? `url(${props.schema.editCanvasConfig.backgroundImage})`
+    : undefined,
+  backgroundSize: props.schema.editCanvasConfig.backgroundImage ? 'cover' : undefined,
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  filter: props.schema.editCanvasConfig.filterShow
+    ? `opacity(${props.schema.editCanvasConfig.opacity}) saturate(${props.schema.editCanvasConfig.saturate}) contrast(${props.schema.editCanvasConfig.contrast}) hue-rotate(${props.schema.editCanvasConfig.hueRotate}deg) brightness(${props.schema.editCanvasConfig.brightness})`
+    : undefined,
+  transform: props.schema.editCanvasConfig.filterShow
+    ? `rotateZ(${props.schema.editCanvasConfig.rotateZ}deg) rotateX(${props.schema.editCanvasConfig.rotateX}deg) rotateY(${props.schema.editCanvasConfig.rotateY}deg) skewX(${props.schema.editCanvasConfig.skewX}deg) skewY(${props.schema.editCanvasConfig.skewY}deg)`
+    : undefined,
+  mixBlendMode: props.schema.editCanvasConfig.blendMode !== 'normal'
+    ? (props.schema.editCanvasConfig.blendMode as CSSProperties['mixBlendMode'])
+    : undefined,
+}))
+
+function componentStyle(comp: CreateComponentType): CSSProperties {
+  return {
+    left: comp.attr.x + 'px',
+    top: comp.attr.y + 'px',
+    width: comp.attr.w + 'px',
+    height: comp.attr.h + 'px',
+    opacity: comp.styles.opacity,
+    filter: comp.styles.filterShow
+      ? `saturate(${comp.styles.saturate}) contrast(${comp.styles.contrast}) hue-rotate(${comp.styles.hueRotate}deg) brightness(${comp.styles.brightness})`
+      : undefined,
+    transform: `rotateZ(${comp.styles.rotateZ}deg) rotateX(${comp.styles.rotateX}deg) rotateY(${comp.styles.rotateY}deg) skewX(${comp.styles.skewX}deg) skewY(${comp.styles.skewY}deg)`,
+    mixBlendMode: comp.styles.blendMode !== 'normal'
+      ? (comp.styles.blendMode as CSSProperties['mixBlendMode'])
+      : undefined,
+    overflow: comp.preview.overFlowHidden ? 'hidden' : undefined,
+  }
+}
+
 const rootComponents = computed(() =>
-  props.schema.components.filter(c => !c.parentId)
+  props.schema.componentList.filter(c => !c.parentId)
 )
 </script>
 
@@ -137,15 +147,20 @@ const rootComponents = computed(() =>
 }
 
 .preview-stage {
-  flex: 1;
   position: relative;
+  margin: 0 auto;
   overflow: auto;
+  flex: 1;
 }
 
 .preview-component {
   position: absolute;
   border-radius: 6px;
   overflow: hidden;
+}
+
+.preview-component.hidden {
+  display: none;
 }
 
 .preview-empty {

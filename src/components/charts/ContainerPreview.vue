@@ -8,19 +8,19 @@
       :key="child.id"
       class="preview-child"
       :style="{
-        left: child.position.x + 'px',
-        top: child.position.y + 'px',
-        width: child.size.width + 'px',
-        height: child.size.height + 'px',
+        left: child.attr.x + 'px',
+        top: child.attr.y + 'px',
+        width: child.attr.w + 'px',
+        height: child.attr.h + 'px',
       }"
     >
       <BarChart
-        v-if="child.type === 'bar-chart'"
-        :title="child.props.title"
-        :width="child.size.width"
-        :height="child.size.height"
-        :bg-color="child.props.bgColor"
-        :data="child.props.data"
+        v-if="child.key === 'BarCommon'"
+        :title="child.option.title"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :bg-color="child.option.bgColor"
+        :data="child.option.dataset"
       />
     </div>
   </div>
@@ -29,18 +29,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BarChart from './BarChart.vue'
+import type { CreateComponentType } from '../../types'
 
 const props = withDefaults(defineProps<{
   bgColor?: string
   parentId?: string
-  allComponents?: {
-    id: string
-    type: string
-    parentId?: string | null
-    props: Record<string, any>
-    position: { x: number; y: number }
-    size: { width: number; height: number }
-  }[]
+  allComponents?: CreateComponentType[]
 }>(), {
   bgColor: 'rgba(30, 30, 46, 0.6)',
   parentId: '',

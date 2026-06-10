@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <header class="app-header">
-      <h1 class="app-title">可视化大屏搭建系统</h1>
+      <h1 class="app-title">{{ store.editCanvasConfig.projectName || '可视化大屏搭建系统' }}</h1>
       <div class="header-actions">
         <button class="preview-btn" @click="showPreview = true">
           👁 预览
@@ -24,6 +24,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useDashboardStore } from './stores/dashboard'
+import type { ChartEditStorage } from './types'
 import LeftPanel from './components/LeftPanel.vue'
 import CanvasArea from './components/CanvasArea.vue'
 import RightPanel from './components/RightPanel.vue'
@@ -32,22 +33,20 @@ import PreviewRenderer from './components/PreviewRenderer.vue'
 const store = useDashboardStore()
 const showPreview = ref(false)
 
-const previewSchema = computed(() => ({
-  page: '可视化大屏',
-  pageConfig: {
-    width: store.pageConfig.width,
-    height: store.pageConfig.height,
-    bgColor: store.pageConfig.bgColor,
-    bgImage: store.pageConfig.bgImage,
-  },
-  components: store.components.map(c => ({
+const previewSchema = computed((): ChartEditStorage => ({
+  editCanvasConfig: { ...store.editCanvasConfig },
+  requestGlobalConfig: { ...store.requestGlobalConfig },
+  componentList: store.components.map(c => ({
     id: c.id,
-    type: c.type,
-    name: c.name,
+    key: c.key,
     parentId: c.parentId,
-    props: { ...c.props },
-    position: { x: c.x, y: c.y },
-    size: { width: c.width, height: c.height },
+    chartConfig: { ...c.chartConfig },
+    attr: { ...c.attr },
+    styles: { ...c.styles },
+    status: { ...c.status },
+    preview: { ...c.preview },
+    filter: c.filter,
+    option: { ...c.option },
   })),
 }))
 </script>

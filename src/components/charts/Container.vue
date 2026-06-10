@@ -11,42 +11,43 @@
     @drop="onDrop"
   >
     <div
-      v-for="child in store.getChildren(parentId)"
+      v-for="child in children"
       :key="child.id"
       class="child-component"
       :class="{ selected: child.id === store.selectedId }"
       :style="{
-        left: child.x + 'px',
-        top: child.y + 'px',
-        width: child.width + 'px',
-        height: child.height + 'px',
+        left: child.attr.x + 'px',
+        top: child.attr.y + 'px',
+        width: child.attr.w + 'px',
+        height: child.attr.h + 'px',
       }"
       @mousedown.stop="onChildMouseDown($event, child.id)"
       @click.stop="childClick(child.id)"
     >
       <BarChart
-        v-if="child.type === 'bar-chart'"
-        :title="child.props.title"
-        :width="child.width"
-        :height="child.height"
-        :bg-color="child.props.bgColor"
-        :data="child.props.data"
+        v-if="child.key === 'BarCommon'"
+        :title="child.option.title"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :bg-color="child.option.bgColor"
+        :data="child.option.dataset"
       />
       <div
         class="child-resize"
         @mousedown.stop="onChildResizeStart($event, child.id)"
       ></div>
     </div>
-    <div v-if="store.getChildren(parentId).length === 0" class="container-placeholder">
+    <div v-if="children.length === 0" class="container-placeholder">
       拖拽组件到此处
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import BarChart from './BarChart.vue'
 import { useDashboardStore } from '../../stores/dashboard'
+import type { CanvasComponent } from '../../stores/dashboard'
 
 const store = useDashboardStore()
 
@@ -62,6 +63,10 @@ const props = withDefaults(defineProps<{
 
 const isOver = ref(false)
 
+const children = computed(() =>
+  store.components.filter(c => c.parentId === props.parentId) as CanvasComponent[]
+)
+
 let dragState: { id: string; startX: number; startY: number; compX: number; compY: number } | null = null
 let resizeState: { id: string; startX: number; startY: number; compW: number; compH: number; parentEl: HTMLElement | null } | null = null
 
@@ -71,13 +76,13 @@ function childClick(id: string) {
 
 function onChildMouseDown(event: MouseEvent, id: string) {
   const comp = store.components.find(c => c.id === id)
-  if (!comp) return
+  if (!comp || comp.status.lock) return
   dragState = {
     id,
     startX: event.clientX,
     startY: event.clientY,
-    compX: comp.x,
-    compY: comp.y,
+    compX: comp.attr.x,
+    compY: comp.attr.y,
   }
   window.addEventListener('mousemove', onChildMouseMove)
   window.addEventListener('mouseup', onChildMouseUp)
@@ -89,8 +94,8 @@ function onChildMouseMove(event: MouseEvent) {
   const dy = event.clientY - dragState.startY
   const comp = store.components.find(c => c.id === dragState!.id)
   if (!comp) return
-  comp.x = Math.max(0, dragState.compX + dx)
-  comp.y = Math.max(0, dragState.compY + dy)
+  comp.attr.x = Math.max(0, dragState.compX + dx)
+  comp.attr.y = Math.max(0, dragState.compY + dy)
 }
 
 function onChildMouseUp() {
@@ -101,13 +106,13 @@ function onChildMouseUp() {
 
 function onChildResizeStart(event: MouseEvent, id: string) {
   const comp = store.components.find(c => c.id === id)
-  if (!comp) return
+  if (!comp || comp.status.lock) return
   resizeState = {
     id,
     startX: event.clientX,
     startY: event.clientY,
-    compW: comp.width,
-    compH: comp.height,
+    compW: comp.attr.w,
+    compH: comp.attr.h,
     parentEl: (event.currentTarget as HTMLElement).parentElement,
   }
   window.addEventListener('mousemove', onChildResizeMove)
@@ -121,10 +126,10 @@ function onChildResizeMove(event: MouseEvent) {
   const comp = store.components.find(c => c.id === resizeState!.id)
   if (!comp) return
   const parentRect = resizeState.parentEl?.parentElement?.getBoundingClientRect()
-  const maxW = parentRect ? parentRect.width - comp.x : 1000
-  const maxH = parentRect ? parentRect.height - comp.y : 1000
-  comp.width = Math.max(80, Math.min(resizeState.compW + dx, maxW))
-  comp.height = Math.max(40, Math.min(resizeState.compH + dy, maxH))
+  const maxW = parentRect ? parentRect.width - comp.attr.x : 1000
+  const maxH = parentRect ? parentRect.height - comp.attr.y : 1000
+  comp.attr.w = Math.max(80, Math.min(resizeState.compW + dx, maxW))
+  comp.attr.h = Math.max(40, Math.min(resizeState.compH + dy, maxH))
 }
 
 function onChildResizeUp() {
@@ -143,9 +148,9 @@ function onDragLeave() {
 
 function onDrop(event: DragEvent) {
   isOver.value = false
-  const type = event.dataTransfer?.getData('text/plain')
-  if (type) {
-    store.addComponent(type, props.parentId)
+  const key = event.dataTransfer?.getData('text/plain')
+  if (key) {
+    store.addComponent(key, props.parentId)
   }
 }
 </script>

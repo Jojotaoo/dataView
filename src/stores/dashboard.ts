@@ -1,50 +1,97 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { CanvasComponent, ComponentDefinition, PageConfig } from '../types'
+import type {
+  CreateComponentType,
+  EditCanvasConfigType,
+  RequestGlobalConfigType,
+  ChartConfigType,
+} from '../types'
+import { DEFAULT_ATTR, DEFAULT_STYLES, DEFAULT_STATUS, DEFAULT_PREVIEW } from '../types'
+
+export interface CanvasComponent extends CreateComponentType {
+  parentId: string | null
+  props: Record<string, any>
+}
 
 export const useDashboardStore = defineStore('dashboard', () => {
   const components = ref<CanvasComponent[]>([])
   const selectedId = ref<string | null>(null)
   const counter = ref(0)
 
-  const pageConfig = ref<PageConfig>({
+  const editCanvasConfig = ref<EditCanvasConfigType>({
+    projectName: '可视化大屏',
     width: 1920,
     height: 1080,
-    bgColor: '#11111b',
-    bgImage: '',
+    background: '#11111b',
+    backgroundImage: null,
+    filterShow: false,
+    opacity: 1,
+    saturate: 1,
+    contrast: 1,
+    hueRotate: 0,
+    brightness: 1,
+    rotateZ: 0,
+    rotateX: 0,
+    rotateY: 0,
+    skewX: 0,
+    skewY: 0,
+    blendMode: 'normal',
+  })
+
+  const requestGlobalConfig = ref<RequestGlobalConfigType>({
+    requestOriginUrl: '',
+    requestInterval: 30,
+    requestIntervalUnit: 'second',
+    requestParams: {
+      Params: {},
+      Header: {},
+      Body: {
+        'form-data': {},
+        'x-www-form-urlencoded': {},
+        json: '',
+        xml: '',
+      },
+    },
   })
 
   const selectedComponent = computed(() =>
     components.value.find(c => c.id === selectedId.value) ?? null
   )
 
-  const componentDefinitions: ComponentDefinition[] = [
+  const componentDefinitions: (ChartConfigType & { name: string; icon: string; defaultOption: Record<string, any>; defaultProps: Record<string, any> })[] = [
     {
-      type: 'container',
+      key: 'container',
+      chartKey: 'VContainer',
+      conKey: 'VCContainer',
+      title: '容器',
       name: '容器',
+      category: 'Containers',
+      categoryName: '容器',
+      package: 'Informations',
+      chartFrame: 'common',
+      image: 'container.png',
       icon: '📦',
-      isContainer: true,
-      props: [
-        { label: '背景色', key: 'bgColor', type: 'color', defaultValue: '#1e1e2e' },
-        { label: '边框色', key: 'borderColor', type: 'color', defaultValue: '#89b4fa' },
-      ],
+      defaultOption: {},
       defaultProps: {
         bgColor: 'rgba(30, 30, 46, 0.6)',
         borderColor: '#89b4fa',
       },
     },
     {
-      type: 'bar-chart',
+      key: 'BarCommon',
+      chartKey: 'VBarCommon',
+      conKey: 'VCBarCommon',
+      title: '柱状图',
       name: '柱状图',
+      category: 'Bars',
+      categoryName: '柱状图',
+      package: 'Charts',
+      chartFrame: 'echarts',
+      image: 'bar.png',
       icon: '📊',
-      props: [
-        { label: '标题', key: 'title', type: 'text', defaultValue: '柱状图' },
-        { label: '背景色', key: 'bgColor', type: 'color', defaultValue: '#1e1e2e' },
-      ],
-      defaultProps: {
+      defaultOption: {
         title: '柱状图',
-        bgColor: '#1e1e2e',
-        data: [
+        dataset: [
           { label: '一月', value: 120 },
           { label: '二月', value: 200 },
           { label: '三月', value: 150 },
@@ -53,6 +100,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
           { label: '六月', value: 110 },
         ],
       },
+      defaultProps: {},
     },
   ]
 
@@ -64,21 +112,45 @@ export const useDashboardStore = defineStore('dashboard', () => {
     return components.value.filter(c => c.parentId === parentId)
   }
 
-  function addComponent(type: string, parentId?: string) {
-    const def = componentDefinitions.find(d => d.type === type)
-    if (!def) return
+  function generateId(): string {
     counter.value++
-    const isContainer = def.isContainer
+    return `comp-${Date.now()}-${counter.value}`
+  }
+
+  function addComponent(key: string, parentId?: string) {
+    const def = componentDefinitions.find(d => d.key === key)
+    if (!def) return
+
+    const id = generateId()
     const comp: CanvasComponent = {
-      id: `comp-${counter.value}`,
-      type: def.type,
-      name: def.name,
-      props: { ...def.defaultProps },
+      id,
+      key: def.key,
       parentId: parentId ?? null,
-      x: parentId ? 10 : 20,
-      y: parentId ? 10 : 20,
-      width: isContainer ? 500 : 400,
-      height: isContainer ? 400 : 320,
+      props: { ...def.defaultProps },
+      chartConfig: {
+        key: def.key,
+        chartKey: def.chartKey,
+        conKey: def.conKey,
+        title: def.title,
+        category: def.category,
+        categoryName: def.categoryName,
+        package: def.package,
+        chartFrame: def.chartFrame,
+        image: def.image,
+        icon: def.icon,
+      },
+      attr: {
+        ...DEFAULT_ATTR,
+        x: parentId ? 10 : 50,
+        y: parentId ? 10 : 50,
+        w: key === 'container' ? 500 : 400,
+        h: key === 'container' ? 400 : 320,
+        zIndex: components.value.length,
+      },
+      styles: { ...DEFAULT_STYLES },
+      status: { ...DEFAULT_STATUS },
+      preview: { ...DEFAULT_PREVIEW },
+      option: { ...def.defaultOption },
     }
     components.value.push(comp)
     selectedId.value = comp.id
@@ -109,21 +181,25 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function updateComponentPosition(id: string, x: number, y: number) {
     const comp = components.value.find(c => c.id === id)
     if (comp) {
-      comp.x = x
-      comp.y = y
+      comp.attr.x = x
+      comp.attr.y = y
     }
-  }
-
-  function updatePageConfig(config: Partial<PageConfig>) {
-    Object.assign(pageConfig.value, config)
   }
 
   function updateComponentSize(id: string, w: number, h: number) {
     const comp = components.value.find(c => c.id === id)
     if (comp) {
-      comp.width = w
-      comp.height = h
+      comp.attr.w = w
+      comp.attr.h = h
     }
+  }
+
+  function updateCanvasConfig(config: Partial<EditCanvasConfigType>) {
+    Object.assign(editCanvasConfig.value, config)
+  }
+
+  function updateRequestGlobalConfig(config: Partial<RequestGlobalConfigType>) {
+    Object.assign(requestGlobalConfig.value, config)
   }
 
   return {
@@ -131,7 +207,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     selectedId,
     selectedComponent,
     componentDefinitions,
-    pageConfig,
+    editCanvasConfig,
+    requestGlobalConfig,
     rootComponents,
     getChildren,
     addComponent,
@@ -140,6 +217,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateComponentProp,
     updateComponentPosition,
     updateComponentSize,
-    updatePageConfig,
+    updateCanvasConfig,
+    updateRequestGlobalConfig,
   }
 })

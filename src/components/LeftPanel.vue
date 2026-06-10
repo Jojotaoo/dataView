@@ -4,14 +4,15 @@
     <div class="component-list">
       <div
         v-for="def in store.componentDefinitions"
-        :key="def.type"
+        :key="def.key"
         class="component-item"
         draggable="true"
-        @dragstart="onDragStart($event, def.type)"
-        @click="store.addComponent(def.type)"
+        @dragstart="onDragStart($event, def.key)"
+        @click="store.addComponent(def.key)"
       >
         <span class="component-icon">{{ def.icon }}</span>
         <span class="component-name">{{ def.name }}</span>
+        <span class="component-badge">{{ def.package }}</span>
       </div>
     </div>
   </div>
@@ -22,8 +23,8 @@ import { useDashboardStore } from '../stores/dashboard'
 
 const store = useDashboardStore()
 
-function onDragStart(event: DragEvent, type: string) {
-  event.dataTransfer?.setData('text/plain', type)
+function onDragStart(event: DragEvent, key: string) {
+  event.dataTransfer?.setData('text/plain', key)
 }
 </script>
 
@@ -86,5 +87,14 @@ function onDragStart(event: DragEvent, type: string) {
   font-size: 13px;
   color: #cdd6f4;
   font-weight: 500;
+  flex: 1;
+}
+
+.component-badge {
+  font-size: 10px;
+  color: #6c7086;
+  background: #181825;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 </style>
