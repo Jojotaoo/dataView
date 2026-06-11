@@ -1,5 +1,5 @@
 <template>
-  <div class="preview-overlay" @keydown.escape="$emit('close')">
+  <div class="preview-overlay">
     <div class="preview-header">
       <h2 class="preview-title">{{ schema.editCanvasConfig.projectName }} - 预览</h2>
       <button class="exit-btn" @click="$emit('close')">
@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
+import { useEventListener } from '../composables/useEventListener'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import ContainerPreview from './charts/ContainerPreview.vue'
@@ -60,9 +61,15 @@ const props = defineProps<{
   schema: ChartEditStorage
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
 }>()
+
+useEventListener(window, 'keydown', (event: Event) => {
+  if ((event as KeyboardEvent).key === 'Escape') {
+    emit('close')
+  }
+})
 
 const canvasStyle = computed((): CSSProperties => ({
   width: props.schema.editCanvasConfig.width + 'px',

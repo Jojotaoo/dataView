@@ -4,11 +4,11 @@
     <div class="prop-form">
       <div class="prop-group">
         <label class="prop-label">组件名称</label>
-        <div class="prop-value-static">{{ store.selectedComponent!.chartConfig.title }}</div>
+        <div class="prop-value-static">{{ comp.chartConfig.title }}</div>
       </div>
       <div class="prop-group">
         <label class="prop-label">组件类型</label>
-        <div class="prop-value-static">{{ store.selectedComponent!.key }}</div>
+        <div class="prop-value-static">{{ comp.key }}</div>
       </div>
     </div>
 
@@ -16,19 +16,19 @@
     <div class="prop-grid">
       <div class="prop-group">
         <label class="prop-label">X (px)</label>
-        <input type="number" class="prop-input" :value="store.selectedComponent!.attr.x" @input="updateAttr('x', $event)" />
+        <input type="number" class="prop-input" :value="comp.attr.x" @input="updateAttr('x', $event)" />
       </div>
       <div class="prop-group">
         <label class="prop-label">Y (px)</label>
-        <input type="number" class="prop-input" :value="store.selectedComponent!.attr.y" @input="updateAttr('y', $event)" />
+        <input type="number" class="prop-input" :value="comp.attr.y" @input="updateAttr('y', $event)" />
       </div>
       <div class="prop-group">
         <label class="prop-label">宽度 (px)</label>
-        <input type="number" class="prop-input" :value="store.selectedComponent!.attr.w" @input="updateAttr('w', $event)" />
+        <input type="number" class="prop-input" :value="comp.attr.w" @input="updateAttr('w', $event)" />
       </div>
       <div class="prop-group">
         <label class="prop-label">高度 (px)</label>
-        <input type="number" class="prop-input" :value="store.selectedComponent!.attr.h" @input="updateAttr('h', $event)" />
+        <input type="number" class="prop-input" :value="comp.attr.h" @input="updateAttr('h', $event)" />
       </div>
     </div>
 
@@ -37,21 +37,21 @@
       <div class="prop-group row">
         <label class="prop-label">锁定</label>
         <label class="switch">
-          <input type="checkbox" :checked="store.selectedComponent!.status.lock" @change="toggleStatus('lock')" />
+          <input type="checkbox" :checked="comp.status.lock" @change="toggleStatus('lock')" />
           <span class="switch-slider"></span>
         </label>
       </div>
       <div class="prop-group row">
         <label class="prop-label">隐藏</label>
         <label class="switch">
-          <input type="checkbox" :checked="store.selectedComponent!.status.hide" @change="toggleStatus('hide')" />
+          <input type="checkbox" :checked="comp.status.hide" @change="toggleStatus('hide')" />
           <span class="switch-slider"></span>
         </label>
       </div>
       <div class="prop-group row">
         <label class="prop-label">预览裁剪</label>
         <label class="switch">
-          <input type="checkbox" :checked="store.selectedComponent!.preview.overFlowHidden" @change="togglePreviewOverflow()" />
+          <input type="checkbox" :checked="comp.preview.overFlowHidden" @change="togglePreviewOverflow()" />
           <span class="switch-slider"></span>
         </label>
       </div>
@@ -62,55 +62,55 @@
       <div class="prop-group row">
         <label class="prop-label">启用滤镜</label>
         <label class="switch">
-          <input type="checkbox" :checked="store.selectedComponent!.styles.filterShow" @change="toggleFilterShow()" />
+          <input type="checkbox" :checked="comp.styles.filterShow" @change="toggleFilterShow()" />
           <span class="switch-slider"></span>
         </label>
       </div>
-      <template v-if="store.selectedComponent!.styles.filterShow">
+      <template v-if="comp.styles.filterShow">
         <div class="prop-group">
-          <label class="prop-label">不透明度 ({{ store.selectedComponent!.styles.opacity }})</label>
-          <input type="range" min="0" max="1" step="0.05" class="prop-range" :value="store.selectedComponent!.styles.opacity" @input="updateStyle('opacity', parseFloat(($event.target as HTMLInputElement).value))" />
+          <label class="prop-label">不透明度 ({{ comp.styles.opacity }})</label>
+          <input type="range" min="0" max="1" step="0.05" class="prop-range" :value="comp.styles.opacity" @input="updateStyle('opacity', parseFloat(($event.target as HTMLInputElement).value))" />
         </div>
         <div class="prop-group">
-          <label class="prop-label">饱和度 ({{ store.selectedComponent!.styles.saturate }})</label>
-          <input type="range" min="0" max="5" step="0.1" class="prop-range" :value="store.selectedComponent!.styles.saturate" @input="updateStyle('saturate', parseFloat(($event.target as HTMLInputElement).value))" />
+          <label class="prop-label">饱和度 ({{ comp.styles.saturate }})</label>
+          <input type="range" min="0" max="5" step="0.1" class="prop-range" :value="comp.styles.saturate" @input="updateStyle('saturate', parseFloat(($event.target as HTMLInputElement).value))" />
         </div>
         <div class="prop-group">
-          <label class="prop-label">对比度 ({{ store.selectedComponent!.styles.contrast }})</label>
-          <input type="range" min="0" max="5" step="0.1" class="prop-range" :value="store.selectedComponent!.styles.contrast" @input="updateStyle('contrast', parseFloat(($event.target as HTMLInputElement).value))" />
+          <label class="prop-label">对比度 ({{ comp.styles.contrast }})</label>
+          <input type="range" min="0" max="5" step="0.1" class="prop-range" :value="comp.styles.contrast" @input="updateStyle('contrast', parseFloat(($event.target as HTMLInputElement).value))" />
         </div>
         <div class="prop-group">
-          <label class="prop-label">色相旋转 ({{ store.selectedComponent!.styles.hueRotate }}deg)</label>
-          <input type="range" min="0" max="360" step="1" class="prop-range" :value="store.selectedComponent!.styles.hueRotate" @input="updateStyle('hueRotate', parseInt(($event.target as HTMLInputElement).value))" />
+          <label class="prop-label">色相旋转 ({{ comp.styles.hueRotate }}deg)</label>
+          <input type="range" min="0" max="360" step="1" class="prop-range" :value="comp.styles.hueRotate" @input="updateStyle('hueRotate', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
         <div class="prop-group">
-          <label class="prop-label">亮度 ({{ store.selectedComponent!.styles.brightness }})</label>
-          <input type="range" min="0" max="5" step="0.1" class="prop-range" :value="store.selectedComponent!.styles.brightness" @input="updateStyle('brightness', parseFloat(($event.target as HTMLInputElement).value))" />
+          <label class="prop-label">亮度 ({{ comp.styles.brightness }})</label>
+          <input type="range" min="0" max="5" step="0.1" class="prop-range" :value="comp.styles.brightness" @input="updateStyle('brightness', parseFloat(($event.target as HTMLInputElement).value))" />
         </div>
       </template>
       <div class="prop-group">
-        <label class="prop-label">Z 轴旋转 ({{ store.selectedComponent!.styles.rotateZ }}deg)</label>
-        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="store.selectedComponent!.styles.rotateZ" @input="updateStyle('rotateZ', parseInt(($event.target as HTMLInputElement).value))" />
+        <label class="prop-label">Z 轴旋转 ({{ comp.styles.rotateZ }}deg)</label>
+        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="comp.styles.rotateZ" @input="updateStyle('rotateZ', parseInt(($event.target as HTMLInputElement).value))" />
       </div>
       <div class="prop-group">
-        <label class="prop-label">X 轴旋转 ({{ store.selectedComponent!.styles.rotateX }}deg)</label>
-        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="store.selectedComponent!.styles.rotateX" @input="updateStyle('rotateX', parseInt(($event.target as HTMLInputElement).value))" />
+        <label class="prop-label">X 轴旋转 ({{ comp.styles.rotateX }}deg)</label>
+        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="comp.styles.rotateX" @input="updateStyle('rotateX', parseInt(($event.target as HTMLInputElement).value))" />
       </div>
       <div class="prop-group">
-        <label class="prop-label">Y 轴旋转 ({{ store.selectedComponent!.styles.rotateY }}deg)</label>
-        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="store.selectedComponent!.styles.rotateY" @input="updateStyle('rotateY', parseInt(($event.target as HTMLInputElement).value))" />
+        <label class="prop-label">Y 轴旋转 ({{ comp.styles.rotateY }}deg)</label>
+        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="comp.styles.rotateY" @input="updateStyle('rotateY', parseInt(($event.target as HTMLInputElement).value))" />
       </div>
       <div class="prop-group">
-        <label class="prop-label">X 倾斜 ({{ store.selectedComponent!.styles.skewX }}deg)</label>
-        <input type="range" min="-90" max="90" step="1" class="prop-range" :value="store.selectedComponent!.styles.skewX" @input="updateStyle('skewX', parseInt(($event.target as HTMLInputElement).value))" />
+        <label class="prop-label">X 倾斜 ({{ comp.styles.skewX }}deg)</label>
+        <input type="range" min="-90" max="90" step="1" class="prop-range" :value="comp.styles.skewX" @input="updateStyle('skewX', parseInt(($event.target as HTMLInputElement).value))" />
       </div>
       <div class="prop-group">
-        <label class="prop-label">Y 倾斜 ({{ store.selectedComponent!.styles.skewY }}deg)</label>
-        <input type="range" min="-90" max="90" step="1" class="prop-range" :value="store.selectedComponent!.styles.skewY" @input="updateStyle('skewY', parseInt(($event.target as HTMLInputElement).value))" />
+        <label class="prop-label">Y 倾斜 ({{ comp.styles.skewY }}deg)</label>
+        <input type="range" min="-90" max="90" step="1" class="prop-range" :value="comp.styles.skewY" @input="updateStyle('skewY', parseInt(($event.target as HTMLInputElement).value))" />
       </div>
       <div class="prop-group">
         <label class="prop-label">混合模式</label>
-        <select class="prop-select" :value="store.selectedComponent!.styles.blendMode" @change="updateStyle('blendMode', ($event.target as HTMLSelectElement).value)">
+        <select class="prop-select" :value="comp.styles.blendMode" @change="updateStyle('blendMode', ($event.target as HTMLSelectElement).value)">
           <option v-for="m in blendModes" :key="m" :value="m">{{ m }}</option>
         </select>
       </div>
@@ -120,16 +120,16 @@
     <div class="prop-form">
       <div class="prop-group">
         <label class="prop-label">标题</label>
-        <input type="text" class="prop-input" :value="store.selectedComponent!.option.title" @input="updateOption('title', ($event.target as HTMLInputElement).value)" />
+        <input type="text" class="prop-input" :value="comp.option.title" @input="updateOption('title', ($event.target as HTMLInputElement).value)" />
       </div>
     </div>
-    <div v-if="store.selectedComponent!.option.dataset" class="prop-form">
+    <div v-if="comp.option.dataset" class="prop-form">
       <div class="section-subtitle">数据集 (Dataset)</div>
       <div class="prop-group">
         <label class="prop-label">维度</label>
         <div class="dimension-row">
           <input
-            v-for="(dim, di) in store.selectedComponent!.option.dataset.dimensions"
+            v-for="(dim, di) in comp.option.dataset.dimensions"
             :key="di"
             type="text" class="prop-input dim-input"
             :value="dim"
@@ -141,10 +141,10 @@
         <label class="prop-label">数据表</label>
         <div class="data-table">
           <div class="table-header">
-            <span v-for="dim in store.selectedComponent!.option.dataset.dimensions" :key="dim" class="th">{{ dim }}</span>
+            <span v-for="dim in comp.option.dataset.dimensions" :key="dim" class="th">{{ dim }}</span>
             <span class="th th-action"></span>
           </div>
-          <div v-for="(row, ri) in store.selectedComponent!.option.dataset.source" :key="ri" class="table-row">
+          <div v-for="(row, ri) in comp.option.dataset.source" :key="ri" class="table-row">
             <input
               v-for="(cell, ci) in row"
               :key="ci"
@@ -163,16 +163,18 @@
     <div class="prop-form">
       <div class="prop-group">
         <label class="prop-label">过滤表达式</label>
-        <textarea class="prop-textarea" rows="3" placeholder="data.filter(item => item.value > 100)" :value="store.selectedComponent!.filter" @input="updateFilter(($event.target as HTMLTextAreaElement).value)"></textarea>
+        <textarea class="prop-textarea" rows="3" placeholder="data.filter(item => item.value > 100)" :value="comp.filter" @input="updateFilter(($event.target as HTMLTextAreaElement).value)"></textarea>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 
 const store = useDashboardStore()
+const comp = computed(() => store.selectedComponent!)
 
 const blendModes = [
   'normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten',

@@ -188,6 +188,18 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
+  dragState = null
+  resizeState = null
+  selStart = null
+  selRect.value = null
+  window.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('mouseup', onMouseUp)
+  window.removeEventListener('blur', onMouseUp)
+  window.removeEventListener('mousemove', onResizeMove)
+  window.removeEventListener('mouseup', onResizeUp)
+  window.removeEventListener('blur', onResizeUp)
+  window.removeEventListener('mousemove', onSelectionMouseMove)
+  window.removeEventListener('mouseup', onSelectionMouseUp)
 })
 
 const gridStyle = computed((): CSSProperties => ({

@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
 import { useDashboardStore } from '../../stores/dashboard'
@@ -76,6 +76,15 @@ const children = computed(() =>
 
 let dragState: { id: string; startX: number; startY: number; compX: number; compY: number } | null = null
 let resizeState: { id: string; startX: number; startY: number; compW: number; compH: number; parentEl: HTMLElement | null } | null = null
+
+onUnmounted(() => {
+  dragState = null
+  resizeState = null
+  window.removeEventListener('mousemove', onChildMouseMove)
+  window.removeEventListener('mouseup', onChildMouseUp)
+  window.removeEventListener('mousemove', onChildResizeMove)
+  window.removeEventListener('mouseup', onChildResizeUp)
+})
 
 function childClick(id: string) {
   store.selectComponent(id)
