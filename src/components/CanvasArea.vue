@@ -7,7 +7,7 @@
       :canvas-height="store.editCanvasConfig.height"
       v-model:scale="scale"
       v-model:lines="lines"
-      :thick="16"
+      :thick="20"
       :min-zoom="0.1"
       :max-zoom="10"
       :zoom-mode="'pointer'"
@@ -16,6 +16,9 @@
       :palette="rulerPalette"
       :auto-center="true"
       :snap-threshold="5"
+      :show-minor-ticks="true"
+      :shadow="shadow"
+      delete-label="放开删除"
     >
       <template #toolbar="{ tools, state }">
         <div class="ruler-toolbar">
@@ -64,6 +67,7 @@
                 :bg-color="comp.props?.bgColor"
                 :border-color="comp.props?.borderColor"
                 :parent-id="comp.id"
+                :scale="scale"
               />
               <BarChart
                 v-else-if="comp.key === 'BarCommon'"
@@ -121,7 +125,7 @@ const showReferLine = ref(true)
 const lines = ref<{ h: number[]; v: number[] }>({ h: [], v: [] })
 
 const rulerPalette = {
-  bgColor: '#11111b',
+  bgColor: 'transparent',
   tickColor: '#585b70',
   labelColor: '#a6adc8',
   guideLineColor: '#89b4fa',
@@ -130,6 +134,9 @@ const rulerPalette = {
   hoverColor: '#cdd6f4',
   borderColor: '#313244',
   shadowColor: '#1e1e2e',
+  guideLineStyle: 'dashed',
+  guideLineWidth: 1,
+  labelEnabled: true,
 }
 
 let resizeObserver: ResizeObserver | null = null
@@ -152,19 +159,33 @@ onUnmounted(() => {
 })
 
 const gridStyle = computed((): CSSProperties => ({
-  width: '100%',
-  height: '100%',
+  width: store.editCanvasConfig.width + 'px',
+  height: store.editCanvasConfig.height + 'px',
   backgroundColor: store.editCanvasConfig.background,
   backgroundImage: store.editCanvasConfig.backgroundImage
-    ? `url(${store.editCanvasConfig.backgroundImage}), radial-gradient(circle, #313244 1px, transparent 1px)`
-    : 'radial-gradient(circle, #313244 1px, transparent 1px)',
+    ? `url(${store.editCanvasConfig.backgroundImage}), radial-gradient(circle, #585b70 1px, transparent 1px)`
+    : 'radial-gradient(circle, #585b70 1px, transparent 1px)',
   backgroundSize: store.editCanvasConfig.backgroundImage
     ? 'cover, 20px 20px'
     : '20px 20px',
+  backgroundPosition: 'center, 0 0',
   filter: store.editCanvasConfig.filterShow
     ? `opacity(${store.editCanvasConfig.opacity}) saturate(${store.editCanvasConfig.saturate}) contrast(${store.editCanvasConfig.contrast}) hue-rotate(${store.editCanvasConfig.hueRotate}deg) brightness(${store.editCanvasConfig.brightness})`
     : undefined,
 }))
+
+const shadow = computed(() => {
+  const selId = store.selectedId
+  if (!selId) return { x: 0, y: 0, width: 0, height: 0 }
+  const comp = store.components.find(c => c.id === selId)
+  if (!comp) return { x: 0, y: 0, width: 0, height: 0 }
+  return {
+    x: comp.attr.x,
+    y: comp.attr.y,
+    width: comp.attr.w,
+    height: comp.attr.h,
+  }
+})
 
 function componentStyle(comp: CanvasComponent): CSSProperties {
   return {
@@ -197,24 +218,21 @@ function onMouseDown(event: MouseEvent, id: string) {
   }
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
+  window.addEventListener('blur', onMouseUp)
 }
 
 function onMouseMove(event: MouseEvent) {
   if (!dragState) return
   const dx = (event.clientX - dragState.startX) / scale.value
   const dy = (event.clientY - dragState.startY) / scale.value
-  const comp = store.components.find(c => c.id === dragState!.id)
-  if (!comp) return
-  const pageW = store.editCanvasConfig.width
-  const pageH = store.editCanvasConfig.height
-  comp.attr.x = Math.max(0, Math.min(dragState.compX + dx, pageW - comp.attr.w))
-  comp.attr.y = Math.max(0, Math.min(dragState.compY + dy, pageH - comp.attr.h))
+  store.moveComponentDelta(dragState.id, dx, dy, dragState.compX, dragState.compY, store.editCanvasConfig.width, store.editCanvasConfig.height)
 }
 
 function onMouseUp() {
   dragState = null
   window.removeEventListener('mousemove', onMouseMove)
   window.removeEventListener('mouseup', onMouseUp)
+  window.removeEventListener('blur', onMouseUp)
 }
 
 function onResizeStart(event: MouseEvent, id: string) {
@@ -229,6 +247,7 @@ function onResizeStart(event: MouseEvent, id: string) {
   }
   window.addEventListener('mousemove', onResizeMove)
   window.addEventListener('mouseup', onResizeUp)
+  window.addEventListener('blur', onResizeUp)
 }
 
 function onResizeMove(event: MouseEvent) {
@@ -237,16 +256,14 @@ function onResizeMove(event: MouseEvent) {
   const dy = (event.clientY - resizeState.startY) / scale.value
   const comp = store.components.find(c => c.id === resizeState!.id)
   if (!comp) return
-  const pageW = store.editCanvasConfig.width
-  const pageH = store.editCanvasConfig.height
-  comp.attr.w = Math.max(100, Math.min(resizeState.compW + dx, pageW - comp.attr.x))
-  comp.attr.h = Math.max(60, Math.min(resizeState.compH + dy, pageH - comp.attr.y))
+  store.resizeComponentDelta(resizeState.id, dx, dy, resizeState.compW, resizeState.compH, store.editCanvasConfig.width - comp.attr.x, store.editCanvasConfig.height - comp.attr.y)
 }
 
 function onResizeUp() {
   resizeState = null
   window.removeEventListener('mousemove', onResizeMove)
   window.removeEventListener('mouseup', onResizeUp)
+  window.removeEventListener('blur', onResizeUp)
 }
 
 function onDraggableChange(evt: any) {
@@ -254,7 +271,8 @@ function onDraggableChange(evt: any) {
     const item = evt.added.element
     if (item && item._clone) {
       store.components.splice(evt.added.newIndex, 1)
-      store.addComponent(item.key)
+      store.addComponent(item.key, store.dropTargetParentId ?? undefined)
+      store.dropTargetParentId = null
     }
   }
 }
@@ -263,7 +281,9 @@ function onDraggableChange(evt: any) {
 <style scoped>
 .canvas-area {
   flex: 1;
-  background: #11111b;
+  background-color: #11111b;
+  background-image: radial-gradient(circle, #585b70 1px, transparent 1px);
+  background-size: 20px 20px;
   position: relative;
   overflow: hidden;
   min-height: 0;
@@ -423,5 +443,40 @@ function onDraggableChange(evt: any) {
   min-width: 48px;
   text-align: center;
   user-select: none;
+}
+</style>
+
+<style>
+.sketch-ruler {
+  background: transparent !important;
+}
+
+.sketch-ruler .h-container .lines .line {
+  border-top: 1px dashed #89b4fa !important;
+}
+
+.sketch-ruler .v-container .lines .line {
+  border-left: 1px dashed #89b4fa !important;
+}
+
+.sketch-ruler .h-container .lines .line-locked {
+  border-top: 1px dashed #45475a !important;
+}
+
+.sketch-ruler .v-container .lines .line-locked {
+  border-left: 1px dashed #45475a !important;
+}
+
+.sketch-ruler .corner {
+  border-width: 0 !important;
+  background: transparent !important;
+}
+
+.sketch-ruler .indicator .value {
+  background-color: transparent !important;
+}
+
+.sketch-ruler .line-label {
+  background: transparent !important;
 }
 </style>

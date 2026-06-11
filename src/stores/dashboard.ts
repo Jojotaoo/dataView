@@ -17,6 +17,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const components = ref<CanvasComponent[]>([])
   const selectedId = ref<string | null>(null)
   const counter = ref(0)
+  const dropTargetParentId = ref<string | null>(null)
 
   const editCanvasConfig = ref<EditCanvasConfigType>({
     projectName: '可视化大屏',
@@ -157,7 +158,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       id,
       key: def.key,
       parentId: parentId ?? null,
-      props: JSON.parse(JSON.stringify(def.defaultProps)),
+      props: structuredClone(def.defaultProps),
       chartConfig: {
         key: def.key,
         chartKey: def.chartKey,
@@ -181,7 +182,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       styles: { ...DEFAULT_STYLES },
       status: { ...DEFAULT_STATUS },
       preview: { ...DEFAULT_PREVIEW },
-      option: JSON.parse(JSON.stringify(def.defaultOption)),
+      option: structuredClone(def.defaultOption),
     }
     components.value.push(comp)
     selectedId.value = comp.id
@@ -233,6 +234,59 @@ export const useDashboardStore = defineStore('dashboard', () => {
     Object.assign(requestGlobalConfig.value, config)
   }
 
+  function findComponent(id: string) {
+    return components.value.find(c => c.id === id) ?? null
+  }
+
+  function updateComponentAttr(id: string, key: keyof typeof DEFAULT_ATTR, value: number) {
+    const comp = findComponent(id)
+    if (comp) (comp.attr as any)[key] = value
+  }
+
+  function updateComponentStyle(id: string, key: string, value: number | string) {
+    const comp = findComponent(id)
+    if (comp) (comp.styles as any)[key] = value
+  }
+
+  function updateComponentOption(id: string, key: string, value: any) {
+    const comp = findComponent(id)
+    if (comp) comp.option[key] = value
+  }
+
+  function toggleComponentStatus(id: string, statusKey: 'lock' | 'hide') {
+    const comp = findComponent(id)
+    if (comp) comp.status[statusKey] = !comp.status[statusKey]
+  }
+
+  function toggleComponentPreviewOverflow(id: string) {
+    const comp = findComponent(id)
+    if (comp) comp.preview.overFlowHidden = !comp.preview.overFlowHidden
+  }
+
+  function toggleComponentFilterShow(id: string) {
+    const comp = findComponent(id)
+    if (comp) comp.styles.filterShow = !comp.styles.filterShow
+  }
+
+  function updateComponentFilter(id: string, value: string) {
+    const comp = findComponent(id)
+    if (comp) comp.filter = value
+  }
+
+  function moveComponentDelta(id: string, dx: number, dy: number, baseX: number, baseY: number, pageW?: number, pageH?: number) {
+    const comp = findComponent(id)
+    if (!comp) return
+    comp.attr.x = Math.max(0, Math.min(baseX + dx, (pageW ?? 9999) - comp.attr.w))
+    comp.attr.y = Math.max(0, Math.min(baseY + dy, (pageH ?? 9999) - comp.attr.h))
+  }
+
+  function resizeComponentDelta(id: string, dw: number, dh: number, baseW: number, baseH: number, maxW?: number, maxH?: number) {
+    const comp = findComponent(id)
+    if (!comp) return
+    comp.attr.w = Math.max(comp.key === 'container' ? 80 : 100, Math.min(baseW + dw, maxW ?? 9999))
+    comp.attr.h = Math.max(comp.key === 'container' ? 40 : 60, Math.min(baseH + dh, maxH ?? 9999))
+  }
+
   return {
     components,
     selectedId,
@@ -240,6 +294,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     componentDefinitions,
     editCanvasConfig,
     requestGlobalConfig,
+    dropTargetParentId,
     rootComponents,
     getChildren,
     addComponent,
@@ -250,5 +305,15 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateComponentSize,
     updateCanvasConfig,
     updateRequestGlobalConfig,
+    findComponent,
+    updateComponentAttr,
+    updateComponentStyle,
+    updateComponentOption,
+    toggleComponentStatus,
+    toggleComponentPreviewOverflow,
+    toggleComponentFilterShow,
+    updateComponentFilter,
+    moveComponentDelta,
+    resizeComponentDelta,
   }
 })

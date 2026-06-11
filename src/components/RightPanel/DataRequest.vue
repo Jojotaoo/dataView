@@ -23,44 +23,139 @@
       </div>
     </div>
 
-    <div class="section-title">全局请求参数</div>
+    <div class="section-title">Query Params</div>
     <div class="prop-form">
-      <div class="subsection-label">Query Params</div>
       <div v-for="(val, key, idx) in store.requestGlobalConfig.requestParams.Params" :key="'qp-' + idx" class="kv-row">
         <input type="text" class="prop-input kv-key" placeholder="key" :value="key" disabled />
-        <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateRequestParam('Params', key, ($event.target as HTMLInputElement).value, idx)" />
+        <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateParamValue('Params', idx, ($event.target as HTMLInputElement).value)" />
+        <button class="kv-remove" @click="removeParam('Params', key)">✕</button>
       </div>
-      <button class="add-btn" @click="addRequestParam('Params')">+ 添加参数</button>
+      <button class="add-btn" @click="addParam('Params')">+ 添加参数</button>
+    </div>
+
+    <div class="section-title">请求头 (Header)</div>
+    <div class="prop-form">
+      <div v-for="(val, key, idx) in store.requestGlobalConfig.requestParams.Header" :key="'qh-' + idx" class="kv-row">
+        <input type="text" class="prop-input kv-key" placeholder="key" :value="key" @input="updateHeaderKey(idx, ($event.target as HTMLInputElement).value)" />
+        <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateParamValue('Header', idx, ($event.target as HTMLInputElement).value)" />
+        <button class="kv-remove" @click="removeParam('Header', key)">✕</button>
+      </div>
+      <button class="add-btn" @click="addParam('Header')">+ 添加请求头</button>
+    </div>
+
+    <div class="section-title">请求体 (Body)</div>
+    <div class="prop-form">
+      <div class="body-tabs">
+        <button v-for="tab in bodyTabs" :key="tab.key" class="body-tab" :class="{ active: activeBodyTab === tab.key }" @click="activeBodyTab = tab.key">{{ tab.label }}</button>
+      </div>
+      <template v-if="isKvBody(activeBodyTab)">
+        <div v-for="(val, key, idx) in kvBodyEntries" :key="'bb-' + idx" class="kv-row">
+          <input type="text" class="prop-input kv-key" placeholder="key" :value="key" disabled />
+          <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateBodyKvValue(idx, ($event.target as HTMLInputElement).value)" />
+          <button class="kv-remove" @click="removeBodyKv(key)">✕</button>
+        </div>
+        <button class="add-btn" @click="addBodyKv">+ 添加字段</button>
+      </template>
+      <template v-else>
+        <textarea class="prop-textarea" rows="6" :value="bodyTextValue" @input="updateBodyText(($event.target as HTMLTextAreaElement).value)"></textarea>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 
 const store = useDashboardStore()
+
+const activeBodyTab = ref<'form-data' | 'x-www-form-urlencoded' | 'json' | 'xml'>('json')
+
+const bodyTabs = [
+  { key: 'form-data' as const, label: 'form-data' },
+  { key: 'x-www-form-urlencoded' as const, label: 'urlencoded' },
+  { key: 'json' as const, label: 'JSON' },
+  { key: 'xml' as const, label: 'XML' },
+]
+
+function isKvBody(tab: string): tab is 'form-data' | 'x-www-form-urlencoded' {
+  return tab === 'form-data' || tab === 'x-www-form-urlencoded'
+}
+
+const kvBodyEntries = computed(() => store.requestGlobalConfig.requestParams.Body[activeBodyTab.value] as Record<string, string>)
+
+const bodyTextValue = computed(() => {
+  const body = store.requestGlobalConfig.requestParams.Body
+  return body[activeBodyTab.value as 'json' | 'xml'] as string
+})
 
 function updateRequestGlobal(key: string, value: any) {
   store.updateRequestGlobalConfig({ [key]: value })
 }
 
-function updateRequestParam(section: string, _oldKey: string, value: string, idx: number) {
-  const params = store.requestGlobalConfig.requestParams
-  const target = (params as any)[section]
-  if (target) {
-    const keys = Object.keys(target)
-    if (keys[idx] !== undefined) {
-      target[keys[idx]] = value
-    }
+function getSection(section: string): Record<string, string> | null {
+  const target = store.requestGlobalConfig.requestParams[section as 'Params' | 'Header']
+  return target ?? null
+}
+
+function updateParamValue(section: 'Params' | 'Header', idx: number, value: string) {
+  const target = getSection(section)
+  if (!target) return
+  const keys = Object.keys(target)
+  if (keys[idx] !== undefined) {
+    target[keys[idx]] = value
   }
 }
 
-function addRequestParam(section: string) {
-  const params = store.requestGlobalConfig.requestParams
-  const target = (params as any)[section]
-  if (target) {
-    target[`param_${Object.keys(target).length + 1}`] = ''
+function updateHeaderKey(idx: number, newKey: string) {
+  const target = getSection('Header')
+  if (!target) return
+  const keys = Object.keys(target)
+  if (keys[idx] !== undefined) {
+    const oldKey = keys[idx]
+    if (oldKey === newKey) return
+    target[newKey] = target[oldKey]
+    delete target[oldKey]
   }
+}
+
+function addParam(section: 'Params' | 'Header') {
+  const target = getSection(section)
+  if (!target) return
+  target[`${section.toLowerCase()}_${Object.keys(target).length + 1}`] = ''
+}
+
+function removeParam(section: 'Params' | 'Header', key: string) {
+  const target = getSection(section)
+  if (!target) return
+  delete target[key]
+}
+
+function updateBodyKvValue(idx: number, value: string) {
+  const target = kvBodyEntries.value
+  if (!target) return
+  const keys = Object.keys(target)
+  if (keys[idx] !== undefined) {
+    target[keys[idx]] = value
+  }
+}
+
+function addBodyKv() {
+  const target = kvBodyEntries.value
+  if (!target) return
+  target[`field_${Object.keys(target).length + 1}`] = ''
+}
+
+function removeBodyKv(key: string) {
+  const target = kvBodyEntries.value
+  if (!target) return
+  delete target[key]
+}
+
+function updateBodyText(value: string) {
+  const body = store.requestGlobalConfig.requestParams.Body
+  if (activeBodyTab.value === 'json') body.json = value
+  else if (activeBodyTab.value === 'xml') body.xml = value
 }
 </script>
 
@@ -75,13 +170,6 @@ function addRequestParam(section: string) {
   user-select: none;
 }
 .section-title:first-child { margin-top: 0; }
-.subsection-label {
-  font-size: 11px;
-  color: #a6adc8;
-  font-weight: 500;
-  margin-top: 8px;
-  margin-bottom: 4px;
-}
 .prop-form {
   display: flex;
   flex-direction: column;
@@ -124,9 +212,34 @@ function addRequestParam(section: string) {
   outline: none;
   cursor: pointer;
 }
+.prop-textarea {
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #cdd6f4;
+  outline: none;
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  resize: vertical;
+  width: 100%;
+}
+.prop-textarea:focus { border-color: #89b4fa; }
 .kv-row { display: flex; gap: 4px; align-items: center; }
 .kv-key { flex: 2; font-size: 11px; opacity: 0.7; }
 .kv-val { flex: 3; font-size: 11px; }
+.kv-remove {
+  flex: 0 0 22px;
+  height: 22px;
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  font-size: 10px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.kv-remove:hover { background: #f38ba8; color: #1e1e2e; }
 .add-btn {
   padding: 4px 8px;
   background: #313244;
@@ -142,4 +255,27 @@ function addRequestParam(section: string) {
   color: #cdd6f4;
   border-color: #89b4fa;
 }
+.body-tabs {
+  display: flex;
+  gap: 2px;
+  background: #313244;
+  border-radius: 6px;
+  padding: 3px;
+}
+.body-tab {
+  flex: 1;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #6c7086;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.body-tab.active {
+  background: #45475a;
+  color: #cdd6f4;
+}
+.body-tab:hover:not(.active) { color: #a6adc8; }
 </style>

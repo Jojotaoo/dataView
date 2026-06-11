@@ -60,10 +60,12 @@ const props = withDefaults(defineProps<{
   bgColor?: string
   borderColor?: string
   parentId?: string
+  scale?: number
 }>(), {
   bgColor: 'rgba(30, 30, 46, 0.6)',
   borderColor: '#89b4fa',
   parentId: '',
+  scale: 1,
 })
 
 const isOver = ref(false)
@@ -95,12 +97,9 @@ function onChildMouseDown(event: MouseEvent, id: string) {
 
 function onChildMouseMove(event: MouseEvent) {
   if (!dragState) return
-  const dx = event.clientX - dragState.startX
-  const dy = event.clientY - dragState.startY
-  const comp = store.components.find(c => c.id === dragState!.id)
-  if (!comp) return
-  comp.attr.x = Math.max(0, dragState.compX + dx)
-  comp.attr.y = Math.max(0, dragState.compY + dy)
+  const dx = (event.clientX - dragState.startX) / props.scale
+  const dy = (event.clientY - dragState.startY) / props.scale
+  store.moveComponentDelta(dragState.id, dx, dy, dragState.compX, dragState.compY)
 }
 
 function onChildMouseUp() {
@@ -126,15 +125,12 @@ function onChildResizeStart(event: MouseEvent, id: string) {
 
 function onChildResizeMove(event: MouseEvent) {
   if (!resizeState) return
-  const dx = event.clientX - resizeState.startX
-  const dy = event.clientY - resizeState.startY
+  const dx = (event.clientX - resizeState.startX) / props.scale
+  const dy = (event.clientY - resizeState.startY) / props.scale
   const comp = store.components.find(c => c.id === resizeState!.id)
   if (!comp) return
   const parentRect = resizeState.parentEl?.parentElement?.getBoundingClientRect()
-  const maxW = parentRect ? parentRect.width - comp.attr.x : 1000
-  const maxH = parentRect ? parentRect.height - comp.attr.y : 1000
-  comp.attr.w = Math.max(80, Math.min(resizeState.compW + dx, maxW))
-  comp.attr.h = Math.max(40, Math.min(resizeState.compH + dy, maxH))
+  store.resizeComponentDelta(resizeState.id, dx, dy, resizeState.compW, resizeState.compH, parentRect ? parentRect.width - comp.attr.x : undefined, parentRect ? parentRect.height - comp.attr.y : undefined)
 }
 
 function onChildResizeUp() {
@@ -145,18 +141,18 @@ function onChildResizeUp() {
 
 function onDragOver() {
   isOver.value = true
+  store.dropTargetParentId = props.parentId
 }
 
 function onDragLeave() {
   isOver.value = false
+  if (store.dropTargetParentId === props.parentId) {
+    store.dropTargetParentId = null
+  }
 }
 
-function onDrop(event: DragEvent) {
+function onDrop(_event: DragEvent) {
   isOver.value = false
-  const key = event.dataTransfer?.getData('text/plain')
-  if (key) {
-    store.addComponent(key, props.parentId)
-  }
 }
 </script>
 

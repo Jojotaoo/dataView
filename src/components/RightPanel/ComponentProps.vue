@@ -184,26 +184,17 @@ function updateAttr(key: string, event: Event) {
   if (!store.selectedComponent) return
   const value = Number((event.target as HTMLInputElement).value)
   if (isNaN(value)) return
-  const comp = store.components.find(c => c.id === store.selectedComponent!.id)
-  if (comp) {
-    (comp.attr as any)[key] = value
-  }
+  store.updateComponentAttr(store.selectedComponent.id, key as any, value)
 }
 
-function updateStyle(key: string, value: any) {
+function updateStyle(key: string, value: number | string) {
   if (!store.selectedComponent) return
-  const comp = store.components.find(c => c.id === store.selectedComponent!.id)
-  if (comp) {
-    (comp.styles as any)[key] = value
-  }
+  store.updateComponentStyle(store.selectedComponent.id, key, value)
 }
 
 function updateOption(key: string, value: any) {
   if (!store.selectedComponent) return
-  const comp = store.components.find(c => c.id === store.selectedComponent!.id)
-  if (comp) {
-    comp.option[key] = value
-  }
+  store.updateComponentOption(store.selectedComponent.id, key, value)
 }
 
 function updateDimension(di: string | number, value: string) {
@@ -243,34 +234,22 @@ function removeSourceRow(ri: string | number) {
 
 function updateFilter(value: string) {
   if (!store.selectedComponent) return
-  const comp = store.components.find(c => c.id === store.selectedComponent!.id)
-  if (comp) {
-    comp.filter = value
-  }
+  store.updateComponentFilter(store.selectedComponent.id, value)
 }
 
 function toggleStatus(key: 'lock' | 'hide') {
   if (!store.selectedComponent) return
-  const comp = store.components.find(c => c.id === store.selectedComponent!.id)
-  if (comp) {
-    comp.status[key] = !comp.status[key]
-  }
+  store.toggleComponentStatus(store.selectedComponent.id, key)
 }
 
 function togglePreviewOverflow() {
   if (!store.selectedComponent) return
-  const comp = store.components.find(c => c.id === store.selectedComponent!.id)
-  if (comp) {
-    comp.preview.overFlowHidden = !comp.preview.overFlowHidden
-  }
+  store.toggleComponentPreviewOverflow(store.selectedComponent.id)
 }
 
 function toggleFilterShow() {
   if (!store.selectedComponent) return
-  const comp = store.components.find(c => c.id === store.selectedComponent!.id)
-  if (comp) {
-    comp.styles.filterShow = !comp.styles.filterShow
-  }
+  store.toggleComponentFilterShow(store.selectedComponent.id)
 }
 </script>
 
