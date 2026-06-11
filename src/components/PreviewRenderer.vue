@@ -23,6 +23,10 @@
           :parent-id="comp.id"
           :all-components="schema.componentList"
         />
+        <GroupPreview
+          v-else-if="comp.key === 'group'"
+          :component="comp"
+        />
         <BarChart
           v-else-if="comp.key === 'BarCommon'"
           :option="comp.option"
@@ -49,6 +53,7 @@ import type { CSSProperties } from 'vue'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import ContainerPreview from './charts/ContainerPreview.vue'
+import GroupPreview from './charts/GroupPreview.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'
 
 const props = defineProps<{

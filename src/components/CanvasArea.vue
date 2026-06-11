@@ -1,5 +1,5 @@
 <template>
-  <div ref="containerRef" class="canvas-area">
+  <div ref="containerRef" class="canvas-area" @contextmenu.prevent="onContextMenu">
     <SketchRule
       :width="containerWidth || 800"
       :height="containerHeight || 600"
@@ -38,7 +38,7 @@
         :sort="false"
         :group="{ name: 'canvas', pull: false, put: true }"
         @change="onDraggableChange"
-        @click.self="store.selectComponent(null)"
+        @mousedown.self="onCanvasMouseDown"
       >
         <template #item="{ element: comp }">
           <div
@@ -46,13 +46,15 @@
             class="canvas-component"
             :class="{
               selected: comp.id === store.selectedId,
+              'multi-selected': store.selectedIds.includes(comp.id) && comp.id !== store.selectedId,
               locked: comp.status.lock,
               hidden: comp.status.hide,
             }"
             :style="componentStyle(comp)"
+            :data-comp-id="comp.id"
             @mousedown.stop="onMouseDown($event, comp.id)"
             @dragstart.prevent
-            @click.stop="store.selectComponent(comp.id)"
+            @click.stop="onComponentClick($event, comp.id)"
           >
             <div class="comp-header">
               <span class="comp-label">{{ comp.chartConfig.title }}</span>
@@ -67,6 +69,11 @@
                 :bg-color="comp.props?.bgColor"
                 :border-color="comp.props?.borderColor"
                 :parent-id="comp.id"
+                :scale="scale"
+              />
+              <GroupComponent
+                v-else-if="comp.key === 'group'"
+                :component="comp"
                 :scale="scale"
               />
               <BarChart
@@ -85,7 +92,7 @@
               />
             </div>
             <div
-              v-if="!comp.status.lock"
+              v-if="!comp.status.lock && comp.key !== 'group'"
               class="resize-handle"
               @mousedown.stop="onResizeStart($event, comp.id)"
             ></div>
@@ -98,7 +105,18 @@
           </div>
         </template>
       </draggable>
+      <div v-if="selRect" class="selection-rect" :style="selRectStyle"></div>
     </SketchRule>
+    <ContextMenu
+      v-if="ctxMenu.show"
+      :x="ctxMenu.x"
+      :y="ctxMenu.y"
+      :can-group="store.selectedIds.length >= 2"
+      :can-ungroup="ctxMenu.isGroup"
+      @group="handleGroup"
+      @ungroup="handleUngroup"
+      @close="ctxMenu.show = false"
+    />
   </div>
 </template>
 
@@ -113,6 +131,8 @@ import 'vue3-sketch-ruler/lib/style.css'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import Container from './charts/Container.vue'
+import GroupComponent from './charts/GroupComponent.vue'
+import ContextMenu from './ContextMenu.vue'
 
 const store = useDashboardStore()
 
@@ -123,6 +143,18 @@ const scale = ref(1)
 const showRuler = ref(true)
 const showReferLine = ref(true)
 const lines = ref<{ h: number[]; v: number[] }>({ h: [], v: [] })
+const selRect = ref<{ x: number; y: number; w: number; h: number } | null>(null)
+const ctxMenu = ref<{ show: boolean; x: number; y: number; isGroup: boolean; ctxId: string | null }>({ show: false, x: 0, y: 0, isGroup: false, ctxId: null })
+
+const selRectStyle = computed(() => {
+  if (!selRect.value) return {}
+  return {
+    left: selRect.value.x + 'px',
+    top: selRect.value.y + 'px',
+    width: selRect.value.w + 'px',
+    height: selRect.value.h + 'px',
+  }
+})
 
 const rulerPalette = {
   bgColor: 'transparent',
@@ -177,14 +209,20 @@ const gridStyle = computed((): CSSProperties => ({
 const shadow = computed(() => {
   const selId = store.selectedId
   if (!selId) return { x: 0, y: 0, width: 0, height: 0 }
-  const comp = store.components.find(c => c.id === selId)
+  const comp = store.findComponent(selId)
   if (!comp) return { x: 0, y: 0, width: 0, height: 0 }
-  return {
-    x: comp.attr.x,
-    y: comp.attr.y,
-    width: comp.attr.w,
-    height: comp.attr.h,
+
+  let x = comp.attr.x
+  let y = comp.attr.y
+  if (!store.components.find(c => c.id === selId)) {
+    const parentGroup = findParentGroup(selId)
+    if (parentGroup) {
+      x += parentGroup.attr.x
+      y += parentGroup.attr.y
+    }
   }
+
+  return { x, y, width: comp.attr.w, height: comp.attr.h }
 })
 
 function componentStyle(comp: CanvasComponent): CSSProperties {
@@ -276,6 +314,124 @@ function onDraggableChange(evt: any) {
     }
   }
 }
+
+function onComponentClick(event: MouseEvent, id: string) {
+  if (event.ctrlKey || event.metaKey) {
+    store.toggleSelectComponent(id)
+  } else {
+    store.selectComponent(id)
+  }
+}
+
+let selStart: { x: number; y: number } | null = null
+let didDrag = false
+
+function onCanvasMouseDown(event: MouseEvent) {
+  if (event.button !== 0) return
+  didDrag = false
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  selStart = {
+    x: (event.clientX - rect.left) / scale.value,
+    y: (event.clientY - rect.top) / scale.value,
+  }
+  window.addEventListener('mousemove', onSelectionMouseMove)
+  window.addEventListener('mouseup', onSelectionMouseUp)
+}
+
+function onSelectionMouseMove(event: MouseEvent) {
+  if (!selStart) return
+  didDrag = true
+  const gridEl = document.querySelector('.canvas-grid')
+  if (!gridEl) return
+  const rect = gridEl.getBoundingClientRect()
+  const mx = (event.clientX - rect.left) / scale.value
+  const my = (event.clientY - rect.top) / scale.value
+  selRect.value = {
+    x: Math.min(mx, selStart.x),
+    y: Math.min(my, selStart.y),
+    w: Math.abs(mx - selStart.x),
+    h: Math.abs(my - selStart.y),
+  }
+}
+
+function onSelectionMouseUp() {
+  if (didDrag && selRect.value) {
+    store.selectComponentsByRect(selRect.value.x, selRect.value.y, selRect.value.w, selRect.value.h)
+  } else {
+    store.clearSelection()
+  }
+  selStart = null
+  selRect.value = null
+  window.removeEventListener('mousemove', onSelectionMouseMove)
+  window.removeEventListener('mouseup', onSelectionMouseUp)
+}
+
+function findParentGroup(id: string): CanvasComponent | null {
+  for (const comp of store.components) {
+    if (comp.groupList && comp.groupList.some(c => c.id === id)) {
+      return comp
+    }
+  }
+  return null
+}
+
+function onContextMenu(event: MouseEvent) {
+  const compEl = (event.target as HTMLElement).closest('[data-comp-id]')
+  let isGroup = false
+  let ctxId: string | null = null
+
+  if (compEl) {
+    const id = compEl.getAttribute('data-comp-id')
+    if (id) {
+      store.selectComponent(id)
+      ctxId = id
+      const comp = store.components.find(c => c.id === id)
+      if (comp) {
+        isGroup = comp.key === 'group'
+      } else {
+        const parentGroup = findParentGroup(id)
+        if (parentGroup) {
+          isGroup = true
+          ctxId = parentGroup.id
+        }
+      }
+    }
+  } else {
+    if (store.selectedId) {
+      ctxId = store.selectedId
+      const comp = store.components.find(c => c.id === store.selectedId)
+      if (comp) {
+        isGroup = comp.key === 'group'
+      } else {
+        const parentGroup = findParentGroup(store.selectedId)
+        if (parentGroup) {
+          isGroup = true
+          ctxId = parentGroup.id
+        }
+      }
+    }
+  }
+
+  ctxMenu.value = {
+    show: true,
+    x: event.clientX,
+    y: event.clientY,
+    isGroup,
+    ctxId,
+  }
+}
+
+function handleGroup() {
+  ctxMenu.value.show = false
+  store.groupSelectedComponents()
+}
+
+function handleUngroup() {
+  ctxMenu.value.show = false
+  if (ctxMenu.value.ctxId) {
+    store.ungroupComponent(ctxMenu.value.ctxId)
+  }
+}
 </script>
 
 <style scoped>
@@ -312,6 +468,11 @@ function onDraggableChange(evt: any) {
   box-shadow: 0 0 12px rgba(137, 180, 250, 0.3);
 }
 
+.canvas-component.multi-selected {
+  border-color: #a6e3a1;
+  box-shadow: 0 0 8px rgba(166, 227, 161, 0.3);
+}
+
 .canvas-component.locked {
   border-color: #f38ba8;
   opacity: 0.85;
@@ -319,6 +480,14 @@ function onDraggableChange(evt: any) {
 
 .canvas-component.hidden {
   display: none;
+}
+
+.selection-rect {
+  position: absolute;
+  border: 1px dashed #89b4fa;
+  background: rgba(137, 180, 250, 0.08);
+  pointer-events: none;
+  z-index: 100;
 }
 
 .comp-header {

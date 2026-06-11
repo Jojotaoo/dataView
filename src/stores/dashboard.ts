@@ -13,9 +13,25 @@ export interface CanvasComponent extends CreateComponentType {
   props: Record<string, any>
 }
 
+function rectsIntersect(a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) {
+  return !(b.x > a.x + a.w || b.x + b.w < a.x || b.y > a.y + a.h || b.y + b.h < a.y)
+}
+
+function findInGroupList(list: CreateComponentType[], id: string): CreateComponentType | null {
+  for (const item of list) {
+    if (item.id === id) return item
+    if (item.groupList) {
+      const found = findInGroupList(item.groupList, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
 export const useDashboardStore = defineStore('dashboard', () => {
   const components = ref<CanvasComponent[]>([])
   const selectedId = ref<string | null>(null)
+  const selectedIds = ref<string[]>([])
   const counter = ref(0)
   const dropTargetParentId = ref<string | null>(null)
 
@@ -55,9 +71,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
     },
   })
 
-  const selectedComponent = computed(() =>
-    components.value.find(c => c.id === selectedId.value) ?? null
-  )
+  const selectedComponent = computed(() => {
+    if (!selectedId.value) return null
+    return findComponent(selectedId.value)
+  })
 
   const componentDefinitions: (ChartConfigType & { name: string; icon: string; defaultOption: Record<string, any>; defaultProps: Record<string, any> })[] = [
     {
@@ -189,29 +206,91 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   function removeComponent(id: string) {
-    const idsToRemove = [id, ...components.value.filter(c => c.parentId === id).map(c => c.id)]
-    idsToRemove.forEach(i => {
-      const index = components.value.findIndex(c => c.id === i)
-      if (index !== -1) components.value.splice(index, 1)
-    })
-    if (idsToRemove.includes(selectedId.value!)) {
-      selectedId.value = components.value[0]?.id ?? null
+    const index = components.value.findIndex(c => c.id === id)
+    if (index !== -1) {
+      components.value.splice(index, 1)
+      if (id === selectedId.value) {
+        selectedId.value = components.value[0]?.id ?? null
+        selectedIds.value = []
+      }
+      return
     }
+    for (const group of components.value) {
+      if (group.groupList && removeFromGroupList(group.groupList, id)) {
+        if (id === selectedId.value) {
+          selectedId.value = null
+          selectedIds.value = []
+        }
+        return
+      }
+    }
+  }
+
+  function removeFromGroupList(list: CreateComponentType[], id: string): boolean {
+    const idx = list.findIndex(c => c.id === id)
+    if (idx >= 0) {
+      list.splice(idx, 1)
+      return true
+    }
+    for (const item of list) {
+      if (item.groupList && removeFromGroupList(item.groupList, id)) {
+        return true
+      }
+    }
+    return false
   }
 
   function selectComponent(id: string | null) {
     selectedId.value = id
+    if (id === null) {
+      selectedIds.value = []
+    } else {
+      selectedIds.value = [id]
+    }
+  }
+
+  function toggleSelectComponent(id: string) {
+    const idx = selectedIds.value.indexOf(id)
+    if (idx >= 0) {
+      selectedIds.value.splice(idx, 1)
+    } else {
+      selectedIds.value.push(id)
+    }
+    if (selectedIds.value.length === 1) {
+      selectedId.value = selectedIds.value[0]
+    } else if (selectedIds.value.length > 1) {
+      selectedId.value = id
+    } else {
+      selectedId.value = null
+    }
+  }
+
+  function selectComponentsByRect(x: number, y: number, w: number, h: number) {
+    const rect = { x, y, w, h }
+    selectedIds.value = components.value
+      .filter(c => !c.parentId && rectsIntersect(rect, { x: c.attr.x, y: c.attr.y, w: c.attr.w, h: c.attr.h }))
+      .map(c => c.id)
+    if (selectedIds.value.length === 0) {
+      selectedId.value = null
+    } else {
+      selectedId.value = selectedIds.value[selectedIds.value.length - 1]
+    }
+  }
+
+  function clearSelection() {
+    selectedIds.value = []
+    selectedId.value = null
   }
 
   function updateComponentProp(id: string, key: string, value: any) {
-    const comp = components.value.find(c => c.id === id)
+    const comp = findComponent(id)
     if (comp) {
       comp.props[key] = value
     }
   }
 
   function updateComponentPosition(id: string, x: number, y: number) {
-    const comp = components.value.find(c => c.id === id)
+    const comp = findComponent(id)
     if (comp) {
       comp.attr.x = x
       comp.attr.y = y
@@ -219,7 +298,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   function updateComponentSize(id: string, w: number, h: number) {
-    const comp = components.value.find(c => c.id === id)
+    const comp = findComponent(id)
     if (comp) {
       comp.attr.w = w
       comp.attr.h = h
@@ -235,7 +314,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   function findComponent(id: string) {
-    return components.value.find(c => c.id === id) ?? null
+    for (const comp of components.value) {
+      if (comp.id === id) return comp
+      if (comp.groupList) {
+        const found = findInGroupList(comp.groupList, id)
+        if (found) return found as CanvasComponent
+      }
+    }
+    return null
   }
 
   function updateComponentAttr(id: string, key: keyof typeof DEFAULT_ATTR, value: number) {
@@ -273,6 +359,125 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (comp) comp.filter = value
   }
 
+  function updateOptionDatasetDimension(id: string, index: number, value: string) {
+    const comp = findComponent(id)
+    if (comp) {
+      const dims = comp.option.dataset?.dimensions
+      if (dims) {
+        const clone = [...dims]
+        clone[index] = value
+        comp.option.dataset.dimensions = clone
+      }
+    }
+  }
+
+  function updateOptionDatasetCell(id: string, rowIndex: number, colIndex: number, value: string) {
+    const comp = findComponent(id)
+    if (comp) {
+      const src = comp.option.dataset?.source
+      if (src?.[rowIndex]) {
+        const currentVal = src[rowIndex][colIndex]
+        const newVal = typeof currentVal === 'number' ? Number(value) : value
+        const newRow = [...src[rowIndex]]
+        newRow[colIndex] = newVal
+        const newSource = [...src]
+        newSource[rowIndex] = newRow
+        comp.option.dataset.source = newSource
+      }
+    }
+  }
+
+  function addOptionDatasetRow(id: string) {
+    const comp = findComponent(id)
+    if (comp) {
+      const ds = comp.option.dataset
+      if (!ds) return
+      const colCount = ds.dimensions?.length ?? 2
+      ds.source = [...ds.source, Array(colCount).fill('')]
+    }
+  }
+
+  function removeOptionDatasetRow(id: string, rowIndex: number) {
+    const comp = findComponent(id)
+    if (comp) {
+      const src = comp.option.dataset?.source
+      if (src) {
+        comp.option.dataset.source = src.filter((_: unknown, i: number) => i !== rowIndex)
+      }
+    }
+  }
+
+  function groupSelectedComponents() {
+    if (selectedIds.value.length < 2) return
+    const ids = new Set(selectedIds.value)
+    const selected = components.value.filter(c => ids.has(c.id))
+    if (selected.length < 2) return
+
+    const minX = Math.min(...selected.map(c => c.attr.x))
+    const minY = Math.min(...selected.map(c => c.attr.y))
+    const maxX = Math.max(...selected.map(c => c.attr.x + c.attr.w))
+    const maxY = Math.max(...selected.map(c => c.attr.y + c.attr.h))
+
+    const id = generateId()
+    const group: CanvasComponent = {
+      id,
+      key: 'group',
+      isGroup: true,
+      parentId: null,
+      props: {},
+      chartConfig: {
+        key: 'group',
+        chartKey: 'group',
+        conKey: '',
+        title: '分组',
+        category: '',
+        categoryName: '',
+        package: '',
+        chartFrame: 'common',
+        image: '',
+      },
+      attr: {
+        x: minX, y: minY, w: maxX - minX, h: maxY - minY,
+        offsetX: 0, offsetY: 0, zIndex: components.value.length,
+      },
+      styles: { ...DEFAULT_STYLES },
+      status: { ...DEFAULT_STATUS },
+      preview: { ...DEFAULT_PREVIEW },
+      option: {},
+      groupList: selected.map(c => ({
+        ...c,
+        attr: { ...c.attr, x: c.attr.x - minX, y: c.attr.y - minY },
+      })) as CanvasComponent[],
+    }
+
+    const idSet = new Set(selected.map(c => c.id))
+    components.value = components.value.filter(c => !idSet.has(c.id))
+    components.value.push(group)
+
+    selectedIds.value = [id]
+    selectedId.value = id
+  }
+
+  function ungroupComponent(groupId: string) {
+    const comp = components.value.find(c => c.id === groupId)
+    if (!comp || !comp.isGroup || !comp.groupList) return
+
+    const absChildren = comp.groupList.map(child => ({
+      ...child,
+      parentId: child.parentId ?? null,
+      props: (child as any).props ?? {},
+      attr: { ...child.attr, x: child.attr.x + comp.attr.x, y: child.attr.y + comp.attr.y },
+    })) as CanvasComponent[]
+
+    const idx = components.value.findIndex(c => c.id === groupId)
+    if (idx >= 0) {
+      components.value.splice(idx, 1, ...absChildren)
+    }
+
+    selectedIds.value = []
+    selectedId.value = null
+  }
+
   function moveComponentDelta(id: string, dx: number, dy: number, baseX: number, baseY: number, pageW?: number, pageH?: number) {
     const comp = findComponent(id)
     if (!comp) return
@@ -290,6 +495,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   return {
     components,
     selectedId,
+    selectedIds,
     selectedComponent,
     componentDefinitions,
     editCanvasConfig,
@@ -300,6 +506,11 @@ export const useDashboardStore = defineStore('dashboard', () => {
     addComponent,
     removeComponent,
     selectComponent,
+    toggleSelectComponent,
+    selectComponentsByRect,
+    clearSelection,
+    groupSelectedComponents,
+    ungroupComponent,
     updateComponentProp,
     updateComponentPosition,
     updateComponentSize,
@@ -315,5 +526,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateComponentFilter,
     moveComponentDelta,
     resizeComponentDelta,
+    updateOptionDatasetDimension,
+    updateOptionDatasetCell,
+    addOptionDatasetRow,
+    removeOptionDatasetRow,
   }
 })

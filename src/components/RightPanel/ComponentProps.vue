@@ -199,37 +199,22 @@ function updateOption(key: string, value: any) {
 
 function updateDimension(di: string | number, value: string) {
   if (!store.selectedComponent) return
-  const ds = store.selectedComponent.option.dataset
-  const idx = Number(di)
-  if (ds?.dimensions) {
-    ds.dimensions[idx] = value
-  }
+  store.updateOptionDatasetDimension(store.selectedComponent.id, Number(di), value)
 }
 
 function updateSourceCell(ri: string | number, ci: string | number, value: string) {
   if (!store.selectedComponent) return
-  const ds = store.selectedComponent.option.dataset
-  const r = Number(ri)
-  const c = Number(ci)
-  if (ds?.source?.[r]) {
-    ds.source[r][c] = value
-  }
+  store.updateOptionDatasetCell(store.selectedComponent.id, Number(ri), Number(ci), value)
 }
 
 function addSourceRow() {
   if (!store.selectedComponent) return
-  const ds = store.selectedComponent.option.dataset
-  if (!ds) return
-  const colCount = ds.dimensions?.length ?? 2
-  ds.source.push(Array(colCount).fill(''))
+  store.addOptionDatasetRow(store.selectedComponent.id)
 }
 
 function removeSourceRow(ri: string | number) {
   if (!store.selectedComponent) return
-  const ds = store.selectedComponent.option.dataset
-  if (ds?.source) {
-    ds.source.splice(Number(ri), 1)
-  }
+  store.removeOptionDatasetRow(store.selectedComponent.id, Number(ri))
 }
 
 function updateFilter(value: string) {

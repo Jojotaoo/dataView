@@ -47,6 +47,8 @@ const previewSchema = computed((): ChartEditStorage => ({
     preview: { ...c.preview },
     filter: c.filter,
     option: { ...c.option },
+    isGroup: c.isGroup,
+    groupList: c.groupList ? JSON.parse(JSON.stringify(c.groupList)) : undefined,
   })),
 }))
 </script>

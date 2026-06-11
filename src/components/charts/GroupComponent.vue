@@ -1,0 +1,99 @@
+<template>
+  <div class="group-component" :style="{ backgroundColor: 'rgba(137, 180, 250, 0.06)' }">
+    <div
+      v-for="child in groupList"
+      :key="child.id"
+      class="group-child"
+      :class="{ selected: isSelected(child.id) }"
+      :style="childStyle(child)"
+      :data-comp-id="child.id"
+      @click.stop="onChildClick($event, child.id)"
+    >
+      <GroupComponent
+        v-if="child.isGroup"
+        :component="child"
+        :scale="scale"
+      />
+      <BarChart
+        v-else-if="child.key === 'BarCommon'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+      />
+      <LineChart
+        v-else-if="child.key === 'LineCommon'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import BarChart from './BarChart.vue'
+import LineChart from './LineChart.vue'
+import GroupComponent from './GroupComponent.vue'
+import { useDashboardStore } from '../../stores/dashboard'
+import type { CanvasComponent } from '../../stores/dashboard'
+import type { CreateComponentType } from '../../types'
+
+const store = useDashboardStore()
+
+const props = withDefaults(defineProps<{
+  component?: CanvasComponent
+  scale?: number
+}>(), {
+  component: undefined,
+  scale: 1,
+})
+
+const groupList = computed(() => props.component?.groupList ?? [])
+
+function childStyle(child: CreateComponentType) {
+  return {
+    left: child.attr.x + 'px',
+    top: child.attr.y + 'px',
+    width: child.attr.w + 'px',
+    height: child.attr.h + 'px',
+  }
+}
+
+function isSelected(id: string) {
+  return store.selectedIds.includes(id)
+}
+
+function onChildClick(event: MouseEvent, id: string) {
+  if (event.ctrlKey || event.metaKey) {
+    store.toggleSelectComponent(id)
+  } else {
+    store.selectComponent(id)
+  }
+}
+</script>
+
+<style scoped>
+.group-component {
+  width: 100%;
+  height: 100%;
+  border: 2px dashed #585b70;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.group-child {
+  position: absolute;
+  border: 2px solid #45475a;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  cursor: default;
+}
+
+.group-child.selected {
+  border-color: #89b4fa;
+  box-shadow: 0 0 8px rgba(137, 180, 250, 0.3);
+}
+</style>

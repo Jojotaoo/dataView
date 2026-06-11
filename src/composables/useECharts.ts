@@ -80,7 +80,7 @@ export function useECharts(option: Ref<Record<string, any>>, width: Ref<number>,
 
   watch(() => option.value, () => {
     if (chartInstance.value) {
-      chartInstance.value.setOption(buildOption())
+      chartInstance.value.setOption(buildOption(), { notMerge: true })
     }
   }, { deep: true })
 
