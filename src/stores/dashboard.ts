@@ -481,8 +481,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function moveComponentDelta(id: string, dx: number, dy: number, baseX: number, baseY: number, pageW?: number, pageH?: number) {
     const comp = findComponent(id)
     if (!comp) return
-    comp.attr.x = Math.max(0, Math.min(baseX + dx, (pageW ?? 9999) - comp.attr.w))
-    comp.attr.y = Math.max(0, Math.min(baseY + dy, (pageH ?? 9999) - comp.attr.h))
+    comp.attr.x = Math.round(Math.max(0, Math.min(baseX + dx, (pageW ?? 9999) - comp.attr.w)))
+    comp.attr.y = Math.round(Math.max(0, Math.min(baseY + dy, (pageH ?? 9999) - comp.attr.h)))
   }
 
   function resizeComponentDelta(id: string, dw: number, dh: number, baseW: number, baseH: number, maxW?: number, maxH?: number) {
