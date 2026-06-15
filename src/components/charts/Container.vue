@@ -40,6 +40,7 @@
         class="child-resize"
         @mousedown.stop="onChildResizeStart($event, child.id)"
       ></div>
+      <DataFetchManager :component-id="child.id" mode="design" />
     </div>
     <div v-if="children.length === 0" class="container-placeholder">
       拖拽组件到此处
@@ -51,6 +52,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
+import DataFetchManager from './DataFetchManager.vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import type { CanvasComponent } from '../../stores/dashboard'
 

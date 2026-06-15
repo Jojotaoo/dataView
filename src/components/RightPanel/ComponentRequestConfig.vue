@@ -18,11 +18,12 @@
     <template v-if="request.requestDataType === 1">
       <div class="prop-group">
         <label class="prop-label">请求路径</label>
-        <div class="url-preview">
-          <span class="url-base">{{ globalConfig.requestOriginUrl }}</span>
+        <div class="url-input-wrapper">
+          <span v-if="globalConfig.requestOriginUrl" class="url-prefix">{{ globalConfig.requestOriginUrl }}</span>
           <input
             type="text"
-            class="prop-input url-input"
+            class="prop-input"
+            :class="{ 'has-prefix': globalConfig.requestOriginUrl }"
             :value="request.requestUrl"
             @input="updateRequest('requestUrl', ($event.target as HTMLInputElement).value)"
             placeholder="/api/chart/data"
@@ -123,6 +124,8 @@
           </template>
         </div>
       </template>
+
+      <button class="send-btn" @click="emit('testRequest')">发送请求</button>
     </template>
 
     <template v-else-if="request.requestDataType === 2">
@@ -210,6 +213,7 @@ const emit = defineEmits<{
   (e: 'updateDatasetCell', rowIndex: number, colIndex: number, value: string): void
   (e: 'addDatasetRow'): void
   (e: 'removeDatasetRow', rowIndex: number): void
+  (e: 'testRequest'): void
 }>()
 
 const store = useDashboardStore()
@@ -400,34 +404,6 @@ function removeSourceRow(ri: number) {
 .type-tab:hover:not(.active) {
   color: #a6adc8;
 }
-.url-preview {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background: #313244;
-  border: 1px solid #45475a;
-  border-radius: 6px;
-  overflow: hidden;
-}
-.url-base {
-  padding: 6px 8px;
-  font-size: 11px;
-  color: #6c7086;
-  background: #45475a;
-  white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.url-input {
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-}
-.url-input:focus {
-  border: none !important;
-  box-shadow: none !important;
-}
 .prop-group {
   display: flex;
   flex-direction: column;
@@ -458,6 +434,28 @@ function removeSourceRow(ri: number) {
   font-size: 10px;
   font-weight: 400;
   color: #6c7086;
+}
+.url-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.url-prefix {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #a6adc8;
+  background: #45475a;
+  white-space: nowrap;
+  border-right: 1px solid #313244;
+  line-height: 1.4;
+}
+.prop-input.has-prefix {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
 }
 .prop-input {
   background: #313244;
@@ -523,6 +521,24 @@ function removeSourceRow(ri: number) {
   background: #45475a;
   color: #cdd6f4;
   border-color: #89b4fa;
+}
+.send-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: #89b4fa;
+  border: none;
+  border-radius: 6px;
+  color: #1e1e2e;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.send-btn:hover {
+  background: #74c7ec;
+}
+.send-btn:active {
+  background: #89dceb;
 }
 .empty-hint {
   font-size: 10px;

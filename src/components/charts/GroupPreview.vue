@@ -27,6 +27,7 @@
         :width="child.attr.w"
         :height="child.attr.h"
       />
+      <DataFetchManager :component-id="child.id" mode="preview" />
     </div>
   </div>
 </template>
@@ -36,6 +37,7 @@ import { computed } from 'vue'
 import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
 import GroupPreview from './GroupPreview.vue'
+import DataFetchManager from './DataFetchManager.vue'
 import type { CreateComponentType } from '../../types'
 
 const props = withDefaults(defineProps<{

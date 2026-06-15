@@ -96,6 +96,7 @@
               class="resize-handle"
               @mousedown.stop="onResizeStart($event, comp.id)"
             ></div>
+            <DataFetchManager :component-id="comp.id" mode="design" />
           </div>
         </template>
         <template #footer>
@@ -133,6 +134,7 @@ import LineChart from './charts/LineChart.vue'
 import Container from './charts/Container.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
+import DataFetchManager from './charts/DataFetchManager.vue'
 
 const store = useDashboardStore()
 

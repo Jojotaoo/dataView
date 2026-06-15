@@ -26,6 +26,7 @@
         :width="child.attr.w"
         :height="child.attr.h"
       />
+      <DataFetchManager :component-id="child.id" mode="design" />
     </div>
   </div>
 </template>
@@ -35,6 +36,7 @@ import { computed } from 'vue'
 import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
 import GroupComponent from './GroupComponent.vue'
+import DataFetchManager from './DataFetchManager.vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import type { CanvasComponent } from '../../stores/dashboard'
 import type { CreateComponentType } from '../../types'

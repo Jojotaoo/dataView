@@ -130,29 +130,12 @@
         <textarea class="prop-textarea" rows="3" placeholder="data.filter(item => item.value > 100)" :value="comp.filter" @input="updateFilter(($event.target as HTMLTextAreaElement).value)"></textarea>
       </div>
     </div>
-
-    <div class="section-title">数据源配置</div>
-    <div class="prop-form">
-      <ComponentRequestConfig
-        v-if="comp.request"
-        :request="comp.request"
-        :dataset="comp.option.dataset"
-        @update="updateRequest"
-        @updateDatasetDimension="updateDimension"
-        @updateDatasetCell="updateSourceCell"
-        @addDatasetRow="addSourceRow"
-        @removeDatasetRow="removeSourceRow"
-      />
-      <div v-else class="empty-hint">暂无请求配置</div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
-import type { RequestConfigType } from '../../types'
-import ComponentRequestConfig from './ComponentRequestConfig.vue'
 
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)
@@ -180,26 +163,6 @@ function updateOption(key: string, value: any) {
   store.updateComponentOption(store.selectedComponent.id, key, value)
 }
 
-function updateDimension(di: string | number, value: string) {
-  if (!store.selectedComponent) return
-  store.updateOptionDatasetDimension(store.selectedComponent.id, Number(di), value)
-}
-
-function updateSourceCell(ri: string | number, ci: string | number, value: string) {
-  if (!store.selectedComponent) return
-  store.updateOptionDatasetCell(store.selectedComponent.id, Number(ri), Number(ci), value)
-}
-
-function addSourceRow() {
-  if (!store.selectedComponent) return
-  store.addOptionDatasetRow(store.selectedComponent.id)
-}
-
-function removeSourceRow(ri: string | number) {
-  if (!store.selectedComponent) return
-  store.removeOptionDatasetRow(store.selectedComponent.id, Number(ri))
-}
-
 function updateFilter(value: string) {
   if (!store.selectedComponent) return
   store.updateComponentFilter(store.selectedComponent.id, value)
@@ -218,11 +181,6 @@ function togglePreviewOverflow() {
 function toggleFilterShow() {
   if (!store.selectedComponent) return
   store.toggleComponentFilterShow(store.selectedComponent.id)
-}
-
-function updateRequest(request: Partial<RequestConfigType>) {
-  if (!store.selectedComponent) return
-  store.updateComponentRequest(store.selectedComponent.id, request)
 }
 </script>
 
@@ -363,11 +321,5 @@ function updateRequest(request: Partial<RequestConfigType>) {
   background: #45475a;
   color: #cdd6f4;
   border-color: #89b4fa;
-}
-.empty-hint {
-  font-size: 11px;
-  color: #6c7086;
-  text-align: center;
-  padding: 12px 0;
 }
 </style>

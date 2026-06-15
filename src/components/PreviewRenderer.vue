@@ -39,6 +39,7 @@
           :width="comp.attr.w"
           :height="comp.attr.h"
         />
+        <DataFetchManager :component-id="comp.id" mode="preview" />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
         暂无组件
@@ -55,6 +56,7 @@ import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import ContainerPreview from './charts/ContainerPreview.vue'
 import GroupPreview from './charts/GroupPreview.vue'
+import DataFetchManager from './charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'
 
 const props = defineProps<{
