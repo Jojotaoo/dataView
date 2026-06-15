@@ -18,20 +18,18 @@ export interface EditCanvasConfigType {
   blendMode: string
 }
 
+export interface DataPondItem {
+  dataPondId: string
+  dataPondName: string
+  dataPondRequestConfig: RequestConfigType
+}
+
 export interface RequestGlobalConfigType {
   requestOriginUrl: string
   requestInterval: number
   requestIntervalUnit: 'second' | 'minute' | 'hour' | 'day'
-  requestParams: {
-    Params: Record<string, string>
-    Header: Record<string, string>
-    Body: {
-      'form-data': Record<string, string>
-      'x-www-form-urlencoded': Record<string, string>
-      json: string
-      xml: string
-    }
-  }
+  requestHeader: Record<string, string>
+  requestDataPond: DataPondItem[]
 }
 
 export interface ChartConfigType {
@@ -157,23 +155,24 @@ export interface RequestBodyType {
   xml: string
 }
 
-export interface RequestParamsType {
-  Params: Record<string, string>
-  Header: Record<string, string>
-  Body: RequestBodyType
-}
-
-export interface RequestConfigType {
+export interface ComponentRequestConfigType {
   requestDataType: 0 | 1 | 2
-  requestHttpType?: 'get' | 'post' | 'put' | 'delete' | 'patch'
   requestUrl?: string
-  requestInterval?: number | null
-  requestIntervalUnit?: string
+  requestHttpType?: 'get' | 'post' | 'put' | 'delete' | 'patch'
   requestContentType?: number
   requestParamsBodyType?: string
   requestSQLContent?: { sql: string }
-  requestParams?: RequestParamsType
+  requestParams?: {
+    Params: Record<string, string>
+    Header: Record<string, string>
+    Body: RequestBodyType
+  }
+  requestInterval?: number | null
+  requestIntervalUnit?: string
+  requestDataPondId?: string
 }
+
+export interface RequestConfigType extends ComponentRequestConfigType {}
 
 export interface CreateComponentType {
   id: string

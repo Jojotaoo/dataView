@@ -123,42 +123,6 @@
         <input type="text" class="prop-input" :value="comp.option.title" @input="updateOption('title', ($event.target as HTMLInputElement).value)" />
       </div>
     </div>
-    <div v-if="comp.option.dataset" class="prop-form">
-      <div class="section-subtitle">数据集 (Dataset)</div>
-      <div class="prop-group">
-        <label class="prop-label">维度</label>
-        <div class="dimension-row">
-          <input
-            v-for="(dim, di) in comp.option.dataset.dimensions"
-            :key="di"
-            type="text" class="prop-input dim-input"
-            :value="dim"
-            @input="updateDimension(di, ($event.target as HTMLInputElement).value)"
-          />
-        </div>
-      </div>
-      <div class="prop-group">
-        <label class="prop-label">数据表</label>
-        <div class="data-table">
-          <div class="table-header">
-            <span v-for="dim in comp.option.dataset.dimensions" :key="dim" class="th">{{ dim }}</span>
-            <span class="th th-action"></span>
-          </div>
-          <div v-for="(row, ri) in comp.option.dataset.source" :key="ri" class="table-row">
-            <input
-              v-for="(cell, ci) in row"
-              :key="ci"
-              type="text" class="prop-input cell-input"
-              :value="cell"
-              @input="updateSourceCell(ri, ci, ($event.target as HTMLInputElement).value)"
-            />
-            <button class="cell-remove" @click="removeSourceRow(ri)">✕</button>
-          </div>
-        </div>
-        <button class="add-btn" @click="addSourceRow">+ 添加行</button>
-      </div>
-    </div>
-
     <div class="section-title">数据过滤</div>
     <div class="prop-form">
       <div class="prop-group">
@@ -166,12 +130,29 @@
         <textarea class="prop-textarea" rows="3" placeholder="data.filter(item => item.value > 100)" :value="comp.filter" @input="updateFilter(($event.target as HTMLTextAreaElement).value)"></textarea>
       </div>
     </div>
+
+    <div class="section-title">数据源配置</div>
+    <div class="prop-form">
+      <ComponentRequestConfig
+        v-if="comp.request"
+        :request="comp.request"
+        :dataset="comp.option.dataset"
+        @update="updateRequest"
+        @updateDatasetDimension="updateDimension"
+        @updateDatasetCell="updateSourceCell"
+        @addDatasetRow="addSourceRow"
+        @removeDatasetRow="removeSourceRow"
+      />
+      <div v-else class="empty-hint">暂无请求配置</div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
+import type { RequestConfigType } from '../../types'
+import ComponentRequestConfig from './ComponentRequestConfig.vue'
 
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)
@@ -238,6 +219,11 @@ function toggleFilterShow() {
   if (!store.selectedComponent) return
   store.toggleComponentFilterShow(store.selectedComponent.id)
 }
+
+function updateRequest(request: Partial<RequestConfigType>) {
+  if (!store.selectedComponent) return
+  store.updateComponentRequest(store.selectedComponent.id, request)
+}
 </script>
 
 <style scoped>
@@ -251,12 +237,6 @@ function toggleFilterShow() {
   user-select: none;
 }
 .section-title:first-child { margin-top: 0; }
-.section-subtitle {
-  font-size: 11px;
-  font-weight: 500;
-  color: #a6adc8;
-  margin: 4px 0;
-}
 .prop-form {
   display: flex;
   flex-direction: column;
@@ -369,45 +349,6 @@ function toggleFilterShow() {
 }
 .switch input:checked + .switch-slider { background: #89b4fa; }
 .switch input:checked + .switch-slider::before { transform: translateX(16px); }
-.dimension-row { display: flex; gap: 4px; }
-.dim-input { flex: 1; font-size: 11px; }
-.data-table {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 240px;
-  overflow-y: auto;
-}
-.table-header {
-  display: flex;
-  gap: 4px;
-  padding: 4px 0;
-  border-bottom: 1px solid #45475a;
-  margin-bottom: 2px;
-}
-.th {
-  flex: 1;
-  font-size: 10px;
-  color: #6c7086;
-  font-weight: 600;
-  text-transform: uppercase;
-  padding: 0 4px;
-}
-.th-action { flex: 0 0 24px; }
-.table-row { display: flex; gap: 4px; align-items: center; }
-.cell-input { flex: 1; font-size: 11px; padding: 4px 6px; }
-.cell-remove {
-  flex: 0 0 24px;
-  height: 24px;
-  background: none;
-  border: none;
-  color: #6c7086;
-  cursor: pointer;
-  font-size: 11px;
-  border-radius: 4px;
-  transition: all 0.15s;
-}
-.cell-remove:hover { background: #f38ba8; color: #1e1e2e; }
 .add-btn {
   padding: 4px 8px;
   background: #313244;
@@ -422,5 +363,11 @@ function toggleFilterShow() {
   background: #45475a;
   color: #cdd6f4;
   border-color: #89b4fa;
+}
+.empty-hint {
+  font-size: 11px;
+  color: #6c7086;
+  text-align: center;
+  padding: 12px 0;
 }
 </style>

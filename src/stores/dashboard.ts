@@ -4,7 +4,9 @@ import type {
   CreateComponentType,
   EditCanvasConfigType,
   RequestGlobalConfigType,
+  RequestConfigType,
   ChartConfigType,
+  DataPondItem,
 } from '../types'
 import { DEFAULT_ATTR, DEFAULT_STYLES, DEFAULT_STATUS, DEFAULT_PREVIEW } from '../types'
 
@@ -59,16 +61,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     requestOriginUrl: '',
     requestInterval: 30,
     requestIntervalUnit: 'second',
-    requestParams: {
-      Params: {},
-      Header: {},
-      Body: {
-        'form-data': {},
-        'x-www-form-urlencoded': {},
-        json: '',
-        xml: '',
-      },
-    },
+    requestHeader: {},
+    requestDataPond: [],
   })
 
   const selectedComponent = computed(() => {
@@ -200,6 +194,24 @@ export const useDashboardStore = defineStore('dashboard', () => {
       status: { ...DEFAULT_STATUS },
       preview: { ...DEFAULT_PREVIEW },
       option: structuredClone(def.defaultOption),
+      request: {
+        requestDataType: 0,
+        requestHttpType: 'get',
+        requestUrl: '',
+        requestInterval: null,
+        requestIntervalUnit: 'second',
+        requestParamsBodyType: 'none',
+        requestParams: {
+          Params: {},
+          Header: {},
+          Body: {
+            'form-data': {},
+            'x-www-form-urlencoded': {},
+            json: '',
+            xml: '',
+          },
+        },
+      },
     }
     components.value.push(comp)
     selectedId.value = comp.id
@@ -492,6 +504,31 @@ export const useDashboardStore = defineStore('dashboard', () => {
     comp.attr.h = Math.max(comp.key === 'container' ? 40 : 60, Math.min(baseH + dh, maxH ?? 9999))
   }
 
+  function addDataPond(item: DataPondItem) {
+    requestGlobalConfig.value.requestDataPond.push(item)
+  }
+
+  function updateDataPond(id: string, item: Partial<DataPondItem>) {
+    const pond = requestGlobalConfig.value.requestDataPond.find(p => p.dataPondId === id)
+    if (pond) {
+      Object.assign(pond, item)
+    }
+  }
+
+  function removeDataPond(id: string) {
+    const idx = requestGlobalConfig.value.requestDataPond.findIndex(p => p.dataPondId === id)
+    if (idx >= 0) {
+      requestGlobalConfig.value.requestDataPond.splice(idx, 1)
+    }
+  }
+
+  function updateComponentRequest(id: string, request: Partial<RequestConfigType>) {
+    const comp = findComponent(id)
+    if (comp && comp.request) {
+      Object.assign(comp.request, request)
+    }
+  }
+
   return {
     components,
     selectedId,
@@ -530,5 +567,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateOptionDatasetCell,
     addOptionDatasetRow,
     removeOptionDatasetRow,
+    addDataPond,
+    updateDataPond,
+    removeDataPond,
+    updateComponentRequest,
   }
 })
