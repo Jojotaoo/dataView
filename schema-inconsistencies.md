@@ -76,7 +76,7 @@ parentId?: string | null
 
 **代码 `EditCanvasConfigType`**（`src/types/index.ts:1-19`），另有 12 个未记录：
 - `filterShow`, `opacity`, `saturate`, `contrast`, `hueRotate`, `brightness`
-- `rotateZ`, `rotateX`, `rotateY`, `skewX`, `skewY`, `blendMode`
+- `blendMode`
 
 ---
 

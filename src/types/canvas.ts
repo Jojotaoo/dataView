@@ -13,15 +13,11 @@ export interface EditCanvasConfigType {
   contrast: number
   hueRotate: number
   brightness: number
-  rotateZ: number
-  rotateX: number
-  rotateY: number
-  skewX: number
-  skewY: number
   blendMode: string
 }
 
 export interface DataPondItem {
+
   dataPondId: string
   dataPondName: string
   dataPondRequestConfig: RequestConfigType

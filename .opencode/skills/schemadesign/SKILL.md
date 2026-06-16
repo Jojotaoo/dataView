@@ -93,14 +93,8 @@ interface ChartEditStorage {
     "contrast": 1,
     "hueRotate": 0,
     "brightness": 1,
-    "rotateZ": 0,
-    "rotateX": 0,
-    "rotateY": 0,
-    "skewX": 0,
-    "skewY": 0,
     "blendMode": "normal"
 }
-```
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -110,11 +104,6 @@ interface ChartEditStorage {
 | `contrast` | `number` | `1` | 对比度倍数 |
 | `hueRotate` | `number` | `0` | 色相旋转角度(deg) |
 | `brightness` | `number` | `1` | 亮度倍数 |
-| `rotateZ` | `number` | `0` | Z 轴旋转(deg) |
-| `rotateX` | `number` | `0` | X 轴旋转(deg) |
-| `rotateY` | `number` | `0` | Y 轴旋转(deg) |
-| `skewX` | `number` | `0` | X 轴倾斜(deg) |
-| `skewY` | `number` | `0` | Y 轴倾斜(deg) |
 | `blendMode` | `string` | `'normal'` | 混合模式 |
 
 ### 2.5 完整 editCanvasConfig 示例
@@ -132,11 +121,6 @@ interface ChartEditStorage {
     "contrast": 1,
     "hueRotate": 0,
     "brightness": 1,
-    "rotateZ": 0,
-    "rotateX": 0,
-    "rotateY": 0,
-    "skewX": 0,
-    "skewY": 0,
     "blendMode": "normal"
 }
 ```
@@ -293,11 +277,6 @@ interface ChartEditStorage {
     "contrast": 1,
     "hueRotate": 0,
     "brightness": 1,
-    "rotateZ": 0,
-    "rotateX": 0,
-    "rotateY": 0,
-    "skewX": 0,
-    "skewY": 0,
     "blendMode": "normal",
     "animations": ["fadeIn", "slideInLeft"]
   }
@@ -312,11 +291,6 @@ interface ChartEditStorage {
 | `contrast` | `number` | `1` | 对比度倍数 |
 | `hueRotate` | `number` | `0` | 色相旋转角度(deg) |
 | `brightness` | `number` | `1` | 亮度倍数 |
-| `rotateZ` | `number` | `0` | Z 轴旋转(deg) |
-| `rotateX` | `number` | `0` | X 轴旋转(deg) |
-| `rotateY` | `number` | `0` | Y 轴旋转(deg) |
-| `skewX` | `number` | `0` | X 轴倾斜(deg) |
-| `skewY` | `number` | `0` | Y 轴倾斜(deg) |
 | `blendMode` | `string` | `'normal'` | 混合模式（同全局滤镜的可选值） |
 | `animations` | `string[]` | `[]` | CSS 动画名称数组，可叠加多个动画效果 |
 

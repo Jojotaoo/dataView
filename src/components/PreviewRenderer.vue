@@ -79,9 +79,7 @@ const canvasStyle = computed((): CSSProperties => ({
   filter: props.schema.editCanvasConfig.filterShow
     ? `opacity(${props.schema.editCanvasConfig.opacity}) saturate(${props.schema.editCanvasConfig.saturate}) contrast(${props.schema.editCanvasConfig.contrast}) hue-rotate(${props.schema.editCanvasConfig.hueRotate}deg) brightness(${props.schema.editCanvasConfig.brightness})`
     : undefined,
-  transform: props.schema.editCanvasConfig.filterShow
-    ? `rotateZ(${props.schema.editCanvasConfig.rotateZ}deg) rotateX(${props.schema.editCanvasConfig.rotateX}deg) rotateY(${props.schema.editCanvasConfig.rotateY}deg) skewX(${props.schema.editCanvasConfig.skewX}deg) skewY(${props.schema.editCanvasConfig.skewY}deg)`
-    : undefined,
+  transform: undefined,
   mixBlendMode: props.schema.editCanvasConfig.blendMode !== 'normal'
     ? (props.schema.editCanvasConfig.blendMode as CSSProperties['mixBlendMode'])
     : undefined,

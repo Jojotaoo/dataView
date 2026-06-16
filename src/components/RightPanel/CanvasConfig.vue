@@ -64,26 +64,6 @@
         </div>
       </template>
       <div class="prop-group">
-        <label class="prop-label">Z 轴旋转 ({{ store.editCanvasConfig.rotateZ }}deg)</label>
-        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="store.editCanvasConfig.rotateZ" @input="store.updateCanvasConfig({ rotateZ: parseInt(($event.target as HTMLInputElement).value) })" />
-      </div>
-      <div class="prop-group">
-        <label class="prop-label">X 轴旋转 ({{ store.editCanvasConfig.rotateX }}deg)</label>
-        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="store.editCanvasConfig.rotateX" @input="store.updateCanvasConfig({ rotateX: parseInt(($event.target as HTMLInputElement).value) })" />
-      </div>
-      <div class="prop-group">
-        <label class="prop-label">Y 轴旋转 ({{ store.editCanvasConfig.rotateY }}deg)</label>
-        <input type="range" min="-180" max="180" step="1" class="prop-range" :value="store.editCanvasConfig.rotateY" @input="store.updateCanvasConfig({ rotateY: parseInt(($event.target as HTMLInputElement).value) })" />
-      </div>
-      <div class="prop-group">
-        <label class="prop-label">X 倾斜 ({{ store.editCanvasConfig.skewX }}deg)</label>
-        <input type="range" min="-90" max="90" step="1" class="prop-range" :value="store.editCanvasConfig.skewX" @input="store.updateCanvasConfig({ skewX: parseInt(($event.target as HTMLInputElement).value) })" />
-      </div>
-      <div class="prop-group">
-        <label class="prop-label">Y 倾斜 ({{ store.editCanvasConfig.skewY }}deg)</label>
-        <input type="range" min="-90" max="90" step="1" class="prop-range" :value="store.editCanvasConfig.skewY" @input="store.updateCanvasConfig({ skewY: parseInt(($event.target as HTMLInputElement).value) })" />
-      </div>
-      <div class="prop-group">
         <label class="prop-label">混合模式</label>
         <select class="prop-select" :value="store.editCanvasConfig.blendMode" @change="store.updateCanvasConfig({ blendMode: ($event.target as HTMLSelectElement).value })">
           <option v-for="m in blendModes" :key="m" :value="m">{{ m }}</option>

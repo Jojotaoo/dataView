@@ -34,11 +34,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     contrast: 1,
     hueRotate: 0,
     brightness: 1,
-    rotateZ: 0,
-    rotateX: 0,
-    rotateY: 0,
-    skewX: 0,
-    skewY: 0,
     blendMode: 'normal',
   })
 

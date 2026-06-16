@@ -53,7 +53,7 @@ Both `src/components/RightPanel/SchemaPanel.vue` and `src/App.vue` build schema 
 
 ### `skills/schema.skill.md` has documentation gaps
 
-The schema doc §2 (`editCanvasConfig`) only documents 5 of 17 fields. The code's `EditCanvasConfigType` has 12 additional canvas-level filter/transform fields (`filterShow`, `opacity`, `saturate`, `contrast`, `hueRotate`, `brightness`, `rotateZ`, `rotateX`, `rotateY`, `skewX`, `skewY`, `blendMode`) not mentioned in the doc. The `parentId` field on `CreateComponentType` is also undocumented in the schema.
+The schema doc §2 (`editCanvasConfig`) only documents 5 of 12 fields. The code's `EditCanvasConfigType` has 7 additional canvas-level filter/transform fields (`filterShow`, `opacity`, `saturate`, `contrast`, `hueRotate`, `brightness`, `blendMode`) not mentioned in the doc. The `parentId` field on `CreateComponentType` is also undocumented in the schema.
 
 ### `tech/README.md` shows an outdated schema format
 
