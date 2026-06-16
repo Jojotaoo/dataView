@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
-import { mergeRequestConfig } from '../../composables/useRequestMerge'
+import { mergeRequestConfig, executeRequest, doFetch, getPondCache, setPondCache, clearPondCache } from '../../composables/useRequestMerge'
+import type { RequestConfigType } from '../../types'
 
 const props = withDefaults(defineProps<{
   componentId: string
@@ -18,34 +19,51 @@ const globalConfig = computed(() => store.requestGlobalConfig)
 
 let pollingTimer: ReturnType<typeof setInterval> | null = null
 
-async function fetchData() {
+function getRequestSource(): RequestConfigType | null {
   const config = request.value
-  if (!config || config.requestDataType !== 1) return
+  if (!config) return null
+  if (config.requestDataType === 1) return config
+  if (config.requestDataType === 2 && config.requestDataPondId) {
+    const pond = globalConfig.value.requestDataPond.find(p => p.dataPondId === config.requestDataPondId)
+    return pond?.dataPondRequestConfig ?? null
+  }
+  return null
+}
 
-  const merged = mergeRequestConfig(config, globalConfig.value)
-  if (!merged) return
+function getPondId(): string | null {
+  return request.value?.requestDataType === 2 ? (request.value.requestDataPondId ?? null) : null
+}
+
+async function fetchData(isPolling = false) {
+  const config = request.value
+  if (!config || config.requestDataType === 0) return
+
+  const source = getRequestSource()
+  if (!source || source.requestDataType === 0) return
 
   try {
-    const queryString = Object.entries(merged.params)
-      .filter(([, v]) => v !== '')
-      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-      .join('&')
-    const fullUrl = queryString ? `${merged.url}?${queryString}` : merged.url
+    const pondId = getPondId()
+    let result: any | null = null
 
-    const fetchOptions: RequestInit = {
-      method: merged.method.toUpperCase(),
-      headers: {
-        'Content-Type': 'application/json',
-        ...merged.headers,
-      },
-    }
-    if (merged.body !== undefined && merged.method.toLowerCase() !== 'get') {
-      fetchOptions.body = typeof merged.body === 'object' ? JSON.stringify(merged.body) : String(merged.body)
+    if (pondId) {
+      if (isPolling) clearPondCache(pondId)
+      const cached = getPondCache(pondId)
+      if (cached !== undefined) {
+        result = cached
+      } else {
+        const merged = mergeRequestConfig(source, globalConfig.value)
+        if (merged) {
+          result = await doFetch(merged)
+          setPondCache(pondId, result)
+        }
+      }
+    } else {
+      result = await executeRequest(source, globalConfig.value)
     }
 
-    const res = await fetch(fullUrl, fetchOptions)
-    const data = await res.json()
-    store.updateComponentOption(props.componentId, 'dataset', data?.data ?? data)
+    if (result !== null) {
+      store.updateComponentOption(props.componentId, 'dataset', result)
+    }
   } catch (err) {
     console.error('[DataFetch] Request failed:', err)
   }
@@ -54,14 +72,17 @@ async function fetchData() {
 function startPolling() {
   stopPolling()
   const config = request.value
-  if (!config || config.requestDataType !== 1) return
+  if (!config || config.requestDataType === 0) return
 
-  const interval = config.requestInterval ?? globalConfig.value.requestInterval
-  const unit = config.requestIntervalUnit ?? globalConfig.value.requestIntervalUnit ?? 'second'
+  const source = getRequestSource()
+  if (!source) return
+
+  const interval = source.requestInterval ?? globalConfig.value.requestInterval
+  const unit = source.requestIntervalUnit ?? globalConfig.value.requestIntervalUnit ?? 'second'
   if (!interval) return
 
   const ms = toMilliseconds(interval, unit)
-  pollingTimer = setInterval(fetchData, ms)
+  pollingTimer = setInterval(() => fetchData(true), ms)
 }
 
 function stopPolling() {
@@ -83,7 +104,7 @@ function toMilliseconds(interval: number, unit: string): number {
 
 function handleConfigChange() {
   stopPolling()
-  if (props.mode === 'preview' && request.value?.requestDataType === 1) {
+  if (props.mode === 'preview' && request.value && request.value.requestDataType !== 0) {
     fetchData()
     startPolling()
   }

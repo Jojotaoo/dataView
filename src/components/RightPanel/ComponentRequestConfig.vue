@@ -19,7 +19,7 @@
       <div class="prop-group">
         <label class="prop-label">请求路径</label>
         <div class="url-input-wrapper">
-          <span v-if="globalConfig.requestOriginUrl" class="url-prefix">{{ globalConfig.requestOriginUrl }}</span>
+          <span v-if="globalConfig.requestOriginUrl" class="url-prefix" :title="globalConfig.requestOriginUrl">{{ globalConfig.requestOriginUrl }}</span>
           <input
             type="text"
             class="prop-input"
@@ -149,6 +149,7 @@
           请先在全局配置中添加数据池
         </div>
       </div>
+      <button class="send-btn" @click="emit('testRequest')" :disabled="!request.requestDataPondId">发送请求</button>
     </template>
 
     <template v-else>
@@ -442,6 +443,7 @@ function removeSourceRow(ri: number) {
   border: 1px solid #45475a;
   border-radius: 6px;
   overflow: hidden;
+  max-width: 100%;
 }
 .url-prefix {
   padding: 6px 8px;
@@ -449,8 +451,12 @@ function removeSourceRow(ri: number) {
   color: #a6adc8;
   background: #45475a;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border-right: 1px solid #313244;
   line-height: 1.4;
+  max-width: 50%;
+  flex-shrink: 0;
 }
 .prop-input.has-prefix {
   border: none !important;

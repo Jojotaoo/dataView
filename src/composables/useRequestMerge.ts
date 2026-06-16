@@ -127,3 +127,51 @@ export function toMilliseconds(interval: number, unit: string): number {
   }
   return interval * (multipliers[unit] ?? 1000)
 }
+
+export async function doFetch(merged: MergedRequestConfig): Promise<any> {
+  const queryString = Object.entries(merged.params)
+    .filter(([, v]) => v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&')
+  const fullUrl = queryString ? `${merged.url}?${queryString}` : merged.url
+
+  const fetchOptions: RequestInit = {
+    method: merged.method.toUpperCase(),
+    headers: {
+      'Content-Type': 'application/json',
+      ...merged.headers,
+    },
+  }
+  if (merged.body !== undefined && merged.method.toLowerCase() !== 'get') {
+    fetchOptions.body = typeof merged.body === 'object' ? JSON.stringify(merged.body) : String(merged.body)
+  }
+
+  const res = await fetch(fullUrl, fetchOptions)
+  const json = await res.json()
+  return json?.data ?? json
+}
+
+export async function executeRequest(
+  config: RequestConfigType,
+  globalConfig: RequestGlobalConfigType
+): Promise<any | null> {
+  if (config.requestDataType === 0) return null
+  const merged = mergeRequestConfig(config, globalConfig)
+  if (!merged) return null
+  return doFetch(merged)
+}
+
+const pondCache = new Map<string, { data: any; timestamp: number }>()
+
+export function getPondCache(pondId: string): any | undefined {
+  return pondCache.get(pondId)?.data
+}
+
+export function setPondCache(pondId: string, data: any) {
+  pondCache.set(pondId, { data, timestamp: Date.now() })
+}
+
+export function clearPondCache(pondId?: string) {
+  if (pondId) pondCache.delete(pondId)
+  else pondCache.clear()
+}

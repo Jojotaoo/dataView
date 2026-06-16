@@ -19,7 +19,7 @@
 import { computed } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import type { RequestConfigType } from '../../types'
-import { mergeRequestConfig } from '../../composables/useRequestMerge'
+import { executeRequest } from '../../composables/useRequestMerge'
 import ComponentRequestConfig from './ComponentRequestConfig.vue'
 
 const store = useDashboardStore()
@@ -54,31 +54,26 @@ function removeSourceRow(ri: number) {
 
 async function handleTestRequest() {
   if (!store.selectedComponent || !comp.value.request) return
-  const merged = mergeRequestConfig(comp.value.request, store.requestGlobalConfig)
-  if (!merged) return
 
   try {
-    const queryString = Object.entries(merged.params)
-      .filter(([, v]) => v !== '')
-      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-      .join('&')
-    const fullUrl = queryString ? `${merged.url}?${queryString}` : merged.url
+    const config = comp.value.request
+    let source: RequestConfigType | null = null
 
-    const fetchOptions: RequestInit = {
-      method: merged.method.toUpperCase(),
-      headers: {
-        'Content-Type': 'application/json',
-        ...merged.headers,
-      },
-    }
-    if (merged.body !== undefined && merged.method.toLowerCase() !== 'get') {
-      fetchOptions.body = typeof merged.body === 'object' ? JSON.stringify(merged.body) : String(merged.body)
+    if (config.requestDataType === 1) {
+      source = config
+    } else if (config.requestDataType === 2 && config.requestDataPondId) {
+      const pond = store.requestGlobalConfig.requestDataPond.find(
+        p => p.dataPondId === config.requestDataPondId
+      )
+      if (pond) source = pond.dataPondRequestConfig
     }
 
-    const res = await fetch(fullUrl, fetchOptions)
-    const data = await res.json()
+    if (!source) return
 
-    store.updateComponentOption(store.selectedComponent.id, 'dataset', data?.data ?? data)
+    const result = await executeRequest(source, store.requestGlobalConfig)
+    if (result !== null) {
+      store.updateComponentOption(store.selectedComponent.id, 'dataset', result)
+    }
   } catch (err) {
     console.error('[TestRequest] Failed:', err)
   }

@@ -17,7 +17,20 @@
 
           <div class="prop-group">
             <label class="prop-label">请求路径</label>
-            <input type="text" class="prop-input" v-model="form.dataPondRequestConfig.requestUrl" placeholder="/api/data" />
+            <div class="url-input-wrapper">
+              <span
+                v-if="globalOriginUrl"
+                class="url-prefix"
+                :title="globalOriginUrl"
+              >{{ globalOriginUrl }}</span>
+              <input
+                type="text"
+                class="prop-input"
+                :class="{ 'has-prefix': globalOriginUrl }"
+                v-model="form.dataPondRequestConfig.requestUrl"
+                placeholder="/api/data"
+              />
+            </div>
           </div>
 
           <div class="prop-grid">
@@ -99,11 +112,15 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import type { DataPondItem, RequestConfigType } from '../../types'
+import { useDashboardStore } from '../../stores/dashboard'
 
 const props = defineProps<{
   visible: boolean
   editItem?: DataPondItem | null
 }>()
+
+const store = useDashboardStore()
+const globalOriginUrl = computed(() => store.requestGlobalConfig.requestOriginUrl)
 
 const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
@@ -384,6 +401,33 @@ function handleConfirm() {
   width: 100%;
 }
 .prop-input:focus { border-color: #89b4fa; }
+.url-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  overflow: hidden;
+  max-width: 100%;
+}
+.url-prefix {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #a6adc8;
+  background: #45475a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid #313244;
+  line-height: 1.4;
+  max-width: 50%;
+  flex-shrink: 0;
+}
+.prop-input.has-prefix {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
 .prop-select {
   background: #313244;
   border: 1px solid #45475a;
