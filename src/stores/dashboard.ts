@@ -11,7 +11,6 @@ import type {
 import { DEFAULT_ATTR, DEFAULT_STYLES, DEFAULT_STATUS, DEFAULT_PREVIEW } from '../types'
 
 export interface CanvasComponent extends CreateComponentType {
-  parentId: string | null
   props: Record<string, any>
 }
 
@@ -35,7 +34,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const selectedId = ref<string | null>(null)
   const selectedIds = ref<string[]>([])
   const counter = ref(0)
-  const dropTargetParentId = ref<string | null>(null)
 
   const editCanvasConfig = ref<EditCanvasConfigType>({
     projectName: '可视化大屏',
@@ -71,24 +69,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
   })
 
   const componentDefinitions: (ChartConfigType & { name: string; icon: string; defaultOption: Record<string, any>; defaultProps: Record<string, any> })[] = [
-    {
-      key: 'container',
-      chartKey: 'VContainer',
-      conKey: 'VCContainer',
-      title: '容器',
-      name: '容器',
-      category: 'Containers',
-      categoryName: '容器',
-      package: 'Informations',
-      chartFrame: 'common',
-      image: 'container.png',
-      icon: '📦',
-      defaultOption: {},
-      defaultProps: {
-        bgColor: 'rgba(30, 30, 46, 0.6)',
-        borderColor: '#89b4fa',
-      },
-    },
     {
       key: 'BarCommon',
       chartKey: 'VBarCommon',
@@ -147,20 +127,12 @@ export const useDashboardStore = defineStore('dashboard', () => {
     },
   ]
 
-  const rootComponents = computed(() =>
-    components.value.filter(c => !c.parentId)
-  )
-
-  function getChildren(parentId: string) {
-    return components.value.filter(c => c.parentId === parentId)
-  }
-
   function generateId(): string {
     counter.value++
     return `comp-${Date.now()}-${counter.value}`
   }
 
-  function addComponent(key: string, parentId?: string) {
+  function addComponent(key: string) {
     const def = componentDefinitions.find(d => d.key === key)
     if (!def) return
 
@@ -168,7 +140,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     const comp: CanvasComponent = {
       id,
       key: def.key,
-      parentId: parentId ?? null,
       props: structuredClone(def.defaultProps),
       chartConfig: {
         key: def.key,
@@ -184,10 +155,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
       },
       attr: {
         ...DEFAULT_ATTR,
-        x: parentId ? 10 : 50,
-        y: parentId ? 10 : 50,
-        w: key === 'container' ? 500 : 400,
-        h: key === 'container' ? 400 : 320,
+        x: 50,
+        y: 50,
+        w: 400,
+        h: 320,
         zIndex: components.value.length,
       },
       styles: { ...DEFAULT_STYLES },
@@ -280,7 +251,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function selectComponentsByRect(x: number, y: number, w: number, h: number) {
     const rect = { x, y, w, h }
     selectedIds.value = components.value
-      .filter(c => !c.parentId && rectsIntersect(rect, { x: c.attr.x, y: c.attr.y, w: c.attr.w, h: c.attr.h }))
+      .filter(c => rectsIntersect(rect, { x: c.attr.x, y: c.attr.y, w: c.attr.w, h: c.attr.h }))
       .map(c => c.id)
     if (selectedIds.value.length === 0) {
       selectedId.value = null
@@ -435,7 +406,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
       id,
       key: 'group',
       isGroup: true,
-      parentId: null,
       props: {},
       chartConfig: {
         key: 'group',
@@ -476,7 +446,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     const absChildren = comp.groupList.map(child => ({
       ...child,
-      parentId: child.parentId ?? null,
       props: (child as any).props ?? {},
       attr: { ...child.attr, x: child.attr.x + comp.attr.x, y: child.attr.y + comp.attr.y },
     })) as CanvasComponent[]
@@ -500,8 +469,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function resizeComponentDelta(id: string, dw: number, dh: number, baseW: number, baseH: number, maxW?: number, maxH?: number) {
     const comp = findComponent(id)
     if (!comp) return
-    comp.attr.w = Math.max(comp.key === 'container' ? 80 : 100, Math.min(baseW + dw, maxW ?? 9999))
-    comp.attr.h = Math.max(comp.key === 'container' ? 40 : 60, Math.min(baseH + dh, maxH ?? 9999))
+    comp.attr.w = Math.max(100, Math.min(baseW + dw, maxW ?? 9999))
+    comp.attr.h = Math.max(60, Math.min(baseH + dh, maxH ?? 9999))
   }
 
   function addDataPond(item: DataPondItem) {
@@ -537,9 +506,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     componentDefinitions,
     editCanvasConfig,
     requestGlobalConfig,
-    dropTargetParentId,
-    rootComponents,
-    getChildren,
     addComponent,
     removeComponent,
     selectComponent,

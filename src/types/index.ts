@@ -177,7 +177,6 @@ export interface RequestConfigType extends ComponentRequestConfigType {}
 export interface CreateComponentType {
   id: string
   key: string
-  parentId?: string | null
   isGroup?: boolean
   chartConfig: ChartConfigType
   attr: AttrType

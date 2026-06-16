@@ -83,6 +83,64 @@ interface ChartEditStorage {
 | `background` | `string` | `undefined` | 背景色（CSS 颜色值） |
 | `backgroundImage` | `string\|null` | `undefined` | 背景图片 URL |
 
+### 2.4 全局滤镜与变换
+
+```json
+{
+    "filterShow": false,
+    "opacity": 1,
+    "saturate": 1,
+    "contrast": 1,
+    "hueRotate": 0,
+    "brightness": 1,
+    "rotateZ": 0,
+    "rotateX": 0,
+    "rotateY": 0,
+    "skewX": 0,
+    "skewY": 0,
+    "blendMode": "normal"
+}
+```
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `filterShow` | `boolean` | `false` | 是否启用滤镜 |
+| `opacity` | `number` | `1` | 不透明度 |
+| `saturate` | `number` | `1` | 饱和度倍数 |
+| `contrast` | `number` | `1` | 对比度倍数 |
+| `hueRotate` | `number` | `0` | 色相旋转角度(deg) |
+| `brightness` | `number` | `1` | 亮度倍数 |
+| `rotateZ` | `number` | `0` | Z 轴旋转(deg) |
+| `rotateX` | `number` | `0` | X 轴旋转(deg) |
+| `rotateY` | `number` | `0` | Y 轴旋转(deg) |
+| `skewX` | `number` | `0` | X 轴倾斜(deg) |
+| `skewY` | `number` | `0` | Y 轴倾斜(deg) |
+| `blendMode` | `string` | `'normal'` | 混合模式 |
+
+### 2.5 完整 editCanvasConfig 示例
+
+```json
+{
+    "projectName": "可视化大屏",
+    "width": 1920,
+    "height": 1080,
+    "background": "#11111b",
+    "backgroundImage": null,
+    "filterShow": false,
+    "opacity": 1,
+    "saturate": 1,
+    "contrast": 1,
+    "hueRotate": 0,
+    "brightness": 1,
+    "rotateZ": 0,
+    "rotateX": 0,
+    "rotateY": 0,
+    "skewX": 0,
+    "skewY": 0,
+    "blendMode": "normal"
+}
+```
+
 ## 3.全局请求配置模块（requestGlobalConfig）
 
 **对应功能：设计器右侧 【数据请求】面板中的 【全局配置】
@@ -105,27 +163,52 @@ interface ChartEditStorage {
 | `requestInterval` | `number` | `30` | 全局轮询间隔数值 |
 | `requestIntervalUnit` | `string` | `'second'` | 轮询时间单位：`'second'`(秒)、`'minute'`(分)、`'hour'`(时)、`'day'`(天) |
 
-### 3.2 全局请求参数
+### 3.2 全局请求头
 
 ```json
 {
-    "requestParams": {
-        "Params": { "TOKEN": "XXX" },
-        "Header": { "Authorization": "Bearer xxx" },
-        "Bodu": {
-            "form-data": { "key": "value" },
-            "json": "",
-            "xml": ""
-        }
+    "requestHeader": {
+        "Authorization": "Bearer xxx"
     }
 }
 ```
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `requestParams.Params` | `object` | URL 查询参数（Query String），键值对 |
-| `requestParams.Header` | `object` | 请求头（Request Header），键值对 |
-| `requestParams.Body` | `object` | 请求体，支持四种格式：`form-data`、`x-www-form-urlencoded`、`json`、`xml` |
+| `requestHeader` | `object` | 全局请求头，键值对，所有组件请求共用 |
+
+### 3.3 共享数据池 (requestDataPond)
+
+```json
+{
+    "requestDataPond": [
+        {
+            "dataPondId": "pond-uuid-1",
+            "dataPondName": "销售数据",
+            "dataPondRequestConfig": {
+                "requestDataType": 1,
+                "requestHttpType": "get",
+                "requestUrl": "/api/sales",
+                "requestInterval": 30,
+                "requestIntervalUnit": "second",
+                "requestParamsBodyType": "none",
+                "requestParams": {
+                    "Params": {},
+                    "Header": {},
+                    "Body": { "form-data": {}, "x-www-form-urlencoded": {}, "json": "", "xml": "" }
+                }
+            }
+        }
+    ]
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `requestDataPond` | `DataPondItem[]` | 共享数据池列表，每个池子有独立请求配置 |
+| `DataPondItem.dataPondId` | `string` | 数据池唯一标识 |
+| `DataPondItem.dataPondName` | `string` | 数据池名称 |
+| `DataPondItem.dataPondRequestConfig` | `RequestConfigType` | 数据池的请求配置（同组件 AJAX 请求配置） |
 
 ## 4. 组件列表模块 (componentList)
 
@@ -401,7 +484,7 @@ interface ChartEditStorage {
 {
     "request": {
         "requestDataType": 0,
-        "requestParams"： { "Body": { ... }, "Header": {}, "Params": {} },
+        "requestParams": { "Body": { ... }, "Header": {}, "Params": {} },
         "requestIntervalUnit": "second"
     }
 }
@@ -409,20 +492,38 @@ interface ChartEditStorage {
 
 适用组件 `option.dataset` 中的静态数据，不发起请求。
 
+#### 4.9.3 数据池模式
+
+```json
+{
+    "request": {
+        "requestDataType": 2,
+        "requestDataPondId": "pond-uuid-1"
+    }
+}
+```
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `requestDataType` | `number` | `0` | 固定为 `2` |
+| `requestDataPondId` | `string` | `undefined` | 关联的数据池 ID，需在 `requestGlobalConfig.requestDataPond` 中存在 |
+
+数据池模式下，组件使用数据池中的请求配置（URL、参数等）来获取数据。多个引用同一数据池的组件共享一份请求结果（通过缓存实现）。
+
 #### 4.9.2 AJAX 请求模式
 
 ```json
 {
     "request": {
         "requestDataType": 1,
-        "requestHttpType"： "get",
+        "requestHttpType": "get",
         "requestUrl": "/api/data",
         "requestInterval": 10,
         "requestIntervalUnit": "second",
         "requestContentType": 0,
         "requestParamsBodyType": "none",
         "requestSQLContent": { "sql": "select * from where" },
-        "requestParams"： {
+        "requestParams": {
             "Body": { "form-data": {}, "x-www-form-urlencoded": {}, "json": "", "xml": ""},
             "Header": { "Authorization": "Bearer xxx" },
             "Params": { "page": 1 }
@@ -441,7 +542,8 @@ interface ChartEditStorage {
 | `requestContentType` | `number` | `0` | 请求内容类型：`0`=普通请求、`1`=SQL 请求 |
 | `requestParamsBodyType` | `string` | `'none'` | 请求体格式：`'none'`、`'form-data'`、`'x-www-form-urlencoded'`、`'json'`、`'xml'` |
 | `requestSQLContent.sql` | `string` | `'select * from  where'` | SQL 查询语句（仅 `requestContentType=1` 时生效） |
-| `requestParams` | `object` | 空对象 | 请求参数，结构与全局配置中的 `requestParams` 一致 |
+| `requestParams` | `object` | 空对象 | 请求参数，与组件级 `requestParams` 结构一致 |
+| `requestDataPondId` | `string` | `undefined` | 关联的数据池 ID（仅 `requestDataType=2` 时生效） |
 
 ### 4.10 图表配置 （option）
 
@@ -517,7 +619,7 @@ interface ChartEditStorage {
     "id": "group-uuid",
     "isGroup": true,
     "key": "group",
-    "charConfig": {
+    "chartConfig": {
         "key": "group",
         "chartKey": "group",
         "title": "分组",

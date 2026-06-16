@@ -39,7 +39,6 @@ const previewSchema = computed((): ChartEditStorage => ({
   componentList: store.components.map(c => ({
     id: c.id,
     key: c.key,
-    parentId: c.parentId,
     chartConfig: { ...c.chartConfig },
     attr: { ...c.attr },
     styles: { ...c.styles },
@@ -49,6 +48,9 @@ const previewSchema = computed((): ChartEditStorage => ({
     option: { ...c.option },
     isGroup: c.isGroup,
     groupList: c.groupList ? JSON.parse(JSON.stringify(c.groupList)) : undefined,
+    request: c.request ? JSON.parse(JSON.stringify(c.request)) : undefined,
+    events: c.events ? JSON.parse(JSON.stringify(c.events)) : undefined,
+    interactActions: c.interactActions ? JSON.parse(JSON.stringify(c.interactActions)) : undefined,
   })),
 }))
 </script>

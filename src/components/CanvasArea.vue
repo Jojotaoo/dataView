@@ -42,7 +42,7 @@
       >
         <template #item="{ element: comp }">
           <div
-            v-if="comp && comp.id && !comp.parentId"
+            v-if="comp && comp.id"
             class="canvas-component"
             :class="{
               selected: comp.id === store.selectedId,
@@ -64,15 +64,8 @@
               </div>
             </div>
             <div class="comp-body">
-              <Container
-                v-if="comp.key === 'container'"
-                :bg-color="comp.props?.bgColor"
-                :border-color="comp.props?.borderColor"
-                :parent-id="comp.id"
-                :scale="scale"
-              />
               <GroupComponent
-                v-else-if="comp.key === 'group'"
+                v-if="comp.key === 'group'"
                 :component="comp"
                 :scale="scale"
               />
@@ -131,7 +124,6 @@ import SketchRule from 'vue3-sketch-ruler'
 import 'vue3-sketch-ruler/lib/style.css'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
-import Container from './charts/Container.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
@@ -323,8 +315,7 @@ function onDraggableChange(evt: any) {
     const item = evt.added.element
     if (item && item._clone) {
       store.components.splice(evt.added.newIndex, 1)
-      store.addComponent(item.key, store.dropTargetParentId ?? undefined)
-      store.dropTargetParentId = null
+      store.addComponent(item.key)
     }
   }
 }

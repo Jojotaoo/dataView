@@ -17,14 +17,8 @@
         :class="{ hidden: comp.status.hide }"
         :style="componentStyle(comp)"
       >
-        <ContainerPreview
-          v-if="comp.key === 'container'"
-          :bg-color="comp.option.bgColor"
-          :parent-id="comp.id"
-          :all-components="schema.componentList"
-        />
         <GroupPreview
-          v-else-if="comp.key === 'group'"
+          v-if="comp.key === 'group'"
           :component="comp"
         />
         <BarChart
@@ -54,7 +48,6 @@ import type { CSSProperties } from 'vue'
 import { useEventListener } from '../composables/useEventListener'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
-import ContainerPreview from './charts/ContainerPreview.vue'
 import GroupPreview from './charts/GroupPreview.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'
@@ -113,7 +106,7 @@ function componentStyle(comp: CreateComponentType): CSSProperties {
 }
 
 const rootComponents = computed(() =>
-  props.schema.componentList.filter(c => !c.parentId)
+  props.schema.componentList
 )
 </script>
 
