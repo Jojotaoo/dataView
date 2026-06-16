@@ -9,6 +9,7 @@ import type {
   DataPondItem,
 } from '../types'
 import { DEFAULT_ATTR, DEFAULT_STYLES, DEFAULT_STATUS, DEFAULT_PREVIEW } from '../types'
+import { useIdGenerator } from '../composables/useId'
 
 export interface CanvasComponent extends CreateComponentType {
   props: Record<string, any>
@@ -33,7 +34,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const components = ref<CanvasComponent[]>([])
   const selectedId = ref<string | null>(null)
   const selectedIds = ref<string[]>([])
-  const counter = ref(0)
 
   const editCanvasConfig = ref<EditCanvasConfigType>({
     projectName: '可视化大屏',
@@ -127,10 +127,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     },
   ]
 
-  function generateId(): string {
-    counter.value++
-    return `comp-${Date.now()}-${counter.value}`
-  }
+  const generateId = useIdGenerator()
 
   function addComponent(key: string) {
     const def = componentDefinitions.find(d => d.key === key)

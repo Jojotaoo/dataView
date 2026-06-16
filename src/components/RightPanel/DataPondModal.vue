@@ -113,6 +113,7 @@
 import { ref, computed, watch } from 'vue'
 import type { DataPondItem, RequestConfigType } from '../../types'
 import { useDashboardStore } from '../../stores/dashboard'
+import { useId } from '../../composables/useId'
 
 const props = defineProps<{
   visible: boolean
@@ -162,7 +163,7 @@ watch(() => props.visible, (val) => {
       form.value = JSON.parse(JSON.stringify(props.editItem))
     } else {
       form.value = {
-        dataPondId: `pond-${Date.now()}`,
+        dataPondId: useId(),
         dataPondName: '',
         dataPondRequestConfig: {
           requestDataType: 1,
