@@ -52,7 +52,7 @@
             }"
             :style="componentStyle(comp)"
             :data-comp-id="comp.id"
-            @mousedown.stop="onMouseDown($event, comp.id)"
+            @mousedown.stop="handleMouseDown($event, comp.id)"
             @dragstart.prevent
             @click.stop="onComponentClick($event, comp.id)"
           >
@@ -87,7 +87,7 @@
             <div
               v-if="!comp.status.lock && comp.key !== 'group'"
               class="resize-handle"
-              @mousedown.stop="onResizeStart($event, comp.id)"
+              @mousedown.stop="handleResizeStart($event, comp.id)"
             ></div>
             <DataFetchManager :component-id="comp.id" mode="design" />
           </div>
@@ -118,7 +118,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useDashboardStore } from '../stores/dashboard'
-import type { CanvasComponent } from '../stores/dashboard'
+import type { CanvasComponent } from '../types'
 import draggable from 'vuedraggable'
 import SketchRule from 'vue3-sketch-ruler'
 import 'vue3-sketch-ruler/lib/style.css'
@@ -127,6 +127,10 @@ import LineChart from './charts/LineChart.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
+import { useCanvasDrag } from '../composables/useCanvasDrag'
+import { useCanvasResize } from '../composables/useCanvasResize'
+import { useBoxSelect } from '../composables/useBoxSelect'
+import { useCanvasInteraction } from '../composables/useCanvasInteraction'
 
 const store = useDashboardStore()
 
@@ -137,8 +141,31 @@ const scale = ref(1)
 const showRuler = ref(true)
 const showReferLine = ref(true)
 const lines = ref<{ h: number[]; v: number[] }>({ h: [], v: [] })
-const selRect = ref<{ x: number; y: number; w: number; h: number } | null>(null)
 const ctxMenu = ref<{ show: boolean; x: number; y: number; isGroup: boolean; ctxId: string | null }>({ show: false, x: 0, y: 0, isGroup: false, ctxId: null })
+
+const { startDrag, cleanup: cleanupDrag } = useCanvasDrag(
+  scale,
+  (id, dx, dy, baseX, baseY) => {
+    store.moveComponentDelta(id, dx, dy, baseX, baseY, store.editCanvasConfig.width, store.editCanvasConfig.height)
+  },
+)
+
+const { startResize, cleanup: cleanupResize } = useCanvasResize(
+  scale,
+  (id, dw, dh, baseW, baseH) => {
+    const comp = store.components.find(c => c.id === id)
+    if (!comp) return
+    store.resizeComponentDelta(id, dw, dh, baseW, baseH, store.editCanvasConfig.width - comp.attr.x, store.editCanvasConfig.height - comp.attr.y)
+  },
+)
+
+const { selRect, onCanvasMouseDown, cleanup: cleanupBoxSelect } = useBoxSelect(
+  scale,
+  (x, y, w, h) => store.selectComponentsByRect(x, y, w, h),
+  () => store.clearSelection(),
+)
+
+const { onDraggableChange, onComponentClick, onContextMenu, handleGroup, handleUngroup, findParentGroup } = useCanvasInteraction(ctxMenu)
 
 const selRectStyle = computed(() => {
   if (!selRect.value) return {}
@@ -182,18 +209,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
-  dragState = null
-  resizeState = null
-  selStart = null
-  selRect.value = null
-  window.removeEventListener('mousemove', onMouseMove)
-  window.removeEventListener('mouseup', onMouseUp)
-  window.removeEventListener('blur', onMouseUp)
-  window.removeEventListener('mousemove', onResizeMove)
-  window.removeEventListener('mouseup', onResizeUp)
-  window.removeEventListener('blur', onResizeUp)
-  window.removeEventListener('mousemove', onSelectionMouseMove)
-  window.removeEventListener('mouseup', onSelectionMouseUp)
+  cleanupDrag()
+  cleanupResize()
+  cleanupBoxSelect()
 })
 
 const gridStyle = computed((): CSSProperties => ({
@@ -247,195 +265,16 @@ function componentStyle(comp: CanvasComponent): CSSProperties {
   }
 }
 
-let dragState: { id: string; startX: number; startY: number; compX: number; compY: number } | null = null
-let resizeState: { id: string; startX: number; startY: number; compW: number; compH: number } | null = null
-
-function onMouseDown(event: MouseEvent, id: string) {
+function handleMouseDown(event: MouseEvent, id: string) {
   const comp = store.components.find(c => c.id === id)
   if (!comp || comp.status.lock) return
-  dragState = {
-    id,
-    startX: event.clientX,
-    startY: event.clientY,
-    compX: comp.attr.x,
-    compY: comp.attr.y,
-  }
-  window.addEventListener('mousemove', onMouseMove)
-  window.addEventListener('mouseup', onMouseUp)
-  window.addEventListener('blur', onMouseUp)
+  startDrag(event, id, comp.attr.x, comp.attr.y)
 }
 
-function onMouseMove(event: MouseEvent) {
-  if (!dragState) return
-  const dx = (event.clientX - dragState.startX) / scale.value
-  const dy = (event.clientY - dragState.startY) / scale.value
-  store.moveComponentDelta(dragState.id, dx, dy, dragState.compX, dragState.compY, store.editCanvasConfig.width, store.editCanvasConfig.height)
-}
-
-function onMouseUp() {
-  dragState = null
-  window.removeEventListener('mousemove', onMouseMove)
-  window.removeEventListener('mouseup', onMouseUp)
-  window.removeEventListener('blur', onMouseUp)
-}
-
-function onResizeStart(event: MouseEvent, id: string) {
+function handleResizeStart(event: MouseEvent, id: string) {
   const comp = store.components.find(c => c.id === id)
   if (!comp || comp.status.lock) return
-  resizeState = {
-    id,
-    startX: event.clientX,
-    startY: event.clientY,
-    compW: comp.attr.w,
-    compH: comp.attr.h,
-  }
-  window.addEventListener('mousemove', onResizeMove)
-  window.addEventListener('mouseup', onResizeUp)
-  window.addEventListener('blur', onResizeUp)
-}
-
-function onResizeMove(event: MouseEvent) {
-  if (!resizeState) return
-  const dx = (event.clientX - resizeState.startX) / scale.value
-  const dy = (event.clientY - resizeState.startY) / scale.value
-  const comp = store.components.find(c => c.id === resizeState!.id)
-  if (!comp) return
-  store.resizeComponentDelta(resizeState.id, dx, dy, resizeState.compW, resizeState.compH, store.editCanvasConfig.width - comp.attr.x, store.editCanvasConfig.height - comp.attr.y)
-}
-
-function onResizeUp() {
-  resizeState = null
-  window.removeEventListener('mousemove', onResizeMove)
-  window.removeEventListener('mouseup', onResizeUp)
-  window.removeEventListener('blur', onResizeUp)
-}
-
-function onDraggableChange(evt: any) {
-  if (evt.added) {
-    const item = evt.added.element
-    if (item && item._clone) {
-      store.components.splice(evt.added.newIndex, 1)
-      store.addComponent(item.key)
-    }
-  }
-}
-
-function onComponentClick(event: MouseEvent, id: string) {
-  if (event.ctrlKey || event.metaKey) {
-    store.toggleSelectComponent(id)
-  } else {
-    store.selectComponent(id)
-  }
-}
-
-let selStart: { x: number; y: number } | null = null
-let didDrag = false
-
-function onCanvasMouseDown(event: MouseEvent) {
-  if (event.button !== 0) return
-  didDrag = false
-  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-  selStart = {
-    x: (event.clientX - rect.left) / scale.value,
-    y: (event.clientY - rect.top) / scale.value,
-  }
-  window.addEventListener('mousemove', onSelectionMouseMove)
-  window.addEventListener('mouseup', onSelectionMouseUp)
-}
-
-function onSelectionMouseMove(event: MouseEvent) {
-  if (!selStart) return
-  didDrag = true
-  const gridEl = document.querySelector('.canvas-grid')
-  if (!gridEl) return
-  const rect = gridEl.getBoundingClientRect()
-  const mx = (event.clientX - rect.left) / scale.value
-  const my = (event.clientY - rect.top) / scale.value
-  selRect.value = {
-    x: Math.min(mx, selStart.x),
-    y: Math.min(my, selStart.y),
-    w: Math.abs(mx - selStart.x),
-    h: Math.abs(my - selStart.y),
-  }
-}
-
-function onSelectionMouseUp() {
-  if (didDrag && selRect.value) {
-    store.selectComponentsByRect(selRect.value.x, selRect.value.y, selRect.value.w, selRect.value.h)
-  } else {
-    store.clearSelection()
-  }
-  selStart = null
-  selRect.value = null
-  window.removeEventListener('mousemove', onSelectionMouseMove)
-  window.removeEventListener('mouseup', onSelectionMouseUp)
-}
-
-function findParentGroup(id: string): CanvasComponent | null {
-  for (const comp of store.components) {
-    if (comp.groupList && comp.groupList.some(c => c.id === id)) {
-      return comp
-    }
-  }
-  return null
-}
-
-function onContextMenu(event: MouseEvent) {
-  const compEl = (event.target as HTMLElement).closest('[data-comp-id]')
-  let isGroup = false
-  let ctxId: string | null = null
-
-  if (compEl) {
-    const id = compEl.getAttribute('data-comp-id')
-    if (id) {
-      store.selectComponent(id)
-      ctxId = id
-      const comp = store.components.find(c => c.id === id)
-      if (comp) {
-        isGroup = comp.key === 'group'
-      } else {
-        const parentGroup = findParentGroup(id)
-        if (parentGroup) {
-          isGroup = true
-          ctxId = parentGroup.id
-        }
-      }
-    }
-  } else {
-    if (store.selectedId) {
-      ctxId = store.selectedId
-      const comp = store.components.find(c => c.id === store.selectedId)
-      if (comp) {
-        isGroup = comp.key === 'group'
-      } else {
-        const parentGroup = findParentGroup(store.selectedId)
-        if (parentGroup) {
-          isGroup = true
-          ctxId = parentGroup.id
-        }
-      }
-    }
-  }
-
-  ctxMenu.value = {
-    show: true,
-    x: event.clientX,
-    y: event.clientY,
-    isGroup,
-    ctxId,
-  }
-}
-
-function handleGroup() {
-  ctxMenu.value.show = false
-  store.groupSelectedComponents()
-}
-
-function handleUngroup() {
-  ctxMenu.value.show = false
-  if (ctxMenu.value.ctxId) {
-    store.ungroupComponent(ctxMenu.value.ctxId)
-  }
+  startResize(event, id, comp.attr.w, comp.attr.h)
 }
 </script>
 

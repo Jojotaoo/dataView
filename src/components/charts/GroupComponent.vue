@@ -38,7 +38,7 @@ import LineChart from './LineChart.vue'
 import GroupComponent from './GroupComponent.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import { useDashboardStore } from '../../stores/dashboard'
-import type { CanvasComponent } from '../../stores/dashboard'
+import type { CanvasComponent } from '../../types'
 import type { CreateComponentType } from '../../types'
 
 const store = useDashboardStore()

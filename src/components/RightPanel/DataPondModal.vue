@@ -73,30 +73,19 @@
           </div>
 
           <template v-if="form.dataPondRequestConfig.requestParamsBodyType !== 'none'">
-            <div class="section-title">请求头 (Header)</div>
-            <div class="prop-form">
-              <div v-for="(val, key, idx) in form.dataPondRequestConfig.requestParams.Header" :key="'ph-' + idx" class="kv-row">
-                <input type="text" class="prop-input kv-key" placeholder="key" :value="key" @input="updateHeaderKey(idx, ($event.target as HTMLInputElement).value)" />
-                <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateHeaderValue(idx, ($event.target as HTMLInputElement).value)" />
-                <button class="kv-remove" @click="removeHeader(key)">✕</button>
-              </div>
-              <button class="add-btn" @click="addHeader">+ 添加请求头</button>
-            </div>
-
-            <div class="section-title">请求体 (Body)</div>
-            <div class="prop-form">
-              <template v-if="isKvBody">
-                <div v-for="(val, key, idx) in kvBodyEntries" :key="'pb-' + idx" class="kv-row">
-                  <input type="text" class="prop-input kv-key" placeholder="key" :value="key" disabled />
-                  <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateBodyKvValue(idx, ($event.target as HTMLInputElement).value)" />
-                  <button class="kv-remove" @click="removeBodyKv(key)">✕</button>
-                </div>
-                <button class="add-btn" @click="addBodyKv">+ 添加字段</button>
-              </template>
-              <template v-else>
-                <textarea class="prop-textarea" rows="4" v-model="bodyTextValue"></textarea>
-              </template>
-            </div>
+            <PondRequestBody
+              :body-type="form.dataPondRequestConfig.requestParamsBodyType"
+              :header="form.dataPondRequestConfig.requestParams.Header"
+              :body="form.dataPondRequestConfig.requestParams.Body"
+              @update-header-key="updateHeaderKey"
+              @update-header-value="updateHeaderValue"
+              @add-header="addHeader"
+              @remove-header="removeHeader"
+              @update-body-kv-value="updateBodyKvValue"
+              @add-body-kv="addBodyKv"
+              @remove-body-kv="removeBodyKv"
+              @update-body-text="updateBodyText"
+            />
           </template>
         </div>
 
@@ -114,6 +103,7 @@ import { ref, computed, watch } from 'vue'
 import type { DataPondItem, RequestConfigType } from '../../types'
 import { useDashboardStore } from '../../stores/dashboard'
 import { useId } from '../../composables/useId'
+import PondRequestBody from './request/PondRequestBody.vue'
 
 const props = defineProps<{
   visible: boolean
@@ -188,27 +178,6 @@ watch(() => props.visible, (val) => {
   }
 })
 
-const isKvBody = computed(() => {
-  const t = form.value.dataPondRequestConfig.requestParamsBodyType
-  return t === 'form-data' || t === 'x-www-form-urlencoded'
-})
-
-const kvBodyEntries = computed(() => {
-  const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  return form.value.dataPondRequestConfig.requestParams.Body[t]
-})
-
-const bodyTextValue = computed({
-  get: () => {
-    const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'json' | 'xml'
-    return form.value.dataPondRequestConfig.requestParams.Body[t] ?? ''
-  },
-  set: (val: string) => {
-    const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'json' | 'xml'
-    form.value.dataPondRequestConfig.requestParams.Body[t] = val
-  },
-})
-
 function updateHeaderKey(idx: number, newKey: string) {
   const header = form.value.dataPondRequestConfig.requestParams.Header
   const keys = Object.keys(header)
@@ -238,7 +207,8 @@ function removeHeader(key: string) {
 }
 
 function updateBodyKvValue(idx: number, value: string) {
-  const target = kvBodyEntries.value
+  const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
+  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
   if (!target) return
   const keys = Object.keys(target)
   if (keys[idx] !== undefined) {
@@ -247,15 +217,22 @@ function updateBodyKvValue(idx: number, value: string) {
 }
 
 function addBodyKv() {
-  const target = kvBodyEntries.value
+  const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
+  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
   if (!target) return
   target[`field_${Object.keys(target).length + 1}`] = ''
 }
 
 function removeBodyKv(key: string) {
-  const target = kvBodyEntries.value
+  const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
+  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
   if (!target) return
   delete target[key]
+}
+
+function updateBodyText(value: string) {
+  const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'json' | 'xml'
+  form.value.dataPondRequestConfig.requestParams.Body[t] = value
 }
 
 function handleCancel() {
@@ -370,11 +347,6 @@ function handleConfirm() {
   border-bottom: 1px solid #313244;
   user-select: none;
 }
-.prop-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 .prop-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -438,48 +410,5 @@ function handleConfirm() {
   color: #cdd6f4;
   outline: none;
   cursor: pointer;
-}
-.prop-textarea {
-  background: #313244;
-  border: 1px solid #45475a;
-  border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 12px;
-  color: #cdd6f4;
-  outline: none;
-  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-  resize: vertical;
-  width: 100%;
-}
-.prop-textarea:focus { border-color: #89b4fa; }
-.kv-row { display: flex; gap: 4px; align-items: center; }
-.kv-key { flex: 2; font-size: 11px; }
-.kv-val { flex: 3; font-size: 11px; }
-.kv-remove {
-  flex: 0 0 22px;
-  height: 22px;
-  background: none;
-  border: none;
-  color: #6c7086;
-  cursor: pointer;
-  font-size: 10px;
-  border-radius: 4px;
-  transition: all 0.15s;
-}
-.kv-remove:hover { background: #f38ba8; color: #1e1e2e; }
-.add-btn {
-  padding: 4px 8px;
-  background: #313244;
-  border: 1px dashed #45475a;
-  border-radius: 4px;
-  color: #6c7086;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.add-btn:hover {
-  background: #45475a;
-  color: #cdd6f4;
-  border-color: #89b4fa;
 }
 </style>

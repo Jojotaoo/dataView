@@ -1,34 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type {
-  CreateComponentType,
   EditCanvasConfigType,
   RequestGlobalConfigType,
   RequestConfigType,
-  ChartConfigType,
   DataPondItem,
+  CanvasComponent,
 } from '../types'
-import { DEFAULT_ATTR, DEFAULT_STYLES, DEFAULT_STATUS, DEFAULT_PREVIEW } from '../types'
+import {
+  DEFAULT_ATTR,
+  DEFAULT_STYLES,
+  DEFAULT_STATUS,
+  DEFAULT_PREVIEW,
+} from '../types'
 import { useIdGenerator } from '../composables/useId'
-
-export interface CanvasComponent extends CreateComponentType {
-  props: Record<string, any>
-}
-
-function rectsIntersect(a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) {
-  return !(b.x > a.x + a.w || b.x + b.w < a.x || b.y > a.y + a.h || b.y + b.h < a.y)
-}
-
-function findInGroupList(list: CreateComponentType[], id: string): CreateComponentType | null {
-  for (const item of list) {
-    if (item.id === id) return item
-    if (item.groupList) {
-      const found = findInGroupList(item.groupList, id)
-      if (found) return found
-    }
-  }
-  return null
-}
+import { componentDefinitions } from '../config/componentDefinitions'
+import { rectsIntersect, findInGroupList, removeFromGroupList } from './utils'
 
 export const useDashboardStore = defineStore('dashboard', () => {
   const components = ref<CanvasComponent[]>([])
@@ -67,65 +54,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (!selectedId.value) return null
     return findComponent(selectedId.value)
   })
-
-  const componentDefinitions: (ChartConfigType & { name: string; icon: string; defaultOption: Record<string, any>; defaultProps: Record<string, any> })[] = [
-    {
-      key: 'BarCommon',
-      chartKey: 'VBarCommon',
-      conKey: 'VCBarCommon',
-      title: '柱状图',
-      name: '柱状图',
-      category: 'Bars',
-      categoryName: '柱状图',
-      package: 'Charts',
-      chartFrame: 'echarts',
-      image: 'bar.png',
-      icon: '📊',
-      defaultOption: {
-        title: '柱状图',
-        dataset: {
-          dimensions: ['类别', '销量'],
-          source: [
-            ['一月', 120],
-            ['二月', 200],
-            ['三月', 150],
-            ['四月', 80],
-            ['五月', 70],
-            ['六月', 110],
-          ],
-        },
-      },
-      defaultProps: {},
-    },
-    {
-      key: 'LineCommon',
-      chartKey: 'VLineCommon',
-      conKey: 'VCLineCommon',
-      title: '折线图',
-      name: '折线图',
-      category: 'Lines',
-      categoryName: '折线图',
-      package: 'Charts',
-      chartFrame: 'echarts',
-      image: 'line.png',
-      icon: '📈',
-      defaultOption: {
-        title: '折线图',
-        dataset: {
-          dimensions: ['月份', '访问量'],
-          source: [
-            ['一月', 820],
-            ['二月', 932],
-            ['三月', 901],
-            ['四月', 1290],
-            ['五月', 1330],
-            ['六月', 1320],
-          ],
-        },
-      },
-      defaultProps: {},
-    },
-  ]
 
   const generateId = useIdGenerator()
 
@@ -204,20 +132,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
         return
       }
     }
-  }
-
-  function removeFromGroupList(list: CreateComponentType[], id: string): boolean {
-    const idx = list.findIndex(c => c.id === id)
-    if (idx >= 0) {
-      list.splice(idx, 1)
-      return true
-    }
-    for (const item of list) {
-      if (item.groupList && removeFromGroupList(item.groupList, id)) {
-        return true
-      }
-    }
-    return false
   }
 
   function selectComponent(id: string | null) {
