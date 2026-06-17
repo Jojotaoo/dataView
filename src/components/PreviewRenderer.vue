@@ -35,6 +35,13 @@
           :height="comp.attr.h"
           :chart-style="comp.chartStyle"
         />
+        <PieChart
+          v-else-if="comp.key === 'PieCommon'"
+          :option="comp.option"
+          :width="comp.attr.w"
+          :height="comp.attr.h"
+          :chart-style="comp.chartStyle"
+        />
         <DataFetchManager :component-id="comp.id" mode="preview" />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -50,6 +57,7 @@ import type { CSSProperties } from 'vue'
 import { useEventListener } from '../composables/useEventListener'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
+import PieChart from './charts/PieChart.vue'
 import GroupPreview from './charts/GroupPreview.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'

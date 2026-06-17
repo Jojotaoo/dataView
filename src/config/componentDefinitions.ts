@@ -64,4 +64,31 @@ export const componentDefinitions: ComponentDefinition[] = [
     },
     defaultProps: {},
   },
+  {
+    key: 'PieCommon',
+    chartKey: 'VPieCommon',
+    conKey: 'VCPieCommon',
+    title: '饼图',
+    name: '饼图',
+    category: 'Pies',
+    categoryName: '饼图',
+    package: 'Charts',
+    chartFrame: 'echarts',
+    image: 'pie.png',
+    icon: '🥧',
+    defaultOption: {
+      title: '饼图',
+      dataset: {
+        dimensions: ['类别', '数量'],
+        source: [
+          ['搜索引擎', 1048],
+          ['社交媒体', 735],
+          ['直接访问', 580],
+          ['邮件营销', 484],
+          ['联盟广告', 300],
+        ],
+      },
+    },
+    defaultProps: {},
+  },
 ]

@@ -10,6 +10,7 @@ export function useECharts(
   height: Ref<number>,
   chartStyle: Ref<ChartStyleConfig>,
   seriesOption: Ref<SeriesOption>,
+  seriesType: 'axis' | 'pie' = 'axis',
 ) {
   const chartRef = ref<HTMLDivElement>()
   const chartInstance = shallowRef<echarts.ECharts>()
@@ -28,22 +29,27 @@ export function useECharts(
 
     const gridTop = Math.max(cs.grid.top, titleBottom, legendBottom)
 
+    const isPie = seriesType === 'pie'
+
     const result: any = {
       backgroundColor: cs.backgroundColor,
       color: cs.series.colorList.length > 0 ? cs.series.colorList : undefined,
-      dataset: [
+      series: [seriesOption.value],
+    }
+
+    if (!isPie) {
+      result.dataset = [
         {
           dimensions: ds.dimensions ?? [],
           source: ds.source ?? [],
         },
-      ],
-      grid: {
+      ]
+      result.grid = {
         left: cs.grid.left,
         right: cs.grid.right,
         top: gridTop,
         bottom: cs.grid.bottom,
-      },
-      series: [seriesOption.value],
+      }
     }
 
     if (hasTitle) {
@@ -65,7 +71,7 @@ export function useECharts(
       }
     }
 
-    if (cs.xAxis.show) {
+    if (!isPie && cs.xAxis.show) {
       result.xAxis = {
         type: 'category',
         name: cs.xAxis.name || undefined,
@@ -75,7 +81,7 @@ export function useECharts(
       }
     }
 
-    if (cs.yAxis.show) {
+    if (!isPie && cs.yAxis.show) {
       result.yAxis = {
         type: 'value',
         name: cs.yAxis.name || undefined,
@@ -88,7 +94,7 @@ export function useECharts(
 
     if (cs.tooltip.show && cs.tooltip.trigger !== 'none') {
       result.tooltip = {
-        trigger: cs.tooltip.trigger,
+        trigger: isPie ? 'item' : cs.tooltip.trigger,
         backgroundColor: cs.tooltip.backgroundColor,
         borderColor: cs.tooltip.borderColor,
         textStyle: { color: cs.tooltip.textColor, fontSize: 12 },

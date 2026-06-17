@@ -130,6 +130,9 @@ export interface ChartStyleConfig {
     areaOpacityStart: number
     areaOpacityEnd: number
     labelColor: string
+    pieRadius: number
+    pieRoseType: boolean
+    pieLabelPosition: 'inside' | 'outside' | 'center'
   }
   tooltip: {
     show: boolean
@@ -156,6 +159,7 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
     colorList: ['#89b4fa', '#f38ba8', '#a6e3a1', '#fab387', '#cba6f7', '#94e2d5', '#f9e2af', '#74c7ec'],
     areaOpacityStart: 0.4, areaOpacityEnd: 0.02,
     labelColor: '#cdd6f4',
+    pieRadius: 0, pieRoseType: false, pieLabelPosition: 'outside',
   },
   tooltip: { show: true, trigger: 'axis', backgroundColor: '#313244', borderColor: '#45475a', textColor: '#cdd6f4' },
   backgroundColor: 'transparent',

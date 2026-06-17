@@ -739,6 +739,9 @@ interface ChartEditStorage {
 | `series.areaOpacityStart` | `number` | `0.4` | 面积填充起始透明度 0-1（仅折线图，showArea=true 时生效） |
 | `series.areaOpacityEnd` | `number` | `0.02` | 面积填充结束透明度 0-1（仅折线图，showArea=true 时生效） |
 | `series.labelColor` | `string` | `'#cdd6f4'` | 数据标签颜色 |
+| `series.pieRadius` | `number` | `0` | 饼图内半径百分比，0=实心饼图，>0=环形图（仅饼图） |
+| `series.pieRoseType` | `boolean` | `false` | 南丁格尔玫瑰模式（仅饼图） |
+| `series.pieLabelPosition` | `'inside' \| 'outside' \| 'center'` | `'outside'` | 标签位置（仅饼图） |
 
 #### tooltip - 提示框
 

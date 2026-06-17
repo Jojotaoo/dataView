@@ -29,6 +29,13 @@
         :height="child.attr.h"
         :chart-style="(child as any).chartStyle"
       />
+      <PieChart
+        v-else-if="child.key === 'PieCommon'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :chart-style="(child as any).chartStyle"
+      />
       <DataFetchManager :component-id="child.id" mode="preview" />
     </div>
   </div>
@@ -38,6 +45,7 @@
 import { computed } from 'vue'
 import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
+import PieChart from './PieChart.vue'
 import GroupPreview from './GroupPreview.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import type { CreateComponentType } from '../../types'

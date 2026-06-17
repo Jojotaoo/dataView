@@ -85,6 +85,14 @@
                 :bg-color="comp.props?.bgColor"
                 :chart-style="comp.chartStyle"
               />
+              <PieChart
+                v-else-if="comp.key === 'PieCommon'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h - 32"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+              />
             </div>
             <div
               v-if="!comp.status.lock && comp.key !== 'group'"
@@ -126,6 +134,7 @@ import SketchRule from 'vue3-sketch-ruler'
 import 'vue3-sketch-ruler/lib/style.css'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
+import PieChart from './charts/PieChart.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
