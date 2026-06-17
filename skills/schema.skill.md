@@ -491,7 +491,142 @@ interface ChartEditStorage {
 }
 ```
 
-### 4.11 分组组件
+### 4.11 图表样式配置 (chartStyle)
+
+**对应功能：右侧面板中的图表样式配置（标题、图例、坐标轴、系列、提示框等）**
+
+`chartStyle` 是 ECharts 图表组件的样式配置，控制图表的视觉外观。仅对 `chartFrame: 'echarts'` 的组件生效。
+
+```json
+{
+  "chartStyle": {
+    "grid": { "top": 10, "bottom": 30, "left": 10, "right": 10 },
+    "titleStyle": {
+      "show": true,
+      "fontSize": 14,
+      "color": "#cdd6f4",
+      "left": "center",
+      "top": 8
+    },
+    "legend": {
+      "show": true,
+      "orient": "horizontal",
+      "left": "center",
+      "top": 38,
+      "fontSize": 11,
+      "icon": "circle"
+    },
+    "xAxis": {
+      "show": true,
+      "name": "",
+      "labelFontSize": 11,
+      "labelRotate": 0
+    },
+    "yAxis": {
+      "show": true,
+      "name": "",
+      "labelFontSize": 11,
+      "min": null,
+      "max": null,
+      "splitLineShow": true
+    },
+    "series": {
+      "smooth": true,
+      "symbol": "circle",
+      "symbolSize": 8,
+      "barWidth": "50%",
+      "barBorderRadius": 4,
+      "lineWidth": 3,
+      "showArea": true,
+      "showLabel": true,
+      "labelFontSize": 11
+    },
+    "tooltip": { "show": true, "trigger": "axis" },
+    "backgroundColor": "transparent"
+  }
+}
+```
+
+#### grid - 网格间距
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `grid.top` | `number` | `10` | 网格顶部间距 (px) |
+| `grid.bottom` | `number` | `30` | 网格底部间距 (px) |
+| `grid.left` | `number` | `10` | 网格左侧间距 (px) |
+| `grid.right` | `number` | `10` | 网格右侧间距 (px) |
+
+#### titleStyle - 标题样式
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `titleStyle.show` | `boolean` | `true` | 是否显示标题 |
+| `titleStyle.fontSize` | `number` | `14` | 标题字号 |
+| `titleStyle.color` | `string` | `'#cdd6f4'` | 标题颜色 |
+| `titleStyle.left` | `number \| string` | `'center'` | 水平位置。预设值：`'left'`/`'center'`/`'right'`；或 px 数值；或百分比字符串如 `'50%'` |
+| `titleStyle.top` | `number \| string` | `8` | 垂直位置。预设值：`'top'`/`'middle'`/`'bottom'`；或 px 数值；或百分比字符串如 `'50%'` |
+
+> **定位互斥规则**：`left` 和 `right` 不能同时生效（`left` 优先），`top` 和 `bottom` 不能同时生效（`top` 优先）。因此只保留 `left` 和 `top`。
+
+#### legend - 图例样式
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `legend.show` | `boolean` | `true` | 是否显示图例 |
+| `legend.orient` | `'horizontal' \| 'vertical'` | `'horizontal'` | 排列方向 |
+| `legend.left` | `number \| string` | `'center'` | 水平位置。预设值：`'left'`/`'center'`/`'right'`；或 px 数值；或百分比字符串如 `'50%'` |
+| `legend.top` | `number \| string` | `38` | 垂直位置。预设值：`'top'`/`'middle'`/`'bottom'`；或 px 数值；或百分比字符串如 `'50%'` |
+| `legend.fontSize` | `number` | `11` | 图例字号 |
+| `legend.icon` | `'circle' \| 'rect' \| 'roundRect' \| 'triangle' \| 'diamond'` | `'circle'` | 图标形状 |
+
+#### xAxis - X 轴配置
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `xAxis.show` | `boolean` | `true` | 是否显示 X 轴 |
+| `xAxis.name` | `string` | `''` | X 轴名称 |
+| `xAxis.labelFontSize` | `number` | `11` | 轴标签字号 |
+| `xAxis.labelRotate` | `number` | `0` | 轴标签旋转角度 (deg) |
+
+#### yAxis - Y 轴配置
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `yAxis.show` | `boolean` | `true` | 是否显示 Y 轴 |
+| `yAxis.name` | `string` | `''` | Y 轴名称 |
+| `yAxis.labelFontSize` | `number` | `11` | 轴标签字号 |
+| `yAxis.min` | `number \| null` | `null` | Y 轴最小值（`null` 为自动） |
+| `yAxis.max` | `number \| null` | `null` | Y 轴最大值（`null` 为自动） |
+| `yAxis.splitLineShow` | `boolean` | `true` | 是否显示分割线 |
+
+#### series - 系列样式
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `series.smooth` | `boolean` | `true` | 折线是否平滑（仅折线图） |
+| `series.symbol` | `string` | `'circle'` | 标记图形（仅折线图） |
+| `series.symbolSize` | `number` | `8` | 标记大小（仅折线图） |
+| `series.barWidth` | `number \| string` | `'50%'` | 柱条宽度（仅柱状图） |
+| `series.barBorderRadius` | `number` | `4` | 柱条圆角半径（仅柱状图） |
+| `series.lineWidth` | `number` | `3` | 折线宽度（仅折线图） |
+| `series.showArea` | `boolean` | `true` | 是否显示面积填充（仅折线图） |
+| `series.showLabel` | `boolean` | `true` | 是否显示数据标签 |
+| `series.labelFontSize` | `number` | `11` | 数据标签字号 |
+
+#### tooltip - 提示框
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `tooltip.show` | `boolean` | `true` | 是否显示提示框 |
+| `tooltip.trigger` | `'axis' \| 'item' \| 'none'` | `'axis'` | 触发方式 |
+
+#### 其他
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `backgroundColor` | `string` | `'transparent'` | 图表背景色 |
+
+### 4.12 分组组件
 
 **对应能力：画布上的【成组】操作**
 
