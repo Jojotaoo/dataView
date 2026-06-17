@@ -26,12 +26,14 @@
           :option="comp.option"
           :width="comp.attr.w"
           :height="comp.attr.h"
+          :chart-style="comp.chartStyle"
         />
         <LineChart
           v-else-if="comp.key === 'LineCommon'"
           :option="comp.option"
           :width="comp.attr.w"
           :height="comp.attr.h"
+          :chart-style="comp.chartStyle"
         />
         <DataFetchManager :component-id="comp.id" mode="preview" />
       </div>

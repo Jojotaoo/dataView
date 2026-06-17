@@ -75,6 +75,7 @@
                 :width="comp.attr.w"
                 :height="comp.attr.h - 32"
                 :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
               />
               <LineChart
                 v-else-if="comp.key === 'LineCommon'"
@@ -82,6 +83,7 @@
                 :width="comp.attr.w"
                 :height="comp.attr.h - 32"
                 :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
               />
             </div>
             <div

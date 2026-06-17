@@ -72,6 +72,75 @@ export const DEFAULT_PREVIEW: PreviewType = {
   overFlowHidden: false,
 }
 
+export interface ChartStyleConfig {
+  grid: {
+    top: number
+    bottom: number
+    left: number
+    right: number
+  }
+  titleStyle: {
+    show: boolean
+    fontSize: number
+    color: string
+    left: number | string
+    top: number | string
+  }
+  legend: {
+    show: boolean
+    orient: 'horizontal' | 'vertical'
+    left: number | string
+    top: number | string
+    fontSize: number
+    icon: 'circle' | 'rect' | 'roundRect' | 'triangle' | 'diamond'
+  }
+  xAxis: {
+    show: boolean
+    name: string
+    labelFontSize: number
+    labelRotate: number
+  }
+  yAxis: {
+    show: boolean
+    name: string
+    labelFontSize: number
+    min: number | null
+    max: number | null
+    splitLineShow: boolean
+  }
+  series: {
+    smooth: boolean
+    symbol: string
+    symbolSize: number
+    barWidth: number | string
+    barBorderRadius: number
+    lineWidth: number
+    showArea: boolean
+    showLabel: boolean
+    labelFontSize: number
+  }
+  tooltip: {
+    show: boolean
+    trigger: 'axis' | 'item' | 'none'
+  }
+  backgroundColor: string
+}
+
+export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
+  grid: { top: 10, bottom: 30, left: 10, right: 10 },
+  titleStyle: { show: true, fontSize: 14, color: '#cdd6f4', left: 'center', top: 8 },
+  legend: { show: true, orient: 'horizontal', left: 'center', top: 38, fontSize: 11, icon: 'circle' },
+  xAxis: { show: true, name: '', labelFontSize: 11, labelRotate: 0 },
+  yAxis: { show: true, name: '', labelFontSize: 11, min: null, max: null, splitLineShow: true },
+  series: {
+    smooth: true, symbol: 'circle', symbolSize: 8,
+    barWidth: '50%', barBorderRadius: 4, lineWidth: 3,
+    showArea: true, showLabel: true, labelFontSize: 11,
+  },
+  tooltip: { show: true, trigger: 'axis' },
+  backgroundColor: 'transparent',
+}
+
 export interface CreateComponentType {
   id: string
   key: string
@@ -86,6 +155,7 @@ export interface CreateComponentType {
   interactActions?: InteractActionItem[]
   request?: RequestConfigType
   option: Record<string, any>
+  chartStyle?: ChartStyleConfig
   groupList?: CreateComponentType[]
 }
 

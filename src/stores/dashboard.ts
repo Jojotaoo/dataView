@@ -12,6 +12,7 @@ import {
   DEFAULT_STYLES,
   DEFAULT_STATUS,
   DEFAULT_PREVIEW,
+  DEFAULT_CHART_STYLE,
 } from '../types'
 import { useIdGenerator } from '../composables/useId'
 import { componentDefinitions } from '../config/componentDefinitions'
@@ -85,6 +86,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       status: { ...DEFAULT_STATUS },
       preview: { ...DEFAULT_PREVIEW },
       option: structuredClone(def.defaultOption),
+      chartStyle: structuredClone(DEFAULT_CHART_STYLE),
       request: {
         requestDataType: 0,
         requestHttpType: 'get',
@@ -226,6 +228,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function updateComponentOption(id: string, key: string, value: any) {
     const comp = findComponent(id)
     if (comp) comp.option[key] = value
+  }
+
+  function updateChartStyle(id: string, path: string, value: any) {
+    const comp = findComponent(id)
+    if (!comp || !comp.chartStyle) return
+    const keys = path.split('.')
+    let target: any = comp.chartStyle
+    for (let i = 0; i < keys.length - 1; i++) {
+      target = target[keys[i]]
+    }
+    target[keys[keys.length - 1]] = value
   }
 
   function toggleComponentStatus(id: string, statusKey: 'lock' | 'hide') {
@@ -429,6 +442,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateComponentAttr,
     updateComponentStyle,
     updateComponentOption,
+    updateChartStyle,
     toggleComponentStatus,
     toggleComponentPreviewOverflow,
     toggleComponentFilterShow,

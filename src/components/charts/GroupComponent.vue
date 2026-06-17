@@ -19,12 +19,14 @@
         :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"
+        :chart-style="(child as any).chartStyle"
       />
       <LineChart
         v-else-if="child.key === 'LineCommon'"
         :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"
+        :chart-style="(child as any).chartStyle"
       />
       <DataFetchManager :component-id="child.id" mode="design" />
     </div>
