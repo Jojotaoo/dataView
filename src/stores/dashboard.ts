@@ -182,6 +182,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  function updateComponentProps(id: string, props: Record<string, any>) {
+    const comp = findComponent(id)
+    if (comp) {
+      comp.props = { ...comp.props, ...props }
+    }
+  }
+
   function updateComponentPosition(id: string, x: number, y: number) {
     const comp = findComponent(id)
     if (comp) {
@@ -456,6 +463,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     groupSelectedComponents,
     ungroupComponent,
     updateComponentProp,
+    updateComponentProps,
     updateComponentPosition,
     updateComponentSize,
     updateCanvasConfig,

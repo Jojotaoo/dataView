@@ -36,6 +36,13 @@
         :height="child.attr.h"
         :chart-style="(child as any).chartStyle"
       />
+      <ScrollList
+        v-else-if="child.key === 'ScrollList'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :scroll-props="(child as any).props"
+      />
       <DataFetchManager :component-id="child.id" mode="preview" />
     </div>
   </div>
@@ -46,6 +53,7 @@ import { computed } from 'vue'
 import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
 import PieChart from './PieChart.vue'
+import ScrollList from './ScrollList.vue'
 import GroupPreview from './GroupPreview.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import type { CreateComponentType } from '../../types'

@@ -814,4 +814,40 @@ interface ChartEditStorage {
 
 > 将多个组件成组后，它们可以一起拖动、缩放。取消成组时会恢复子组件的绝对坐标。
 
+### 4.13 滚动列表
+
+滚动列表是一个纯 HTML/CSS 组件，不依赖 ECharts。数据存储在 `option.dataset` 中，配置存储在 `props` 中。
+
+#### 数据格式
+
+```json
+{
+  "option": {
+    "dataset": {
+      "dimensions": ["排名", "名称", "数值", "状态"],
+      "source": [
+        ["1", "搜索引擎", "1,048", "↑ 12%"],
+        ["2", "社交媒体", "735", "↑ 8%"]
+      ]
+    }
+  }
+}
+```
+
+#### 配置字段（props）
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `scrollSpeed` | `number` | `30` | 滚动速度（px/s），范围 10-100 |
+| `visibleRows` | `number` | `5` | 可见行数，范围 3-15 |
+| `rowHeight` | `number` | `36` | 行高（px），范围 24-60 |
+| `showHeader` | `boolean` | `true` | 是否显示表头 |
+| `headerBg` | `string` | `'#313244'` | 表头背景色 |
+| `headerColor` | `string` | `'#cdd6f4'` | 表头文字颜色 |
+| `zebraOdd` | `string` | `'#1e1e2e'` | 奇数行背景色 |
+| `zebraEven` | `string` | `'#181825'` | 偶数行背景色 |
+| `fontSize` | `number` | `13` | 字号（px） |
+| `textColor` | `string` | `'#cdd6f4'` | 文字颜色 |
+| `highlightColor` | `string` | `'#89b4fa'` | 高亮颜色（预留） |
+
 ---

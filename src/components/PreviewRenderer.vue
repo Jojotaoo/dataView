@@ -42,6 +42,13 @@
           :height="comp.attr.h"
           :chart-style="comp.chartStyle"
         />
+        <ScrollList
+          v-else-if="comp.key === 'ScrollList'"
+          :option="comp.option"
+          :width="comp.attr.w"
+          :height="comp.attr.h"
+          :scroll-props="comp.props"
+        />
         <DataFetchManager :component-id="comp.id" mode="preview" />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -58,6 +65,7 @@ import { useEventListener } from '../composables/useEventListener'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import PieChart from './charts/PieChart.vue'
+import ScrollList from './charts/ScrollList.vue'
 import GroupPreview from './charts/GroupPreview.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'
