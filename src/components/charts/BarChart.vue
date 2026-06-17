@@ -32,6 +32,7 @@ const chartStyleRef = computed(() => props.chartStyle ?? DEFAULT_CHART_STYLE)
 const seriesOption = computed((): SeriesOption => {
   const s = chartStyleRef.value.series
   const dims = optionRef.value.dataset?.dimensions
+  const useColorList = s.colorList.length > 0
   return {
     type: 'bar',
     name: dims?.[1] ?? '',
@@ -39,16 +40,18 @@ const seriesOption = computed((): SeriesOption => {
     barWidth: s.barWidth as any,
     itemStyle: {
       borderRadius: [s.barBorderRadius, s.barBorderRadius, 0, 0],
-      color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-        { offset: 0, color: '#89b4fa' },
-        { offset: 1, color: '#45475a' },
-      ]),
+      ...(useColorList ? {} : {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: s.color },
+          { offset: 1, color: s.colorEnd },
+        ]),
+      }),
     },
     label: s.showLabel
       ? {
           show: true,
           position: 'top',
-          color: '#cdd6f4',
+          color: s.labelColor,
           fontSize: s.labelFontSize,
           formatter: (p: any) => (p.data?.[1] ?? p.value),
         }

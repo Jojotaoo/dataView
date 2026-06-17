@@ -127,6 +127,19 @@
     <div class="section-title">图表样式</div>
     <div class="chart-style-panel">
       <details class="style-section" :open="true">
+        <summary class="style-summary">主题预设</summary>
+        <div class="prop-form">
+          <div class="prop-group">
+            <label class="prop-label">选择主题</label>
+            <select class="prop-select" :value="comp.chartStyle?.themeName ?? 'catppuccin'" @change="onThemeChange">
+              <option v-for="t in CHART_THEMES" :key="t.name" :value="t.name">{{ t.label }}</option>
+            </select>
+          </div>
+          <button class="save-theme-btn" @click="saveCurrentAsCustomTheme">保存为自定义主题</button>
+        </div>
+      </details>
+
+      <details class="style-section" :open="true">
         <summary class="style-summary">布局</summary>
         <div class="prop-grid">
           <div class="prop-group">
@@ -271,6 +284,10 @@
               <option value="diamond">菱形</option>
             </select>
           </div>
+          <div class="prop-group">
+            <label class="prop-label">文字颜色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.legend.textColor" @input="onChartStyle('legend.textColor', ($event.target as HTMLInputElement).value)" />
+          </div>
         </div>
       </details>
 
@@ -295,6 +312,14 @@
           <div class="prop-group">
             <label class="prop-label">标签旋转 ({{ comp.chartStyle?.xAxis.labelRotate }}°)</label>
             <input type="range" min="-90" max="90" step="1" class="prop-range" :value="comp.chartStyle?.xAxis.labelRotate" @input="onChartStyle('xAxis.labelRotate', parseInt(($event.target as HTMLInputElement).value))" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">轴线颜色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.xAxis.lineColor" @input="onChartStyle('xAxis.lineColor', ($event.target as HTMLInputElement).value)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">标签颜色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.xAxis.labelColor" @input="onChartStyle('xAxis.labelColor', ($event.target as HTMLInputElement).value)" />
           </div>
         </div>
       </details>
@@ -331,6 +356,14 @@
               <input type="checkbox" :checked="comp.chartStyle?.yAxis.splitLineShow" @change="onChartStyle('yAxis.splitLineShow', ($event.target as HTMLInputElement).checked)" />
               <span class="switch-slider"></span>
             </label>
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">分割线颜色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.yAxis.splitLineColor" @input="onChartStyle('yAxis.splitLineColor', ($event.target as HTMLInputElement).value)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">标签颜色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.yAxis.labelColor" @input="onChartStyle('yAxis.labelColor', ($event.target as HTMLInputElement).value)" />
           </div>
         </div>
       </details>
@@ -394,6 +427,40 @@
             <label class="prop-label">标签字号</label>
             <input type="number" class="prop-input" :value="comp.chartStyle?.series.labelFontSize" @input="onChartStyle('series.labelFontSize', numVal($event))" />
           </div>
+          <div class="prop-group">
+            <label class="prop-label">系列主色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.series.color" @input="onChartStyle('series.color', ($event.target as HTMLInputElement).value)" />
+          </div>
+          <template v-if="comp.key === 'BarCommon'">
+            <div class="prop-group">
+              <label class="prop-label">渐变结束色</label>
+              <input type="color" class="prop-color" :value="comp.chartStyle?.series.colorEnd" @input="onChartStyle('series.colorEnd', ($event.target as HTMLInputElement).value)" />
+            </div>
+          </template>
+          <template v-if="comp.key === 'LineCommon' && comp.chartStyle?.series.showArea">
+            <div class="prop-group">
+              <label class="prop-label">面积起始透明度 ({{ comp.chartStyle?.series.areaOpacityStart }})</label>
+              <input type="range" min="0" max="1" step="0.05" class="prop-range" :value="comp.chartStyle?.series.areaOpacityStart" @input="onChartStyle('series.areaOpacityStart', parseFloat(($event.target as HTMLInputElement).value))" />
+            </div>
+            <div class="prop-group">
+              <label class="prop-label">面积结束透明度 ({{ comp.chartStyle?.series.areaOpacityEnd }})</label>
+              <input type="range" min="0" max="1" step="0.05" class="prop-range" :value="comp.chartStyle?.series.areaOpacityEnd" @input="onChartStyle('series.areaOpacityEnd', parseFloat(($event.target as HTMLInputElement).value))" />
+            </div>
+          </template>
+          <div class="prop-group">
+            <label class="prop-label">标签颜色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.series.labelColor" @input="onChartStyle('series.labelColor', ($event.target as HTMLInputElement).value)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">调色板</label>
+            <div class="palette-editor">
+              <div v-for="(color, idx) in (comp.chartStyle?.series.colorList ?? [])" :key="idx" class="palette-item">
+                <input type="color" class="prop-color palette-color" :value="color" @input="onPaletteColor(idx, ($event.target as HTMLInputElement).value)" />
+                <button class="palette-remove" @click="removePaletteColor(idx)" :disabled="(comp.chartStyle?.series.colorList?.length ?? 0) <= 1">×</button>
+              </div>
+              <button class="palette-add" @click="addPaletteColor" :disabled="(comp.chartStyle?.series.colorList?.length ?? 0) >= 10">+</button>
+            </div>
+          </div>
         </div>
       </details>
 
@@ -415,12 +482,24 @@
               <option value="none">无</option>
             </select>
           </div>
+          <div class="prop-group">
+            <label class="prop-label">背景色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.tooltip.backgroundColor" @input="onChartStyle('tooltip.backgroundColor', ($event.target as HTMLInputElement).value)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">边框色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.tooltip.borderColor" @input="onChartStyle('tooltip.borderColor', ($event.target as HTMLInputElement).value)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">文字颜色</label>
+            <input type="color" class="prop-color" :value="comp.chartStyle?.tooltip.textColor" @input="onChartStyle('tooltip.textColor', ($event.target as HTMLInputElement).value)" />
+          </div>
         </div>
       </details>
 
       <div class="prop-group" style="margin-top: 8px;">
-        <label class="prop-label">背景色</label>
-        <input type="text" class="prop-input" :value="comp.chartStyle?.backgroundColor" @input="onChartStyle('backgroundColor', ($event.target as HTMLInputElement).value)" />
+        <label class="prop-label">图表背景色</label>
+        <input type="color" class="prop-color" :value="comp.chartStyle?.backgroundColor" @input="onChartStyle('backgroundColor', ($event.target as HTMLInputElement).value)" />
       </div>
     </div>
 
@@ -437,6 +516,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
+import { CHART_THEMES } from '../../config/chartThemes'
 
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)
@@ -484,6 +564,48 @@ function toggleFilterShow() {
   store.toggleComponentFilterShow(store.selectedComponent.id)
 }
 
+function onThemeChange(event: Event) {
+  const themeName = (event.target as HTMLSelectElement).value
+  if (themeName === 'custom') {
+    const custom = store.editCanvasConfig.customTheme
+    if (custom) {
+      store.applyThemeToAll(custom)
+    }
+  } else {
+    const preset = CHART_THEMES.find(t => t.name === themeName)
+    if (preset) {
+      store.applyThemeToAll(preset)
+    }
+  }
+}
+
+function saveCurrentAsCustomTheme() {
+  if (!comp.value?.chartStyle) return
+  const cs = comp.value.chartStyle
+  const customPreset = {
+    name: 'custom',
+    label: '自定义',
+    colors: {
+      titleColor: cs.titleStyle.color,
+      legendTextColor: cs.legend.textColor,
+      axisLineColor: cs.xAxis.lineColor,
+      axisLabelColor: cs.xAxis.labelColor,
+      splitLineColor: cs.yAxis.splitLineColor,
+      seriesColor: cs.series.color,
+      seriesColorEnd: cs.series.colorEnd,
+      seriesColorList: cs.series.colorList,
+      areaOpacityStart: cs.series.areaOpacityStart,
+      areaOpacityEnd: cs.series.areaOpacityEnd,
+      labelColor: cs.series.labelColor,
+      tooltipBg: cs.tooltip.backgroundColor,
+      tooltipBorder: cs.tooltip.borderColor,
+      tooltipTextColor: cs.tooltip.textColor,
+      backgroundColor: cs.backgroundColor,
+    },
+  }
+  store.saveCustomTheme(customPreset)
+}
+
 function numVal(event: Event) {
   return Number((event.target as HTMLInputElement).value)
 }
@@ -519,6 +641,26 @@ function maybeNull(event: Event) {
 function onChartStyle(path: string, value: any) {
   if (!store.selectedComponent) return
   store.updateChartStyle(store.selectedComponent.id, path, value)
+}
+
+function onPaletteColor(idx: number, color: string) {
+  const list = [...(comp.value?.chartStyle?.series.colorList ?? [])]
+  list[idx] = color
+  onChartStyle('series.colorList', list)
+}
+
+function addPaletteColor() {
+  const list = [...(comp.value?.chartStyle?.series.colorList ?? [])]
+  if (list.length >= 10) return
+  list.push('#89b4fa')
+  onChartStyle('series.colorList', list)
+}
+
+function removePaletteColor(idx: number) {
+  const list = [...(comp.value?.chartStyle?.series.colorList ?? [])]
+  if (list.length <= 1) return
+  list.splice(idx, 1)
+  onChartStyle('series.colorList', list)
 }
 </script>
 
@@ -710,5 +852,94 @@ function onChartStyle(path: string, value: any) {
   cursor: pointer;
   width: 44px;
   flex-shrink: 0;
+}
+.prop-color {
+  width: 100%;
+  height: 32px;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  background: #313244;
+  cursor: pointer;
+  padding: 2px;
+}
+.save-theme-btn {
+  width: 100%;
+  padding: 6px 0;
+  background: #89b4fa;
+  border: none;
+  border-radius: 6px;
+  color: #1e1e2e;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.save-theme-btn:hover {
+  background: #b4d0fb;
+}
+.palette-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.palette-color {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #45475a;
+  border-radius: 4px;
+  background: #313244;
+  cursor: pointer;
+  padding: 2px;
+}
+.palette-remove {
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 4px;
+  background: #45475a;
+  color: #cdd6f4;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.palette-remove:hover:not(:disabled) {
+  background: #f38ba8;
+  color: #1e1e2e;
+}
+.palette-remove:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.palette-add {
+  width: 28px;
+  height: 28px;
+  border: 1px dashed #45475a;
+  border-radius: 4px;
+  background: #313244;
+  color: #6c7086;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.palette-add:hover:not(:disabled) {
+  background: #45475a;
+  color: #cdd6f4;
+  border-color: #89b4fa;
+}
+.palette-add:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 </style>

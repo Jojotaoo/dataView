@@ -1,5 +1,6 @@
 import type { RequestConfigType } from './request'
 import type { CreateComponentType } from './component'
+import type { ChartThemePreset } from '../config/chartThemes'
 
 export interface EditCanvasConfigType {
   projectName: string
@@ -14,6 +15,7 @@ export interface EditCanvasConfigType {
   hueRotate: number
   brightness: number
   blendMode: string
+  customTheme: ChartThemePreset | null
 }
 
 export interface DataPondItem {

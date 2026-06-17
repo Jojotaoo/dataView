@@ -17,6 +17,7 @@ import {
 import { useIdGenerator } from '../composables/useId'
 import { componentDefinitions } from '../config/componentDefinitions'
 import { rectsIntersect, findInGroupList, removeFromGroupList } from './utils'
+import { applyTheme, type ChartThemePreset } from '../config/chartThemes'
 
 export const useDashboardStore = defineStore('dashboard', () => {
   const components = ref<CanvasComponent[]>([])
@@ -36,6 +37,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     hueRotate: 0,
     brightness: 1,
     blendMode: 'normal',
+    customTheme: null,
   })
 
   const requestGlobalConfig = ref<RequestGlobalConfigType>({
@@ -241,6 +243,26 @@ export const useDashboardStore = defineStore('dashboard', () => {
     target[keys[keys.length - 1]] = value
   }
 
+  function applyThemeToAll(preset: ChartThemePreset) {
+    function applyToComp(comp: CanvasComponent) {
+      if (comp.chartStyle) {
+        const updated = applyTheme(comp.chartStyle, preset)
+        Object.assign(comp.chartStyle, updated)
+      }
+      comp.groupList?.forEach(child => {
+        if (child.chartStyle) {
+          const updated = applyTheme(child.chartStyle, preset)
+          Object.assign(child.chartStyle, updated)
+        }
+      })
+    }
+    components.value.forEach(applyToComp)
+  }
+
+  function saveCustomTheme(preset: ChartThemePreset) {
+    editCanvasConfig.value.customTheme = preset
+  }
+
   function toggleComponentStatus(id: string, statusKey: 'lock' | 'hide') {
     const comp = findComponent(id)
     if (comp) comp.status[statusKey] = !comp.status[statusKey]
@@ -443,6 +465,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateComponentStyle,
     updateComponentOption,
     updateChartStyle,
+    applyThemeToAll,
+    saveCustomTheme,
     toggleComponentStatus,
     toggleComponentPreviewOverflow,
     toggleComponentFilterShow,

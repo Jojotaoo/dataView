@@ -30,6 +30,7 @@ export function useECharts(
 
     const result: any = {
       backgroundColor: cs.backgroundColor,
+      color: cs.series.colorList.length > 0 ? cs.series.colorList : undefined,
       dataset: [
         {
           dimensions: ds.dimensions ?? [],
@@ -59,7 +60,7 @@ export function useECharts(
         orient: cs.legend.orient,
         left: cs.legend.left,
         top: cs.legend.top,
-        textStyle: { fontSize: cs.legend.fontSize, color: '#cdd6f4' },
+        textStyle: { fontSize: cs.legend.fontSize, color: cs.legend.textColor },
         icon: cs.legend.icon,
       }
     }
@@ -68,8 +69,8 @@ export function useECharts(
       result.xAxis = {
         type: 'category',
         name: cs.xAxis.name || undefined,
-        axisLine: { lineStyle: { color: '#45475a' } },
-        axisLabel: { color: '#a6adc8', fontSize: cs.xAxis.labelFontSize, rotate: cs.xAxis.labelRotate },
+        axisLine: { lineStyle: { color: cs.xAxis.lineColor } },
+        axisLabel: { color: cs.xAxis.labelColor, fontSize: cs.xAxis.labelFontSize, rotate: cs.xAxis.labelRotate },
         axisTick: { alignWithLabel: true },
       }
     }
@@ -80,17 +81,17 @@ export function useECharts(
         name: cs.yAxis.name || undefined,
         min: cs.yAxis.min ?? undefined,
         max: cs.yAxis.max ?? undefined,
-        splitLine: cs.yAxis.splitLineShow ? { lineStyle: { color: '#313244' } } : { show: false },
-        axisLabel: { color: '#a6adc8', fontSize: cs.yAxis.labelFontSize },
+        splitLine: cs.yAxis.splitLineShow ? { lineStyle: { color: cs.yAxis.splitLineColor } } : { show: false },
+        axisLabel: { color: cs.yAxis.labelColor, fontSize: cs.yAxis.labelFontSize },
       }
     }
 
     if (cs.tooltip.show && cs.tooltip.trigger !== 'none') {
       result.tooltip = {
         trigger: cs.tooltip.trigger,
-        backgroundColor: '#313244',
-        borderColor: '#45475a',
-        textStyle: { color: '#cdd6f4', fontSize: 12 },
+        backgroundColor: cs.tooltip.backgroundColor,
+        borderColor: cs.tooltip.borderColor,
+        textStyle: { color: cs.tooltip.textColor, fontSize: 12 },
       }
     }
 

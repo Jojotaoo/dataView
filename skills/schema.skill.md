@@ -493,13 +493,14 @@ interface ChartEditStorage {
 
 ### 4.11 图表样式配置 (chartStyle)
 
-**对应功能：右侧面板中的图表样式配置（标题、图例、坐标轴、系列、提示框等）**
+**对应功能：右侧面板中的图表样式配置（主题预设、标题、图例、坐标轴、系列、提示框等）**
 
 `chartStyle` 是 ECharts 图表组件的样式配置，控制图表的视觉外观。仅对 `chartFrame: 'echarts'` 的组件生效。
 
 ```json
 {
   "chartStyle": {
+    "themeName": "catppuccin",
     "grid": { "top": 10, "bottom": 30, "left": 10, "right": 10 },
     "titleStyle": {
       "show": true,
@@ -514,13 +515,16 @@ interface ChartEditStorage {
       "left": "center",
       "top": 38,
       "fontSize": 11,
-      "icon": "circle"
+      "icon": "circle",
+      "textColor": "#cdd6f4"
     },
     "xAxis": {
       "show": true,
       "name": "",
       "labelFontSize": 11,
-      "labelRotate": 0
+      "labelRotate": 0,
+      "lineColor": "#45475a",
+      "labelColor": "#a6adc8"
     },
     "yAxis": {
       "show": true,
@@ -528,7 +532,9 @@ interface ChartEditStorage {
       "labelFontSize": 11,
       "min": null,
       "max": null,
-      "splitLineShow": true
+      "splitLineShow": true,
+      "splitLineColor": "#313244",
+      "labelColor": "#a6adc8"
     },
     "series": {
       "smooth": true,
@@ -539,13 +545,32 @@ interface ChartEditStorage {
       "lineWidth": 3,
       "showArea": true,
       "showLabel": true,
-      "labelFontSize": 11
+      "labelFontSize": 11,
+      "color": "#89b4fa",
+      "colorEnd": "#45475a",
+      "areaOpacityStart": 0.4,
+      "areaOpacityEnd": 0.02,
+      "labelColor": "#cdd6f4"
     },
-    "tooltip": { "show": true, "trigger": "axis" },
+    "tooltip": {
+      "show": true,
+      "trigger": "axis",
+      "backgroundColor": "#313244",
+      "borderColor": "#45475a",
+      "textColor": "#cdd6f4"
+    },
     "backgroundColor": "transparent"
   }
 }
 ```
+
+#### themeName - 主题预设
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `themeName` | `string` | `'catppuccin'` | 当前主题名称。可选值：`'catppuccin'`、`'dracula'`、`'solarized'`、`'nord'`、`'onedark'`、`'gruvbox'`、`'tokyonight'`、`'rosepine'` |
+
+> 切换主题会批量更新所有组件的颜色配置。
 
 #### grid - 网格间距
 
@@ -578,6 +603,7 @@ interface ChartEditStorage {
 | `legend.top` | `number \| string` | `38` | 垂直位置。预设值：`'top'`/`'middle'`/`'bottom'`；或 px 数值；或百分比字符串如 `'50%'` |
 | `legend.fontSize` | `number` | `11` | 图例字号 |
 | `legend.icon` | `'circle' \| 'rect' \| 'roundRect' \| 'triangle' \| 'diamond'` | `'circle'` | 图标形状 |
+| `legend.textColor` | `string` | `'#cdd6f4'` | 图例文字颜色 |
 
 #### xAxis - X 轴配置
 
@@ -587,6 +613,8 @@ interface ChartEditStorage {
 | `xAxis.name` | `string` | `''` | X 轴名称 |
 | `xAxis.labelFontSize` | `number` | `11` | 轴标签字号 |
 | `xAxis.labelRotate` | `number` | `0` | 轴标签旋转角度 (deg) |
+| `xAxis.lineColor` | `string` | `'#45475a'` | 轴线颜色 |
+| `xAxis.labelColor` | `string` | `'#a6adc8'` | 轴标签颜色 |
 
 #### yAxis - Y 轴配置
 
@@ -598,6 +626,8 @@ interface ChartEditStorage {
 | `yAxis.min` | `number \| null` | `null` | Y 轴最小值（`null` 为自动） |
 | `yAxis.max` | `number \| null` | `null` | Y 轴最大值（`null` 为自动） |
 | `yAxis.splitLineShow` | `boolean` | `true` | 是否显示分割线 |
+| `yAxis.splitLineColor` | `string` | `'#313244'` | 分割线颜色 |
+| `yAxis.labelColor` | `string` | `'#a6adc8'` | 轴标签颜色 |
 
 #### series - 系列样式
 
@@ -612,6 +642,12 @@ interface ChartEditStorage {
 | `series.showArea` | `boolean` | `true` | 是否显示面积填充（仅折线图） |
 | `series.showLabel` | `boolean` | `true` | 是否显示数据标签 |
 | `series.labelFontSize` | `number` | `11` | 数据标签字号 |
+| `series.color` | `string` | `'#89b4fa'` | 系列主色。柱状图为渐变起始色，折线图为线条和数据点颜色 |
+| `series.colorEnd` | `string` | `'#45475a'` | 渐变结束色（仅柱状图） |
+| `series.colorList` | `string[]` | `['#89b4fa', '#f38ba8', '#a6e3a1', '#fab387', '#cba6f7', '#94e2d5', '#f9e2af', '#74c7ec']` | 多色调色板（最多10色）。非空时覆盖 color/colorEnd，ECharts 自动为每个系列分配颜色 |
+| `series.areaOpacityStart` | `number` | `0.4` | 面积填充起始透明度 0-1（仅折线图，showArea=true 时生效） |
+| `series.areaOpacityEnd` | `number` | `0.02` | 面积填充结束透明度 0-1（仅折线图，showArea=true 时生效） |
+| `series.labelColor` | `string` | `'#cdd6f4'` | 数据标签颜色 |
 
 #### tooltip - 提示框
 
@@ -619,6 +655,9 @@ interface ChartEditStorage {
 |------|------|--------|------|
 | `tooltip.show` | `boolean` | `true` | 是否显示提示框 |
 | `tooltip.trigger` | `'axis' \| 'item' \| 'none'` | `'axis'` | 触发方式 |
+| `tooltip.backgroundColor` | `string` | `'#313244'` | 提示框背景色 |
+| `tooltip.borderColor` | `string` | `'#45475a'` | 提示框边框色 |
+| `tooltip.textColor` | `string` | `'#cdd6f4'` | 提示框文字颜色 |
 
 #### 其他
 
