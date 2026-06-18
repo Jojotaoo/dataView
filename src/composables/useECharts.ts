@@ -72,18 +72,17 @@ export function useECharts(
       }
     }
 
-    if (!isPie && !isGeo && cs.xAxis.show) {
+    if (!isPie && !isGeo) {
       result.xAxis = {
+        show: cs.xAxis.show,
         type: 'category',
         name: cs.xAxis.name || undefined,
         axisLine: { lineStyle: { color: cs.xAxis.lineColor } },
         axisLabel: { color: cs.xAxis.labelColor, fontSize: cs.xAxis.labelFontSize, rotate: cs.xAxis.labelRotate },
         axisTick: { alignWithLabel: true },
       }
-    }
-
-    if (!isPie && !isGeo && cs.yAxis.show) {
       result.yAxis = {
+        show: cs.yAxis.show,
         type: 'value',
         name: cs.yAxis.name || undefined,
         min: cs.yAxis.min ?? undefined,
