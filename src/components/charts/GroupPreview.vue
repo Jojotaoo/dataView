@@ -52,6 +52,13 @@
         :chart-style="(child as any).chartStyle"
         geo-key="heilongjiang"
       />
+      <TextDisplay
+        v-else-if="child.key === 'TextDisplay'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :text-props="(child as any).props"
+      />
       <DataFetchManager :component-id="child.id" mode="preview" />
     </div>
   </div>
@@ -64,6 +71,7 @@ import LineChart from './LineChart.vue'
 import PieChart from './PieChart.vue'
 import ScrollList from './ScrollList.vue'
 import MapChart from './MapChart.vue'
+import TextDisplay from './TextDisplay.vue'
 import GroupPreview from './GroupPreview.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import type { CreateComponentType } from '../../types'

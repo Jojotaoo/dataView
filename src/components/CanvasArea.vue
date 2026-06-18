@@ -109,6 +109,13 @@
                 :chart-style="comp.chartStyle"
                 geo-key="heilongjiang"
               />
+              <TextDisplay
+                v-else-if="comp.key === 'TextDisplay'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h - 32"
+                :text-props="comp.props"
+              />
             </div>
             <div
               v-if="!comp.status.lock && comp.key !== 'group'"
@@ -153,6 +160,7 @@ import LineChart from './charts/LineChart.vue'
 import PieChart from './charts/PieChart.vue'
 import ScrollList from './charts/ScrollList.vue'
 import MapChart from './charts/MapChart.vue'
+import TextDisplay from './charts/TextDisplay.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
