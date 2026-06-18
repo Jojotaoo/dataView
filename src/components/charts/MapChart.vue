@@ -85,19 +85,19 @@ function buildOption(): any {
   }
 
   if (s.mapVisualMapShow) {
-    result.visualMap = {
-      min: s.mapVisualMin,
-      max: s.mapVisualMax,
-      text: ['高', '低'],
-      textStyle: { color: s.mapLabelColor },
-      inRange: { color: s.mapVisualColors },
-      show: true,
-      calculable: true,
-      itemWidth: 18,
-      itemHeight: 120,
-      left: 'left',
-      bottom: 30,
-    }
+    // result.visualMap = {
+    //   min: s.mapVisualMin,
+    //   max: s.mapVisualMax,
+    //   text: ['高', '低'],
+    //   textStyle: { color: s.mapLabelColor },
+    //   inRange: { color: s.mapVisualColors },
+    //   show: true,
+    //   calculable: true,
+    //   itemWidth: 18,
+    //   itemHeight: 120,
+    //   left: 'left',
+    //   bottom: 30,
+    // }
   }
 
   result.series = [{
