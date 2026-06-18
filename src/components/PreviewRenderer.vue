@@ -49,6 +49,15 @@
           :height="comp.attr.h"
           :scroll-props="comp.props"
         />
+        <MapChart
+          v-else-if="comp.key === 'HeilongjiangMap'"
+          :option="comp.option"
+          :width="comp.attr.w"
+          :height="comp.attr.h"
+          :bg-color="comp.props?.bgColor"
+          :chart-style="comp.chartStyle"
+          geo-key="heilongjiang"
+        />
         <DataFetchManager :component-id="comp.id" mode="preview" />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -66,6 +75,7 @@ import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import PieChart from './charts/PieChart.vue'
 import ScrollList from './charts/ScrollList.vue'
+import MapChart from './charts/MapChart.vue'
 import GroupPreview from './charts/GroupPreview.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'

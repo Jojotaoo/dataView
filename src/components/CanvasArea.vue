@@ -100,6 +100,15 @@
                 :height="comp.attr.h - 32"
                 :scroll-props="comp.props"
               />
+              <MapChart
+                v-else-if="comp.key === 'HeilongjiangMap'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h - 32"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+                geo-key="heilongjiang"
+              />
             </div>
             <div
               v-if="!comp.status.lock && comp.key !== 'group'"
@@ -143,6 +152,7 @@ import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import PieChart from './charts/PieChart.vue'
 import ScrollList from './charts/ScrollList.vue'
+import MapChart from './charts/MapChart.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'

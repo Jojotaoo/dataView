@@ -133,6 +133,15 @@ export interface ChartStyleConfig {
     pieRadius: number
     pieRoseType: boolean
     pieLabelPosition: 'inside' | 'outside' | 'center'
+    mapRegionColor: string
+    mapRegionBorderColor: string
+    mapRegionHoverColor: string
+    mapLabelShow: boolean
+    mapLabelColor: string
+    mapLabelFontSize: number
+    mapVisualMin: number
+    mapVisualMax: number
+    mapVisualColors: string[]
   }
   tooltip: {
     show: boolean
@@ -160,6 +169,9 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
     areaOpacityStart: 0.4, areaOpacityEnd: 0.02,
     labelColor: '#cdd6f4',
     pieRadius: 0, pieRoseType: false, pieLabelPosition: 'outside',
+    mapRegionColor: '#313244', mapRegionBorderColor: '#45475a', mapRegionHoverColor: '#89b4fa',
+    mapLabelShow: true, mapLabelColor: '#cdd6f4', mapLabelFontSize: 11,
+    mapVisualMin: 0, mapVisualMax: 200, mapVisualColors: ['#313244', '#89b4fa'],
   },
   tooltip: { show: true, trigger: 'axis', backgroundColor: '#313244', borderColor: '#45475a', textColor: '#cdd6f4' },
   backgroundColor: 'transparent',

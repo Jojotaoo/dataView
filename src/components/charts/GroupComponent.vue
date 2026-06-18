@@ -42,6 +42,15 @@
         :height="child.attr.h"
         :scroll-props="(child as any).props"
       />
+      <MapChart
+        v-else-if="child.key === 'HeilongjiangMap'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :bg-color="(child as any).props?.bgColor"
+        :chart-style="(child as any).chartStyle"
+        geo-key="heilongjiang"
+      />
       <DataFetchManager :component-id="child.id" mode="design" />
     </div>
   </div>
@@ -53,6 +62,7 @@ import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
 import PieChart from './PieChart.vue'
 import ScrollList from './ScrollList.vue'
+import MapChart from './MapChart.vue'
 import GroupComponent from './GroupComponent.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import { useDashboardStore } from '../../stores/dashboard'
