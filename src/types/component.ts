@@ -142,6 +142,17 @@ export interface ChartStyleConfig {
     mapVisualMin: number
     mapVisualMax: number
     mapVisualColors: string[]
+    mapVisualMapShow: boolean
+    mapMarkPointShow: boolean
+    mapMarkPointSymbolSize: number
+    mapMarkPointColor: string
+    mapMarkPointLabelShow: boolean
+    mapMarkPointLabelFontSize: number
+    mapSelectColor: string
+    mapSelectLabelColor: string
+    mapMiniMapShow: boolean
+    mapMiniMapWidth: number
+    mapMiniMapHeight: number
   }
   tooltip: {
     show: boolean
@@ -172,6 +183,10 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
     mapRegionColor: '#313244', mapRegionBorderColor: '#45475a', mapRegionHoverColor: '#89b4fa',
     mapLabelShow: true, mapLabelColor: '#cdd6f4', mapLabelFontSize: 11,
     mapVisualMin: 0, mapVisualMax: 200, mapVisualColors: ['#313244', '#89b4fa'],
+    mapVisualMapShow: true, mapMarkPointShow: true, mapMarkPointSymbolSize: 12,
+    mapMarkPointColor: '#e74c3c', mapMarkPointLabelShow: true, mapMarkPointLabelFontSize: 11,
+    mapSelectColor: '#e76f51', mapSelectLabelColor: '#000',
+    mapMiniMapShow: true, mapMiniMapWidth: 150, mapMiniMapHeight: 120,
   },
   tooltip: { show: true, trigger: 'axis', backgroundColor: '#313244', borderColor: '#45475a', textColor: '#cdd6f4' },
   backgroundColor: 'transparent',

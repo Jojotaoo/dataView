@@ -60,6 +60,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (!def) return
 
     const id = generateId()
+    const offset = components.value.length * 30
     const comp: CanvasComponent = {
       id,
       key: def.key,
@@ -78,8 +79,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
       },
       attr: {
         ...DEFAULT_ATTR,
-        x: 50,
-        y: 50,
+        x: 50 + offset,
+        y: 50 + offset,
         w: 400,
         h: 320,
         zIndex: components.value.length,
@@ -110,6 +111,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
     components.value.push(comp)
     selectedId.value = comp.id
+    selectedIds.value = [comp.id]
   }
 
   function removeComponent(id: string) {

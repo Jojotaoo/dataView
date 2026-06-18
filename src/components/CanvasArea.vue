@@ -284,6 +284,7 @@ function componentStyle(comp: CanvasComponent): CSSProperties {
     top: comp.attr.y + 'px',
     width: comp.attr.w + 'px',
     height: comp.attr.h + 'px',
+    zIndex: comp.attr.zIndex,
     opacity: comp.styles.opacity,
     transform: `rotateZ(${comp.styles.rotateZ}deg) rotateX(${comp.styles.rotateX}deg) rotateY(${comp.styles.rotateY}deg) skewX(${comp.styles.skewX}deg) skewY(${comp.styles.skewY}deg)`,
     filter: comp.styles.filterShow
