@@ -49,10 +49,11 @@ const previewSchema = computed((): ChartEditStorage => ({
     chartStyle: c.chartStyle,
     isGroup: c.isGroup,
     groupList: c.groupList ? JSON.parse(JSON.stringify(c.groupList)) : undefined,
-    request: c.request ? JSON.parse(JSON.stringify(c.request)) : undefined,
-    events: c.events ? JSON.parse(JSON.stringify(c.events)) : undefined,
-    interactActions: c.interactActions ? JSON.parse(JSON.stringify(c.interactActions)) : undefined,
-  })),
+      request: c.request ? JSON.parse(JSON.stringify(c.request)) : undefined,
+      events: c.events ? JSON.parse(JSON.stringify(c.events)) : undefined,
+      interactActions: c.interactActions ? JSON.parse(JSON.stringify(c.interactActions)) : undefined,
+      props: c.props ? JSON.parse(JSON.stringify(c.props)) : undefined,
+    })),
 }))
 </script>
 

@@ -34,6 +34,7 @@ const schemaJson = computed(() => {
       request: c.request ? JSON.parse(JSON.stringify(c.request)) : undefined,
       events: c.events ? JSON.parse(JSON.stringify(c.events)) : undefined,
       interactActions: c.interactActions ? JSON.parse(JSON.stringify(c.interactActions)) : undefined,
+      props: c.props ? JSON.parse(JSON.stringify(c.props)) : undefined,
     })),
   }
   return JSON.stringify(storage, null, 2)
