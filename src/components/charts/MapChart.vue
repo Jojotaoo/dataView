@@ -48,6 +48,10 @@ const zoomState = ref<{ center?: [number, number], zoom?: number, animationDurat
 const DEFAULT_CENTER: [number, number] = [126.5, 47.5]
 const DEFAULT_ZOOM = 1.2
 
+if (!echarts.getMap(props.geoKey)) {
+  echarts.registerMap(props.geoKey, GeoJSON)
+}
+
 const seriesOption = computed((): SeriesOption => {
   const cs = chartStyleRef.value ?? DEFAULT_CHART_STYLE
   const s = cs.series
@@ -209,10 +213,6 @@ function debouncedUpdateMiniMapRect() {
 
 onMounted(async () => {
   try {
-    if (!echarts.getMap(props.geoKey)) {
-      echarts.registerMap(props.geoKey, GeoJSON)
-    }
-
     const features: any[] = GeoJSON.features ?? []
     const map = new Map<string, number[]>()
     features.forEach((f: any) => {
