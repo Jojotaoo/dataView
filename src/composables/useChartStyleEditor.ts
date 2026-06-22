@@ -80,6 +80,7 @@ export function useChartStyleEditor() {
         tooltipBorder: cs.tooltip.borderColor,
         tooltipTextColor: cs.tooltip.textColor,
         backgroundColor: cs.backgroundColor,
+        backgroundOpacity: cs.backgroundOpacity,
       },
     }
     store.saveCustomTheme(customPreset)

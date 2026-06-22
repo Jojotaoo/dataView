@@ -1,7 +1,6 @@
 <template>
-  <div class="map-chart" :style="{ backgroundColor: bgColor }">
+  <div class="map-chart" :style="{ backgroundColor: containerBg }">
     <div ref="chartRef" class="map-chart-canvas"></div>
-    <!-- <div ref="miniMapRef" class="map-mini-map"></div> -->
     <button v-if="isZoomed" class="map-back-btn" @click="handleResetView">
       ← 返回全省
     </button>
@@ -9,13 +8,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, toRef, onMounted, onUnmounted, shallowRef, nextTick } from 'vue'
+import { ref, computed, toRef, onMounted, onUnmounted, watch, shallowRef, nextTick } from 'vue'
 import * as echarts from 'echarts'
-import type { SeriesOption } from 'echarts'
 import type { ChartStyleConfig } from '../../types'
 import { DEFAULT_CHART_STYLE } from '../../types'
 import GeoJSON from '../../assets/maps/heilongjiang.json'
-import { useECharts } from '../../composables/useECharts'
 
 const props = withDefaults(defineProps<{
   option?: Record<string, any>
@@ -38,35 +35,88 @@ const widthRef = toRef(props, 'width')
 const heightRef = toRef(props, 'height')
 const chartStyleRef = computed(() => props.chartStyle ?? DEFAULT_CHART_STYLE)
 
-const miniMapRef = ref<HTMLDivElement>()
-const miniChartInstance = shallowRef<echarts.ECharts>()
+const containerBg = computed(() => {
+  const cs = chartStyleRef.value
+  if (cs.backgroundOpacity < 1 && cs.backgroundColor !== 'transparent') {
+    const h = cs.backgroundColor.replace('#', '')
+    const r = parseInt(h.substring(0, 2), 16)
+    const g = parseInt(h.substring(2, 4), 16)
+    const b = parseInt(h.substring(4, 6), 16)
+    return `rgba(${r}, ${g}, ${b}, ${cs.backgroundOpacity})`
+  }
+  return props.bgColor || cs.backgroundColor
+})
+
+const chartRef = ref<HTMLDivElement>()
+const chartInstance = shallowRef<echarts.ECharts>()
+const mapReady = ref(false)
 const isZoomed = ref(false)
 const currentCity = ref('')
 const cityCenterMap = ref(new Map<string, number[]>())
-const zoomState = ref<{ center?: [number, number], zoom?: number, animationDurationUpdate?: number }>({})
 
 const DEFAULT_CENTER: [number, number] = [126.5, 47.5]
 const DEFAULT_ZOOM = 1.2
 
-if (!echarts.getMap(props.geoKey)) {
-  echarts.registerMap(props.geoKey, GeoJSON)
-}
-
-const seriesOption = computed((): SeriesOption => {
+function buildOption(): any {
   const cs = chartStyleRef.value ?? DEFAULT_CHART_STYLE
-  const s = cs.series
   const ds = optionRef.value.dataset ?? { dimensions: [], source: [] }
   const source: any[] = ds.source ?? []
+  const s = cs.series
 
-  return {
+  const result: any = {
+    backgroundColor: cs.backgroundOpacity < 1 ? 'transparent' : cs.backgroundColor,
+  }
+
+  if (cs.titleStyle.show && optionRef.value.title) {
+    result.title = {
+      text: optionRef.value.title,
+      textStyle: { color: cs.titleStyle.color, fontSize: cs.titleStyle.fontSize, fontWeight: 600 },
+      left: cs.titleStyle.left,
+      top: cs.titleStyle.top,
+    }
+  }
+
+  if (cs.tooltip.show && cs.tooltip.trigger !== 'none') {
+    result.tooltip = {
+      trigger: 'item',
+      backgroundColor: cs.tooltip.backgroundColor,
+      borderColor: cs.tooltip.borderColor,
+      textStyle: { color: cs.tooltip.textColor, fontSize: 12 },
+      formatter: (params: any) => {
+        if (params.seriesType !== 'map') return ''
+        if (params.data && params.data.coord) {
+          return `<b>${params.name}</b><br/>数值: ${params.data.value ?? '--'}`
+        }
+        const val = params.value ?? '-'
+        return `<b>${params.name}</b><br/>数值: ${val}`
+      },
+    }
+  }
+
+  if (s.mapVisualMapShow) {
+    result.visualMap = {
+      min: s.mapVisualMin,
+      max: s.mapVisualMax,
+      text: ['高', '低'],
+      textStyle: { color: s.mapLabelColor },
+      inRange: { color: s.mapVisualColors },
+      show: true,
+      calculable: true,
+      itemWidth: 18,
+      itemHeight: 120,
+      left: 'left',
+      bottom: 30,
+    }
+  }
+
+  result.series = [{
     type: 'map',
     map: props.geoKey,
     roam: true,
     scaleLimit: { min: 1, max: 10 },
     selectedMode: 'single',
-    ...zoomState.value,
     label: {
-      show: false,
+      show: s.mapLabelShow,
       color: s.mapLabelColor,
       fontSize: s.mapLabelFontSize,
     },
@@ -107,6 +157,7 @@ const seriesOption = computed((): SeriesOption => {
         fontSize: s.mapMarkPointLabelFontSize,
         fontWeight: 'bold',
         color: s.mapLabelColor,
+        backgroundColor: 'rgba(30,30,46,0.7)',
         padding: [2, 6],
         borderRadius: 4,
         borderColor: s.mapRegionBorderColor,
@@ -118,21 +169,27 @@ const seriesOption = computed((): SeriesOption => {
         coord: item.properties.center,
       })),
     } : undefined,
-  }
-})
+  }]
 
-function tooltipFormatter(params: any): string {
-  if (params.seriesType !== 'map') return ''
-  if (params.data && params.data.coord) {
-    return `<b>${params.name}</b><br/>数值: ${params.data.value ?? '--'}`
-  }
-  const val = params.value ?? '-'
-  return `<b>${params.name}</b><br/>数值: ${val}`
+  return result
 }
 
-const { chartRef, chartInstance } = useECharts(
-  optionRef, widthRef, heightRef, chartStyleRef, seriesOption, 'geo', tooltipFormatter
-)
+function initChart() {
+  if (!chartRef.value || !mapReady.value) return
+  chartInstance.value?.dispose()
+  chartInstance.value = echarts.init(chartRef.value, undefined, { renderer: 'canvas' })
+  chartInstance.value.setOption(buildOption())
+  chartInstance.value.on('click', handleMapClick)
+}
+
+function updateChart() {
+  if (!chartInstance.value || !mapReady.value) return
+  chartInstance.value.setOption(buildOption(), { notMerge: true })
+}
+
+function handleResize() {
+  chartInstance.value?.resize()
+}
 
 function handleMapClick(params: any) {
   if (params.seriesType !== 'map') return
@@ -141,78 +198,36 @@ function handleMapClick(params: any) {
   if (!center) return
 
   if (currentCity.value === name) {
-    zoomState.value = {}
+    updateChart()
     currentCity.value = ''
     isZoomed.value = false
   } else {
-    zoomState.value = { center: center as [number, number], zoom: 5.5, animationDurationUpdate: 800 }
+    chartInstance.value?.setOption({
+      series: [{ center, zoom: 5.5, animationDurationUpdate: 800 }],
+    })
     currentCity.value = name
     isZoomed.value = true
   }
 }
 
 function handleResetView() {
-  zoomState.value = {}
+  updateChart()
   isZoomed.value = false
   currentCity.value = ''
 }
 
-function updateMiniMapRect() {
-  if (!chartInstance.value || !miniChartInstance.value) return
-  if (!chartStyleRef.value?.series.mapMiniMapShow) return
-
-  const width = chartInstance.value.getWidth()
-  const height = chartInstance.value.getHeight()
-  if (width === 0 || height === 0) return
-
-  const topLeft = chartInstance.value.convertFromPixel('series', [0, 0])
-  const topRight = chartInstance.value.convertFromPixel('series', [width, 0])
-  const bottomLeft = chartInstance.value.convertFromPixel('series', [0, height])
-  const bottomRight = chartInstance.value.convertFromPixel('series', [width, height])
-
-  if (!topLeft || !topRight || !bottomLeft || !bottomRight) return
-
-  const lons = [topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]]
-  const lats = [topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]]
-  const lonMin = Math.min(...lons)
-  const lonMax = Math.max(...lons)
-  const latMin = Math.min(...lats)
-  const latMax = Math.max(...lats)
-
-  const p1 = miniChartInstance.value.convertToPixel('series', [lonMin, latMin])
-  const p2 = miniChartInstance.value.convertToPixel('series', [lonMax, latMax])
-  if (!p1 || !p2) return
-
-  const x = Math.min(p1[0], p2[0])
-  const y = Math.min(p1[1], p2[1])
-  const rectWidth = Math.abs(p2[0] - p1[0])
-  const rectHeight = Math.abs(p2[1] - p1[1])
-
-  miniChartInstance.value.setOption({
-    graphic: [{
-      id: 'viewRect',
-      type: 'rect',
-      shape: { x, y, width: rectWidth, height: rectHeight },
-      style: {
-        fill: 'rgba(255, 80, 80, 0.15)',
-        stroke: '#e74c3c',
-        lineWidth: 2,
-        lineDash: [4, 4],
-      },
-      z: 100,
-      silent: true,
-    }],
-  })
-}
-
-let miniMapDebounceTimer: ReturnType<typeof setTimeout> | null = null
-function debouncedUpdateMiniMapRect() {
-  if (miniMapDebounceTimer) clearTimeout(miniMapDebounceTimer)
-  miniMapDebounceTimer = setTimeout(updateMiniMapRect, 100)
-}
+const resizeObserver = new ResizeObserver(handleResize)
 
 onMounted(async () => {
+  if (chartRef.value) {
+    resizeObserver.observe(chartRef.value)
+  }
+
   try {
+    if (!echarts.getMap(props.geoKey)) {
+      echarts.registerMap(props.geoKey, GeoJSON)
+    }
+
     const features: any[] = GeoJSON.features ?? []
     const map = new Map<string, number[]>()
     features.forEach((f: any) => {
@@ -222,22 +237,25 @@ onMounted(async () => {
     })
     cityCenterMap.value = map
 
+    mapReady.value = true
     await nextTick()
-
-    const instance = chartInstance.value
-    if (instance) {
-      instance.on('click', handleMapClick)
-      instance.on('mapRoam', debouncedUpdateMiniMapRect)
-    }
+    initChart()
   } catch (e) {
     console.warn(`[MapChart] GeoJSON for "${props.geoKey}" not found.`, e)
   }
 })
 
 onUnmounted(() => {
-  miniChartInstance.value?.dispose()
-  if (miniMapDebounceTimer) clearTimeout(miniMapDebounceTimer)
+  resizeObserver.disconnect()
+  chartInstance.value?.dispose()
 })
+
+watch(() => [widthRef.value, heightRef.value], () => {
+  requestAnimationFrame(() => chartInstance.value?.resize())
+})
+
+watch(() => optionRef.value, updateChart, { deep: true })
+watch(() => JSON.stringify(chartStyleRef.value), updateChart)
 </script>
 
 <style scoped>
@@ -250,23 +268,6 @@ onUnmounted(() => {
 .map-chart-canvas {
   width: 100%;
   height: 100%;
-}
-.map-mini-map {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  width: 150px;
-  height: 120px;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  z-index: 10;
-  pointer-events: none;
-  overflow: hidden;
-}
-.map-mini-map :deep(canvas) {
-  border-radius: 8px;
 }
 .map-back-btn {
   position: absolute;

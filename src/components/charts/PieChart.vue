@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartRef" class="pie-chart" :style="{ backgroundColor: bgColor }"></div>
+  <div ref="chartRef" class="pie-chart" :style="{ backgroundColor: containerBg }"></div>
 </template>
 
 <script setup lang="ts">
@@ -27,6 +27,18 @@ const optionRef = toRef(props, 'option')
 const widthRef = toRef(props, 'width')
 const heightRef = toRef(props, 'height')
 const chartStyleRef = computed(() => props.chartStyle ?? DEFAULT_CHART_STYLE)
+
+const containerBg = computed(() => {
+  const cs = chartStyleRef.value
+  if (cs.backgroundOpacity < 1 && cs.backgroundColor !== 'transparent') {
+    const h = cs.backgroundColor.replace('#', '')
+    const r = parseInt(h.substring(0, 2), 16)
+    const g = parseInt(h.substring(2, 4), 16)
+    const b = parseInt(h.substring(4, 6), 16)
+    return `rgba(${r}, ${g}, ${b}, ${cs.backgroundOpacity})`
+  }
+  return props.bgColor || cs.backgroundColor
+})
 
 const seriesOption = computed((): SeriesOption => {
   const s = chartStyleRef.value.series

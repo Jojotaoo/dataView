@@ -335,7 +335,7 @@ function handleResizeStart(event: MouseEvent, id: string) {
 
 .canvas-component {
   position: absolute;
-  background: #1e1e2e;
+  background: transparent;
   border: 2px solid #45475a;
   border-radius: 6px;
   display: flex;

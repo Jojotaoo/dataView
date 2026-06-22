@@ -162,6 +162,7 @@ export interface ChartStyleConfig {
     textColor: string
   }
   backgroundColor: string
+  backgroundOpacity: number
 }
 
 export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
@@ -189,7 +190,8 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
     mapMiniMapShow: true, mapMiniMapWidth: 150, mapMiniMapHeight: 120,
   },
   tooltip: { show: true, trigger: 'axis', backgroundColor: '#313244', borderColor: '#45475a', textColor: '#cdd6f4' },
-  backgroundColor: 'transparent',
+  backgroundColor: '#1e1e2e',
+  backgroundOpacity: 1,
 }
 
 export interface CreateComponentType {

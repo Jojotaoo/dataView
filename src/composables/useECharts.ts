@@ -34,7 +34,7 @@ export function useECharts(
     const isGeo = seriesType === 'geo'
 
     const result: any = {
-      backgroundColor: cs.backgroundColor,
+      backgroundColor: cs.backgroundOpacity < 1 ? 'transparent' : cs.backgroundColor,
       color: cs.series.colorList.length > 0 ? cs.series.colorList : undefined,
       series: [seriesOption.value],
     }

@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartRef" class="line-chart" :style="{ backgroundColor: bgColor }"></div>
+  <div ref="chartRef" class="line-chart" :style="{ backgroundColor: containerBg }"></div>
 </template>
 
 <script setup lang="ts">
@@ -75,6 +75,18 @@ const seriesOption = computed((): SeriesOption => {
         }
       : { show: false },
   }
+})
+
+const containerBg = computed(() => {
+  const cs = chartStyleRef.value
+  if (cs.backgroundOpacity < 1 && cs.backgroundColor !== 'transparent') {
+    const h = cs.backgroundColor.replace('#', '')
+    const r = parseInt(h.substring(0, 2), 16)
+    const g = parseInt(h.substring(2, 4), 16)
+    const b = parseInt(h.substring(4, 6), 16)
+    return `rgba(${r}, ${g}, ${b}, ${cs.backgroundOpacity})`
+  }
+  return props.bgColor || cs.backgroundColor
 })
 
 const { chartRef } = useECharts(optionRef, widthRef, heightRef, chartStyleRef, seriesOption)
