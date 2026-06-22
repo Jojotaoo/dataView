@@ -6,6 +6,7 @@
         <div class="prop-group">
           <label class="prop-label">文本内容</label>
           <textarea class="prop-textarea" rows="3" v-model="textContent"></textarea>
+          <span class="prop-hint">支持 <code>{{字段名}}</code> 引用数据源字段</span>
         </div>
         <div class="prop-group">
           <label class="prop-label">字号 ({{ comp.props?.fontSize ?? 32 }}px)</label>
@@ -111,4 +112,17 @@ function onTextProp(key: string, value: any) {
 
 <style>
 @import './shared-form-styles.css';
+.prop-hint {
+  display: block;
+  font-size: 10px;
+  color: var(--ctp-surface1);
+  margin-top: 4px;
+}
+.prop-hint code {
+  background: var(--ctp-surface0);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  color: var(--ctp-blue);
+}
 </style>

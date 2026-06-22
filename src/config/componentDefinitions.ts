@@ -181,6 +181,10 @@ export const componentDefinitions: ComponentDefinition[] = [
     icon: '📝',
     defaultOption: {
       title: '文本内容',
+      dataset: {
+        dimensions: ['字段1', '字段2'],
+        source: [['示例值1', '示例值2']],
+      },
     },
     defaultProps: {
       text: '文本内容',

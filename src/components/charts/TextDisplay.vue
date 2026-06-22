@@ -1,11 +1,11 @@
 <template>
   <div class="text-display" :style="containerStyle">
-    <div class="text-content" :style="textStyle">{{ localText }}</div>
+    <div class="text-content" :style="textStyle">{{ displayText }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
   option?: Record<string, any>
@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<{
   textProps: () => ({}),
 })
 
-const localText = ref('文本内容')
+const rawText = ref('文本内容')
 const localBgColor = ref('transparent')
 const localPadding = ref(12)
 const localFontSize = ref(32)
@@ -33,9 +33,31 @@ const localGradientStart = ref('#89b4fa')
 const localGradientEnd = ref('#cba6f7')
 const localGradientDirection = ref('to right')
 
+function buildDatasetMap(): Record<string, any> {
+  const ds = props.option?.dataset
+  if (!ds?.dimensions || !ds?.source?.length) return {}
+  const row = ds.source[0]
+  const map: Record<string, any> = {}
+  ds.dimensions.forEach((dim: string, i: number) => {
+    map[dim] = row[i]
+  })
+  return map
+}
+
+function replacePlaceholders(text: string, dataMap: Record<string, any>): string {
+  return text.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+    return key in dataMap ? String(dataMap[key]) : `{{${key}}}`
+  })
+}
+
+const displayText = computed(() => {
+  const dataMap = buildDatasetMap()
+  return replacePlaceholders(rawText.value, dataMap)
+})
+
 function syncFromProps() {
   const tp = props.textProps ?? {}
-  localText.value = tp.text ?? props.option?.title ?? '文本内容'
+  rawText.value = tp.text ?? props.option?.title ?? '文本内容'
   localBgColor.value = tp.bgColor ?? 'transparent'
   localPadding.value = tp.padding ?? 12
   localFontSize.value = tp.fontSize ?? 32
@@ -96,7 +118,7 @@ function rebuildStyles() {
   textStyle.value = base
 }
 
-watch([localText, localBgColor, localPadding, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection], rebuildStyles, { immediate: true })
+watch([rawText, localBgColor, localPadding, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection], rebuildStyles, { immediate: true })
 </script>
 
 <style scoped>

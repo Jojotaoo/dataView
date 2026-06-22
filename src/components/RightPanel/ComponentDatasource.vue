@@ -9,6 +9,7 @@
       @updateDatasetCell="updateSourceCell"
       @addDatasetRow="addSourceRow"
       @removeDatasetRow="removeSourceRow"
+      @createDataset="createDataset"
       @testRequest="handleTestRequest"
     />
     <div v-else class="empty-hint">暂无请求配置</div>
@@ -50,6 +51,14 @@ function addSourceRow() {
 function removeSourceRow(ri: number) {
   if (!store.selectedComponent) return
   store.removeOptionDatasetRow(store.selectedComponent.id, ri)
+}
+
+function createDataset() {
+  if (!store.selectedComponent) return
+  store.updateComponentOption(store.selectedComponent.id, 'dataset', {
+    dimensions: ['字段1', '字段2'],
+    source: [['示例值1', '示例值2']],
+  })
 }
 
 async function handleTestRequest() {

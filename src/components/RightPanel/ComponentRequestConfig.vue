@@ -57,7 +57,8 @@
         @remove-row="(ri) => emit('removeDatasetRow', ri)"
       />
       <div v-else class="static-hint">
-        使用静态数据，可直接在下方编辑数据集
+        <p>暂无数据集</p>
+        <button class="create-dataset-btn" @click="emit('createDataset')">创建数据集</button>
       </div>
     </template>
   </div>
@@ -84,6 +85,7 @@ const emit = defineEmits<{
   (e: 'updateDatasetCell', rowIndex: number, colIndex: number, value: string): void
   (e: 'addDatasetRow'): void
   (e: 'removeDatasetRow', rowIndex: number): void
+  (e: 'createDataset'): void
   (e: 'testRequest'): void
 }>()
 
@@ -188,5 +190,20 @@ function updateDataType(value: number) {
   color: #6c7086;
   text-align: center;
   padding: 12px 0;
+}
+.create-dataset-btn {
+  margin-top: 8px;
+  padding: 6px 16px;
+  background: #89b4fa;
+  border: none;
+  border-radius: 6px;
+  color: #1e1e2e;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.create-dataset-btn:hover {
+  background: #74c7ec;
 }
 </style>
