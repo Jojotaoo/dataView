@@ -11,6 +11,7 @@ export function useECharts(
   chartStyle: Ref<ChartStyleConfig>,
   seriesOption: Ref<SeriesOption>,
   seriesType: 'axis' | 'pie' | 'geo' = 'axis',
+  tooltipFormatter?: (params: any) => string,
 ) {
   const chartRef = ref<HTMLDivElement>()
   const chartInstance = shallowRef<echarts.ECharts>()
@@ -98,6 +99,7 @@ export function useECharts(
         backgroundColor: cs.tooltip.backgroundColor,
         borderColor: cs.tooltip.borderColor,
         textStyle: { color: cs.tooltip.textColor, fontSize: 12 },
+        formatter: tooltipFormatter,
       }
     }
 
@@ -142,5 +144,5 @@ export function useECharts(
   watch(() => seriesOption.value, updateChart, { deep: true })
   watch(() => JSON.stringify(chartStyle.value), updateChart)
 
-  return { chartRef }
+  return { chartRef, chartInstance }
 }

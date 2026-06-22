@@ -9,11 +9,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, toRef, onMounted, onUnmounted, watch, shallowRef, nextTick } from 'vue'
+import { ref, computed, toRef, onMounted, onUnmounted, shallowRef, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import type { SeriesOption } from 'echarts'
 import type { ChartStyleConfig } from '../../types'
 import { DEFAULT_CHART_STYLE } from '../../types'
 import GeoJSON from '../../assets/maps/heilongjiang.json'
+import { useECharts } from '../../composables/useECharts'
 
 const props = withDefaults(defineProps<{
   option?: Record<string, any>
@@ -36,78 +38,30 @@ const widthRef = toRef(props, 'width')
 const heightRef = toRef(props, 'height')
 const chartStyleRef = computed(() => props.chartStyle ?? DEFAULT_CHART_STYLE)
 
-const chartRef = ref<HTMLDivElement>()
 const miniMapRef = ref<HTMLDivElement>()
-const chartInstance = shallowRef<echarts.ECharts>()
 const miniChartInstance = shallowRef<echarts.ECharts>()
-const mapReady = ref(false)
 const isZoomed = ref(false)
 const currentCity = ref('')
 const cityCenterMap = ref(new Map<string, number[]>())
+const zoomState = ref<{ center?: [number, number], zoom?: number, animationDurationUpdate?: number }>({})
 
 const DEFAULT_CENTER: [number, number] = [126.5, 47.5]
 const DEFAULT_ZOOM = 1.2
 
-function buildOption(): any {
+const seriesOption = computed((): SeriesOption => {
   const cs = chartStyleRef.value ?? DEFAULT_CHART_STYLE
+  const s = cs.series
   const ds = optionRef.value.dataset ?? { dimensions: [], source: [] }
   const source: any[] = ds.source ?? []
-  const s = cs.series
 
-  const result: any = {
-    backgroundColor: cs.backgroundColor,
-  }
-
-  if (cs.titleStyle.show && optionRef.value.title) {
-    result.title = {
-      text: optionRef.value.title,
-      textStyle: { color: cs.titleStyle.color, fontSize: cs.titleStyle.fontSize, fontWeight: 600 },
-      left: cs.titleStyle.left,
-      top: cs.titleStyle.top,
-    }
-  }
-
-  if (cs.tooltip.show && cs.tooltip.trigger !== 'none') {
-    result.tooltip = {
-      trigger: 'item',
-      backgroundColor: cs.tooltip.backgroundColor,
-      borderColor: cs.tooltip.borderColor,
-      textStyle: { color: cs.tooltip.textColor, fontSize: 12 },
-      formatter: (params: any) => {
-        if (params.seriesType !== 'map') return ''
-        if (params.data && params.data.coord) {
-          return `<b>${params.name}</b><br/>数值: ${params.data.value ?? '--'}`
-        }
-        const val = params.value ?? '-'
-        return `<b>${params.name}</b><br/>数值: ${val}`
-      },
-    }
-  }
-
-  if (s.mapVisualMapShow) {
-    // result.visualMap = {
-    //   min: s.mapVisualMin,
-    //   max: s.mapVisualMax,
-    //   text: ['高', '低'],
-    //   textStyle: { color: s.mapLabelColor },
-    //   inRange: { color: s.mapVisualColors },
-    //   show: true,
-    //   calculable: true,
-    //   itemWidth: 18,
-    //   itemHeight: 120,
-    //   left: 'left',
-    //   bottom: 30,
-    // }
-  }
-
-  result.series = [{
+  return {
     type: 'map',
     map: props.geoKey,
     roam: true,
     scaleLimit: { min: 1, max: 10 },
     selectedMode: 'single',
+    ...zoomState.value,
     label: {
-      // show: s.mapLabelShow,
       show: false,
       color: s.mapLabelColor,
       fontSize: s.mapLabelFontSize,
@@ -149,7 +103,6 @@ function buildOption(): any {
         fontSize: s.mapMarkPointLabelFontSize,
         fontWeight: 'bold',
         color: s.mapLabelColor,
-        // backgroundColor: 'rgba(30,30,46,0.7)',
         padding: [2, 6],
         borderRadius: 4,
         borderColor: s.mapRegionBorderColor,
@@ -161,38 +114,43 @@ function buildOption(): any {
         coord: item.properties.center,
       })),
     } : undefined,
-  }]
+  }
+})
 
-  return result
+function tooltipFormatter(params: any): string {
+  if (params.seriesType !== 'map') return ''
+  if (params.data && params.data.coord) {
+    return `<b>${params.name}</b><br/>数值: ${params.data.value ?? '--'}`
+  }
+  const val = params.value ?? '-'
+  return `<b>${params.name}</b><br/>数值: ${val}`
 }
 
-function initMiniMap() {
-  if (!miniMapRef.value || !mapReady.value) return
-  miniChartInstance.value?.dispose()
-  miniChartInstance.value = echarts.init(miniMapRef.value, undefined, { renderer: 'canvas' })
+const { chartRef, chartInstance } = useECharts(
+  optionRef, widthRef, heightRef, chartStyleRef, seriesOption, 'geo', tooltipFormatter
+)
 
-  const miniOption = {
-    tooltip: { show: false },
-    visualMap: { show: false },
-    series: [{
-      type: 'map',
-      map: props.geoKey,
-      roam: false,
-      center: DEFAULT_CENTER,
-      zoom: DEFAULT_ZOOM,
-      label: { show: false },
-      itemStyle: {
-        areaColor: '#e8edf3',
-        borderColor: '#9aa9b7',
-        borderWidth: 0.8,
-      },
-      emphasis: { disabled: true },
-      data: [],
-    }],
-    graphic: [],
+function handleMapClick(params: any) {
+  if (params.seriesType !== 'map') return
+  const name = params.name as string
+  const center = cityCenterMap.value.get(name)
+  if (!center) return
+
+  if (currentCity.value === name) {
+    zoomState.value = {}
+    currentCity.value = ''
+    isZoomed.value = false
+  } else {
+    zoomState.value = { center: center as [number, number], zoom: 5.5, animationDurationUpdate: 800 }
+    currentCity.value = name
+    isZoomed.value = true
   }
-  miniChartInstance.value.setOption(miniOption)
-  updateMiniMapRect()
+}
+
+function handleResetView() {
+  zoomState.value = {}
+  isZoomed.value = false
+  currentCity.value = ''
 }
 
 function updateMiniMapRect() {
@@ -243,55 +201,13 @@ function updateMiniMapRect() {
   })
 }
 
-function handleMapClick(params: any) {
-  if (params.seriesType !== 'map') return
-  const name = params.name as string
-  const center = cityCenterMap.value.get(name)
-  if (!center) return
-
-  if (currentCity.value === name) {
-    updateChart()
-    currentCity.value = ''
-    isZoomed.value = false
-  } else {
-    chartInstance.value?.setOption({
-      series: [{ center, zoom: 5.5, animationDurationUpdate: 800 }],
-    })
-    currentCity.value = name
-    isZoomed.value = true
-  }
+let miniMapDebounceTimer: ReturnType<typeof setTimeout> | null = null
+function debouncedUpdateMiniMapRect() {
+  if (miniMapDebounceTimer) clearTimeout(miniMapDebounceTimer)
+  miniMapDebounceTimer = setTimeout(updateMiniMapRect, 100)
 }
-
-function handleResetView() {
-  updateChart()
-  isZoomed.value = false
-  currentCity.value = ''
-}
-
-function initChart() {
-  if (!chartRef.value || !mapReady.value) return
-  chartInstance.value?.dispose()
-  chartInstance.value = echarts.init(chartRef.value, undefined, { renderer: 'canvas' })
-  chartInstance.value.setOption(buildOption())
-  chartInstance.value.on('click', handleMapClick)
-  chartInstance.value.on('mapRoam', updateMiniMapRect)
-  chartInstance.value.on('finished', updateMiniMapRect)
-  // initMiniMap()
-}
-
-function handleResize() {
-  chartInstance.value?.resize()
-  miniChartInstance.value?.resize()
-  setTimeout(updateMiniMapRect, 100)
-}
-
-const resizeObserver = new ResizeObserver(handleResize)
 
 onMounted(async () => {
-  if (chartRef.value) {
-    resizeObserver.observe(chartRef.value)
-  }
-
   try {
     if (!echarts.getMap(props.geoKey)) {
       echarts.registerMap(props.geoKey, GeoJSON)
@@ -306,36 +222,22 @@ onMounted(async () => {
     })
     cityCenterMap.value = map
 
-    mapReady.value = true
     await nextTick()
-    initChart()
+
+    const instance = chartInstance.value
+    if (instance) {
+      instance.on('click', handleMapClick)
+      instance.on('mapRoam', debouncedUpdateMiniMapRect)
+    }
   } catch (e) {
     console.warn(`[MapChart] GeoJSON for "${props.geoKey}" not found.`, e)
   }
 })
 
 onUnmounted(() => {
-  resizeObserver.disconnect()
-  chartInstance.value?.dispose()
   miniChartInstance.value?.dispose()
+  if (miniMapDebounceTimer) clearTimeout(miniMapDebounceTimer)
 })
-
-watch(() => [widthRef.value, heightRef.value], () => {
-  requestAnimationFrame(() => {
-    chartInstance.value?.resize()
-    miniChartInstance.value?.resize()
-    setTimeout(updateMiniMapRect, 100)
-  })
-})
-
-function updateChart() {
-  if (!chartInstance.value || !mapReady.value) return
-  chartInstance.value.setOption(buildOption(), { notMerge: true })
-  setTimeout(updateMiniMapRect, 100)
-}
-
-watch(() => optionRef.value, updateChart, { deep: true })
-watch(() => JSON.stringify(chartStyleRef.value), updateChart)
 </script>
 
 <style scoped>
