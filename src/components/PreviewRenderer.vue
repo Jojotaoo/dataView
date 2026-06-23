@@ -80,9 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useEventListener } from '../composables/useEventListener'
+import { useDashboardStore } from '../stores/dashboard'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import PieChart from './charts/PieChart.vue'
@@ -100,6 +101,16 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
 }>()
+
+const store = useDashboardStore()
+
+onMounted(() => {
+  store.setPreviewMode(true)
+})
+
+onUnmounted(() => {
+  store.setPreviewMode(false)
+})
 
 useEventListener(window, 'keydown', (event: Event) => {
   if ((event as KeyboardEvent).key === 'Escape') {

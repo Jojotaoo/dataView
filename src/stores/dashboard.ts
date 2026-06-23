@@ -24,6 +24,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const components = ref<CanvasComponent[]>([])
   const selectedId = ref<string | null>(null)
   const selectedIds = ref<string[]>([])
+  const isPreviewMode = ref(false)
 
   const editCanvasConfig = ref<EditCanvasConfigType>({
     projectName: '可视化大屏',
@@ -177,6 +178,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function clearSelection() {
     selectedIds.value = []
     selectedId.value = null
+  }
+
+  function setPreviewMode(value: boolean) {
+    isPreviewMode.value = value
   }
 
   function updateComponentProp(id: string, key: string, value: any) {
@@ -536,6 +541,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     selectedId,
     selectedIds,
     selectedComponent,
+    isPreviewMode,
     componentDefinitions,
     editCanvasConfig,
     requestGlobalConfig,
@@ -545,6 +551,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     toggleSelectComponent,
     selectComponentsByRect,
     clearSelection,
+    setPreviewMode,
     groupSelectedComponents,
     ungroupComponent,
     updateComponentProp,

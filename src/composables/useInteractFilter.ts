@@ -9,6 +9,8 @@ export function useInteractFilter(
   const store = useDashboardStore()
 
   const filteredSource = computed(() => {
+    if (!store.isPreviewMode) return source.value
+
     const filters = store.interactFilters[componentId.value]
     if (!filters || Object.keys(filters).length === 0) return source.value
 

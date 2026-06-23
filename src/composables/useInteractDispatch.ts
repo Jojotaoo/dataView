@@ -5,6 +5,8 @@ export function useInteractDispatch(componentId: Ref<string>) {
   const store = useDashboardStore()
 
   function dispatch(eventName: string, params: Record<string, any>) {
+    if (!store.isPreviewMode) return
+
     const comp = store.findComponent(componentId.value)
     if (!comp?.events?.interactEvents) return
 
