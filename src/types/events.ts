@@ -12,7 +12,8 @@ export interface AdvancedEventType {
 
 export interface InteractEventItem {
   interactOn: string
-  interactComponentId: string
+  interactComponentId?: string
+  interactComponentIds: string[]
   interactFn: Record<string, string>
 }
 

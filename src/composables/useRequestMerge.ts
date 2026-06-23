@@ -14,7 +14,8 @@ export interface MergedRequestConfig {
 
 export function mergeRequestConfig(
   componentConfig: RequestConfigType,
-  globalConfig: RequestGlobalConfigType
+  globalConfig: RequestGlobalConfigType,
+  interactOverrides?: Record<string, any>
 ): MergedRequestConfig | null {
   if (componentConfig.requestDataType === 0) {
     return null
@@ -30,7 +31,10 @@ export function mergeRequestConfig(
     ...(componentConfig.requestParams?.Header ?? {}),
   }
 
-  const params = componentConfig.requestParams?.Params ?? {}
+  const params = {
+    ...(componentConfig.requestParams?.Params ?? {}),
+    ...(interactOverrides ?? {}),
+  }
 
   const body = getBodyByType(
     componentConfig.requestParamsBodyType ?? 'none',
@@ -153,10 +157,11 @@ export async function doFetch(merged: MergedRequestConfig): Promise<any> {
 
 export async function executeRequest(
   config: RequestConfigType,
-  globalConfig: RequestGlobalConfigType
+  globalConfig: RequestGlobalConfigType,
+  interactOverrides?: Record<string, any>
 ): Promise<any | null> {
   if (config.requestDataType === 0) return null
-  const merged = mergeRequestConfig(config, globalConfig)
+  const merged = mergeRequestConfig(config, globalConfig, interactOverrides)
   if (!merged) return null
   return doFetch(merged)
 }

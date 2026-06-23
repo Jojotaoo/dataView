@@ -206,6 +206,7 @@ export interface CreateComponentType {
   preview: PreviewType
   events?: EventsType
   interactActions?: InteractActionItem[]
+  interactOverrides?: Record<string, any>
   request?: RequestConfigType
   option: Record<string, any>
   chartStyle?: ChartStyleConfig

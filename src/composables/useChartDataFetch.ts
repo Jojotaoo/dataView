@@ -15,6 +15,7 @@ export interface UseChartDataFetchOptions {
   filter: Ref<string | undefined>
   onDataSet: (data: any) => void
   httpClient?: (config: any) => Promise<any>
+  interactOverrides?: Ref<Record<string, any> | undefined>
 }
 
 function defaultHttpClient(config: any): Promise<any> {
@@ -61,7 +62,7 @@ export function useChartDataFetch(options: UseChartDataFetchOptions) {
     error.value = null
 
     try {
-      const merged = mergeRequestConfig(config, globalConfig.value)
+      const merged = mergeRequestConfig(config, globalConfig.value, options.interactOverrides?.value)
       if (!merged) {
         loading.value = false
         return

@@ -6,16 +6,19 @@
 import { computed, toRef } from 'vue'
 import type { SeriesOption } from 'echarts'
 import { useECharts } from '../../composables/useECharts'
+import { useInteractFilter } from '../../composables/useInteractFilter'
 import type { ChartStyleConfig } from '../../types'
 import { DEFAULT_CHART_STYLE } from '../../types'
 
 const props = withDefaults(defineProps<{
+  componentId?: string
   option?: Record<string, any>
   width?: number
   height?: number
   bgColor?: string
   chartStyle?: ChartStyleConfig
 }>(), {
+  componentId: '',
   option: () => ({}),
   width: 400,
   height: 300,
@@ -27,6 +30,20 @@ const optionRef = toRef(props, 'option')
 const widthRef = toRef(props, 'width')
 const heightRef = toRef(props, 'height')
 const chartStyleRef = computed(() => props.chartStyle ?? DEFAULT_CHART_STYLE)
+
+const componentIdRef = toRef(props, 'componentId')
+const dimensions = computed(() => optionRef.value.dataset?.dimensions ?? [])
+const source = computed(() => optionRef.value.dataset?.source ?? [])
+const { filteredSource } = useInteractFilter(componentIdRef, dimensions, source)
+
+const filteredOption = computed(() => {
+  const ds = optionRef.value.dataset
+  if (!ds) return optionRef.value
+  return {
+    ...optionRef.value,
+    dataset: { ...ds, source: filteredSource.value },
+  }
+})
 
 const containerBg = computed(() => {
   const cs = chartStyleRef.value
@@ -43,7 +60,6 @@ const containerBg = computed(() => {
 const seriesOption = computed((): SeriesOption => {
   const s = chartStyleRef.value.series
   const ds = optionRef.value.dataset ?? { dimensions: [], source: [] }
-  const source: any[] = ds.source ?? []
 
   const outerRadius = s.pieRadius > 0 ? '70%' : '70%'
   const innerRadius = s.pieRadius > 0 ? s.pieRadius + '%' : '0%'
@@ -54,7 +70,7 @@ const seriesOption = computed((): SeriesOption => {
     radius: [innerRadius, outerRadius],
     center: ['50%', '55%'],
     roseType: s.pieRoseType ? 'area' : undefined,
-    data: source.map((item: any) => ({
+    data: filteredSource.value.map((item: any) => ({
       name: item?.[0] ?? '',
       value: item?.[1] ?? 0,
     })),
@@ -79,7 +95,7 @@ const seriesOption = computed((): SeriesOption => {
   }
 })
 
-const { chartRef } = useECharts(optionRef, widthRef, heightRef, chartStyleRef, seriesOption, 'pie')
+const { chartRef } = useECharts(filteredOption, widthRef, heightRef, chartStyleRef, seriesOption, 'pie')
 </script>
 
 <style scoped>

@@ -16,6 +16,7 @@ const store = useDashboardStore()
 const comp = computed(() => store.findComponent(props.componentId))
 const request = computed(() => comp.value?.request)
 const globalConfig = computed(() => store.requestGlobalConfig)
+const interactOverrides = computed(() => comp.value?.interactOverrides)
 
 let pollingTimer: ReturnType<typeof setInterval> | null = null
 
@@ -51,14 +52,14 @@ async function fetchData(isPolling = false) {
       if (cached !== undefined) {
         result = cached
       } else {
-        const merged = mergeRequestConfig(source, globalConfig.value)
+        const merged = mergeRequestConfig(source, globalConfig.value, interactOverrides.value)
         if (merged) {
           result = await doFetch(merged)
           setPondCache(pondId, result)
         }
       }
     } else {
-      result = await executeRequest(source, globalConfig.value)
+      result = await executeRequest(source, globalConfig.value, interactOverrides.value)
     }
 
     if (result !== null) {
@@ -114,6 +115,7 @@ if (props.mode === 'preview') {
   onMounted(handleConfigChange)
   watch(request, handleConfigChange, { deep: true })
   watch(globalConfig, handleConfigChange, { deep: true })
+  watch(interactOverrides, handleConfigChange, { deep: true })
 }
 onUnmounted(stopPolling)
 </script>

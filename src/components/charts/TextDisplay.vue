@@ -5,19 +5,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, toRef } from 'vue'
+import { useInteractFilter } from '../../composables/useInteractFilter'
 
 const props = withDefaults(defineProps<{
+  componentId?: string
   option?: Record<string, any>
   width?: number
   height?: number
   textProps?: Record<string, any>
 }>(), {
+  componentId: '',
   option: () => ({}),
   width: 400,
   height: 200,
   textProps: () => ({}),
 })
+
+const componentIdRef = toRef(props, 'componentId')
+const dimensions = computed(() => props.option?.dataset?.dimensions ?? [])
+const source = computed(() => props.option?.dataset?.source ?? [])
+const { filteredSource } = useInteractFilter(componentIdRef, dimensions, source)
 
 const rawText = ref('文本内容')
 const localBgColor = ref('transparent')
@@ -35,8 +43,8 @@ const localGradientDirection = ref('to right')
 
 function buildDatasetMap(): Record<string, any> {
   const ds = props.option?.dataset
-  if (!ds?.dimensions || !ds?.source?.length) return {}
-  const row = ds.source[0]
+  if (!ds?.dimensions || !filteredSource.value.length) return {}
+  const row = filteredSource.value[0]
   const map: Record<string, any> = {}
   ds.dimensions.forEach((dim: string, i: number) => {
     map[dim] = row[i]

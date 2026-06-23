@@ -13,8 +13,10 @@ import * as echarts from 'echarts'
 import type { ChartStyleConfig } from '../../types'
 import { DEFAULT_CHART_STYLE } from '../../types'
 import GeoJSON from '../../assets/maps/heilongjiang.json'
+import { useInteractDispatch } from '../../composables/useInteractDispatch'
 
 const props = withDefaults(defineProps<{
+  componentId?: string
   option?: Record<string, any>
   width?: number
   height?: number
@@ -22,6 +24,7 @@ const props = withDefaults(defineProps<{
   chartStyle?: ChartStyleConfig
   geoKey?: string
 }>(), {
+  componentId: '',
   option: () => ({}),
   width: 400,
   height: 300,
@@ -49,6 +52,9 @@ const containerBg = computed(() => {
 
 const chartRef = ref<HTMLDivElement>()
 const chartInstance = shallowRef<echarts.ECharts>()
+
+const componentIdRef = toRef(props, 'componentId')
+const { dispatch } = useInteractDispatch(componentIdRef)
 const mapReady = ref(false)
 const isZoomed = ref(false)
 const currentCity = ref('')
@@ -208,6 +214,7 @@ function handleMapClick(params: any) {
     currentCity.value = name
     isZoomed.value = true
   }
+  dispatch('click', { name, value: params.value })
 }
 
 function handleResetView() {

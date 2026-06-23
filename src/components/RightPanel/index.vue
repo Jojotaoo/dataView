@@ -14,6 +14,7 @@
 
     <ComponentProps v-show="activeTab === 'props'" v-if="store.selectedComponent" />
     <ComponentDatasource v-show="activeTab === 'datasource'" v-if="store.selectedComponent" />
+    <InteractionPanel v-show="activeTab === 'interact'" v-if="store.selectedComponent" />
     <CanvasConfig v-show="activeTab === 'page'" v-if="!store.selectedComponent" />
     <DataRequest v-show="activeTab === 'request'" v-if="!store.selectedComponent" />
     <SchemaPanel v-show="activeTab === 'schema'" v-if="!store.selectedComponent" />
@@ -25,6 +26,7 @@ import { ref, computed, watch } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import ComponentProps from './ComponentProps.vue'
 import ComponentDatasource from './ComponentDatasource.vue'
+import InteractionPanel from './InteractionPanel.vue'
 import CanvasConfig from './CanvasConfig.vue'
 import DataRequest from './DataRequest.vue'
 import SchemaPanel from './SchemaPanel.vue'
@@ -36,6 +38,7 @@ const tabs = computed(() => {
     return [
       { key: 'props', label: '组件配置' },
       { key: 'datasource', label: '数据源' },
+      { key: 'interact', label: '交互' },
     ]
   }
   return [

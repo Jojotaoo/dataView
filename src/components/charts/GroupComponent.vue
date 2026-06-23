@@ -16,6 +16,7 @@
       />
       <BarChart
         v-else-if="child.key === 'BarCommon'"
+        :component-id="child.id"
         :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"
@@ -23,6 +24,7 @@
       />
       <LineChart
         v-else-if="child.key === 'LineCommon'"
+        :component-id="child.id"
         :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"
@@ -30,6 +32,7 @@
       />
       <PieChart
         v-else-if="child.key === 'PieCommon'"
+        :component-id="child.id"
         :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"
@@ -44,6 +47,7 @@
       />
       <MapChart
         v-else-if="child.key === 'HeilongjiangMap'"
+        :component-id="child.id"
         :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"
@@ -53,6 +57,7 @@
       />
       <TextDisplay
         v-else-if="child.key === 'TextDisplay'"
+        :component-id="child.id"
         :option="child.option"
         :width="child.attr.w"
         :height="child.attr.h"

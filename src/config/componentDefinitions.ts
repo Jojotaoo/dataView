@@ -1,11 +1,59 @@
 import type { ChartConfigType } from '../types'
+import type { InteractActionItem } from '../types/events'
 
 export type ComponentDefinition = ChartConfigType & {
   name: string
   icon: string
   defaultOption: Record<string, any>
   defaultProps: Record<string, any>
+  defaultInteractActions?: InteractActionItem[]
 }
+
+const chartInteractActions: InteractActionItem[] = [
+  {
+    interactType: 'setFilter',
+    interactName: '数据筛选',
+    componentEmitEvents: {},
+  },
+  {
+    interactType: 'clearFilter',
+    interactName: '清除筛选',
+    componentEmitEvents: {},
+  },
+  {
+    interactType: 'setRequestParams',
+    interactName: '修改请求参数',
+    componentEmitEvents: {},
+  },
+  {
+    interactType: 'clearOverrides',
+    interactName: '清除交互参数',
+    componentEmitEvents: {},
+  },
+  {
+    interactType: 'setData',
+    interactName: '设置数据',
+    componentEmitEvents: {},
+  },
+]
+
+const textInteractActions: InteractActionItem[] = [
+  {
+    interactType: 'setFilter',
+    interactName: '数据筛选',
+    componentEmitEvents: {},
+  },
+  {
+    interactType: 'clearFilter',
+    interactName: '清除筛选',
+    componentEmitEvents: {},
+  },
+  {
+    interactType: 'setData',
+    interactName: '设置数据',
+    componentEmitEvents: {},
+  },
+]
 
 export const componentDefinitions: ComponentDefinition[] = [
   {
@@ -35,6 +83,7 @@ export const componentDefinitions: ComponentDefinition[] = [
       },
     },
     defaultProps: {},
+    defaultInteractActions: chartInteractActions,
   },
   {
     key: 'LineCommon',
@@ -63,6 +112,7 @@ export const componentDefinitions: ComponentDefinition[] = [
       },
     },
     defaultProps: {},
+    defaultInteractActions: chartInteractActions,
   },
   {
     key: 'PieCommon',
@@ -90,6 +140,7 @@ export const componentDefinitions: ComponentDefinition[] = [
       },
     },
     defaultProps: {},
+    defaultInteractActions: chartInteractActions,
   },
   {
     key: 'ScrollList',
@@ -166,6 +217,7 @@ export const componentDefinitions: ComponentDefinition[] = [
       },
     },
     defaultProps: {},
+    defaultInteractActions: chartInteractActions,
   },
   {
     key: 'TextDisplay',
@@ -201,5 +253,6 @@ export const componentDefinitions: ComponentDefinition[] = [
       letterSpacing: 0,
       padding: 12,
     },
+    defaultInteractActions: textInteractActions,
   },
 ]

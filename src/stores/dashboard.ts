@@ -14,6 +14,7 @@ import {
   DEFAULT_PREVIEW,
   DEFAULT_CHART_STYLE,
 } from '../types'
+import type { EventsType, InteractActionItem, InteractEventItem } from '../types/events'
 import { useIdGenerator } from '../composables/useId'
 import { componentDefinitions } from '../config/componentDefinitions'
 import { rectsIntersect, findInGroupList, removeFromGroupList } from './utils'
@@ -90,6 +91,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       preview: { ...DEFAULT_PREVIEW },
       option: structuredClone(def.defaultOption),
       chartStyle: structuredClone(DEFAULT_CHART_STYLE),
+      interactActions: def.defaultInteractActions ? structuredClone(def.defaultInteractActions) : [],
       request: {
         requestDataType: 0,
         requestHttpType: 'get',
@@ -448,6 +450,87 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  const interactFilters = ref<Record<string, Record<string, any>>>({})
+
+  function updateComponentEvents(id: string, events: EventsType) {
+    const comp = findComponent(id)
+    if (comp) comp.events = events
+  }
+
+  function updateComponentInteractActions(id: string, actions: InteractActionItem[]) {
+    const comp = findComponent(id)
+    if (comp) comp.interactActions = actions
+  }
+
+  function addInteractEvent(id: string, event: InteractEventItem) {
+    const comp = findComponent(id)
+    if (!comp) return
+    if (!comp.events) comp.events = {}
+    if (!comp.events.interactEvents) comp.events.interactEvents = []
+    comp.events.interactEvents.push(event)
+  }
+
+  function removeInteractEvent(id: string, index: number) {
+    const comp = findComponent(id)
+    if (comp?.events?.interactEvents) {
+      comp.events.interactEvents.splice(index, 1)
+    }
+  }
+
+  function updateInteractEvent(id: string, index: number, patch: Partial<InteractEventItem>) {
+    const comp = findComponent(id)
+    if (comp?.events?.interactEvents?.[index]) {
+      Object.assign(comp.events.interactEvents[index], patch)
+    }
+  }
+
+  function applyInteractAction(targetId: string, method: string, value: any) {
+    if (method === 'setFilter') {
+      const currentFilters = interactFilters.value[targetId] || {}
+      let newFilters: Record<string, any>
+      
+      if (typeof value === 'object' && value !== null) {
+        newFilters = { ...currentFilters, ...value }
+      } else {
+        newFilters = { ...currentFilters, _primary: value }
+      }
+      
+      interactFilters.value = {
+        ...interactFilters.value,
+        [targetId]: newFilters,
+      }
+    } else if (method === 'setData') {
+      const target = findComponent(targetId)
+      if (target) target.option.dataset = value
+    } else if (method === 'clearFilter') {
+      const { [targetId]: _, ...rest } = interactFilters.value
+      interactFilters.value = rest
+    } else if (method === 'setRequestParams') {
+      const target = findComponent(targetId)
+      if (target) {
+        if (!target.interactOverrides) target.interactOverrides = {}
+        Object.assign(target.interactOverrides, value)
+      }
+    } else if (method === 'clearOverrides') {
+      const target = findComponent(targetId)
+      if (target) target.interactOverrides = {}
+    } else if (method === 'setRequestUrl') {
+      const target = findComponent(targetId)
+      if (target?.request) {
+        target.request.requestUrl = value
+      }
+    }
+  }
+
+  function clearInteractFilters(targetId?: string) {
+    if (targetId) {
+      const { [targetId]: _, ...rest } = interactFilters.value
+      interactFilters.value = rest
+    } else {
+      interactFilters.value = {}
+    }
+  }
+
   return {
     components,
     selectedId,
@@ -491,5 +574,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateDataPond,
     removeDataPond,
     updateComponentRequest,
+    interactFilters,
+    updateComponentEvents,
+    updateComponentInteractActions,
+    addInteractEvent,
+    removeInteractEvent,
+    updateInteractEvent,
+    applyInteractAction,
+    clearInteractFilters,
   }
 })
