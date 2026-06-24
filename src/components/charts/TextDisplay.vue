@@ -1,6 +1,7 @@
 <template>
   <div class="text-display" :style="containerStyle">
     <div class="text-content" :style="textStyle">{{ displayText }}</div>
+    <div v-if="displaySubText" class="text-subtitle" :style="subtitleStyle">{{ displaySubText }}</div>
   </div>
 </template>
 
@@ -41,8 +42,20 @@ const localGradientStart = ref('#89b4fa')
 const localGradientEnd = ref('#cba6f7')
 const localGradientDirection = ref('to right')
 
+const rawSubText = ref('')
+const localSubFontSize = ref(16)
+const localSubFontWeight = ref('normal')
+const localSubTextColor = ref('#a6adc8')
+const localSubTextAlign = ref('center')
+const localSubLineHeight = ref(1.5)
+const localTextDefault = ref('')
+const localSubTextDefault = ref('')
+
 function buildDatasetMap(): Record<string, any> {
   const ds = props.option?.dataset
+  if (!('source' in ds) && !('dimensions' in ds)) {
+    return ds
+  } 
   if (!ds?.dimensions || !filteredSource.value.length) return {}
   const row = filteredSource.value[0]
   const map: Record<string, any> = {}
@@ -52,15 +65,23 @@ function buildDatasetMap(): Record<string, any> {
   return map
 }
 
-function replacePlaceholders(text: string, dataMap: Record<string, any>): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (_, key) => {
-    return key in dataMap ? String(dataMap[key]) : `{{${key}}}`
+function replacePlaceholders(text: string, dataMap: Record<string, any>, defaultValue: string = ''): string {
+  return text.replace(/\{\{(.+?)\}\}/g, (_, key) => {
+    const trimmedKey = key.trim()
+    if (trimmedKey in dataMap) return String(dataMap[trimmedKey])
+    return defaultValue || `{{${trimmedKey}}}`
   })
 }
 
 const displayText = computed(() => {
   const dataMap = buildDatasetMap()
-  return replacePlaceholders(rawText.value, dataMap)
+  return replacePlaceholders(rawText.value, dataMap, localTextDefault.value)
+})
+
+const displaySubText = computed(() => {
+  if (!rawSubText.value) return ''
+  const dataMap = buildDatasetMap()
+  return replacePlaceholders(rawSubText.value, dataMap, localSubTextDefault.value)
 })
 
 function syncFromProps() {
@@ -78,6 +99,15 @@ function syncFromProps() {
   localGradientStart.value = tp.gradientStart ?? '#89b4fa'
   localGradientEnd.value = tp.gradientEnd ?? '#cba6f7'
   localGradientDirection.value = tp.gradientDirection ?? 'to right'
+
+  rawSubText.value = tp.subText ?? ''
+  localSubFontSize.value = tp.subFontSize ?? 16
+  localSubFontWeight.value = tp.subFontWeight ?? 'normal'
+  localSubTextColor.value = tp.subTextColor ?? '#a6adc8'
+  localSubTextAlign.value = tp.subTextAlign ?? 'center'
+  localSubLineHeight.value = tp.subLineHeight ?? 1.5
+  localTextDefault.value = tp.textDefault ?? ''
+  localSubTextDefault.value = tp.subTextDefault ?? ''
 }
 
 watch(() => props.textProps, syncFromProps, { deep: true, immediate: true })
@@ -85,12 +115,14 @@ watch(() => props.option, syncFromProps, { deep: true, immediate: true })
 
 const containerStyle = ref({})
 const textStyle = ref({})
+const subtitleStyle = ref({})
 
 function rebuildStyles() {
   containerStyle.value = {
     backgroundColor: localBgColor.value,
     padding: `${localPadding.value}px`,
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
@@ -124,9 +156,20 @@ function rebuildStyles() {
   }
 
   textStyle.value = base
+
+  subtitleStyle.value = {
+    fontSize: `${localSubFontSize.value}px`,
+    fontWeight: localSubFontWeight.value,
+    textAlign: localSubTextAlign.value,
+    lineHeight: localSubLineHeight.value,
+    color: localSubTextColor.value,
+    marginTop: '8px',
+    width: '100%',
+    wordBreak: 'break-word' as const,
+  }
 }
 
-watch([rawText, localBgColor, localPadding, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection], rebuildStyles, { immediate: true })
+watch([rawText, localBgColor, localPadding, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection, rawSubText, localSubFontSize, localSubFontWeight, localSubTextColor, localSubTextAlign, localSubLineHeight, localTextDefault, localSubTextDefault], rebuildStyles, { immediate: true })
 </script>
 
 <style scoped>
@@ -137,6 +180,9 @@ watch([rawText, localBgColor, localPadding, localFontSize, localFontWeight, loca
   border-radius: 8px;
 }
 .text-content {
+  user-select: none;
+}
+.text-subtitle {
   user-select: none;
 }
 </style>

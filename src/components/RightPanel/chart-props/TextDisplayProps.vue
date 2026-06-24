@@ -9,6 +9,10 @@
           <span class="prop-hint">支持 <code>{{字段名}}</code> 引用数据源字段</span>
         </div>
         <div class="prop-group">
+          <label class="prop-label">主标题默认值</label>
+          <input type="text" class="prop-input" v-model="textDefaultContent" placeholder="未匹配字段时显示" />
+        </div>
+        <div class="prop-group">
           <label class="prop-label">字号 ({{ comp.props?.fontSize ?? 32 }}px)</label>
           <input type="range" min="12" max="72" step="1" class="prop-range" :value="comp.props?.fontSize ?? 32" @input="onTextProp('fontSize', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
@@ -45,6 +49,54 @@
         <div class="prop-group">
           <label class="prop-label">内边距 ({{ comp.props?.padding ?? 12 }}px)</label>
           <input type="range" min="0" max="48" step="1" class="prop-range" :value="comp.props?.padding ?? 12" @input="onTextProp('padding', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+      </div>
+    </details>
+    <details class="style-section" :open="true">
+      <summary class="style-summary">副标题</summary>
+      <div class="prop-form" style="padding: 8px;">
+        <div class="prop-group">
+          <label class="prop-label">副标题内容</label>
+          <textarea class="prop-textarea" rows="2" v-model="subTextContent"></textarea>
+          <span class="prop-hint">支持 <code>{{字段名}}</code> 引用数据源字段</span>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">副标题默认值</label>
+          <input type="text" class="prop-input" v-model="subTextDefaultContent" placeholder="未匹配字段时显示" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">字号 ({{ comp.props?.subFontSize ?? 16 }}px)</label>
+          <input type="range" min="10" max="48" step="1" class="prop-range" :value="comp.props?.subFontSize ?? 16" @input="onTextProp('subFontSize', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">字重</label>
+          <select class="prop-select" :value="comp.props?.subFontWeight ?? 'normal'" @change="onTextProp('subFontWeight', ($event.target as HTMLSelectElement).value)">
+            <option value="normal">Normal</option>
+            <option value="bold">Bold</option>
+            <option value="300">300</option>
+            <option value="400">400</option>
+            <option value="500">500</option>
+            <option value="600">600</option>
+            <option value="700">700</option>
+            <option value="800">800</option>
+            <option value="900">900</option>
+          </select>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">对齐</label>
+          <select class="prop-select" :value="comp.props?.subTextAlign ?? 'center'" @change="onTextProp('subTextAlign', ($event.target as HTMLSelectElement).value)">
+            <option value="left">左对齐</option>
+            <option value="center">居中</option>
+            <option value="right">右对齐</option>
+          </select>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">行高 ({{ comp.props?.subLineHeight ?? 1.5 }})</label>
+          <input type="range" min="1" max="3" step="0.1" class="prop-range" :value="comp.props?.subLineHeight ?? 1.5" @input="onTextProp('subLineHeight', parseFloat(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">副标题颜色</label>
+          <input type="color" class="prop-color" :value="comp.props?.subTextColor ?? '#a6adc8'" @input="onTextProp('subTextColor', ($event.target as HTMLInputElement).value)" />
         </div>
       </div>
     </details>
@@ -101,6 +153,21 @@ const comp = computed(() => store.selectedComponent!)
 const textContent = computed({
   get: () => comp.value?.props?.text ?? '文本内容',
   set: (val: string) => onTextProp('text', val),
+})
+
+const subTextContent = computed({
+  get: () => comp.value?.props?.subText ?? '',
+  set: (val: string) => onTextProp('subText', val),
+})
+
+const textDefaultContent = computed({
+  get: () => comp.value?.props?.textDefault ?? '',
+  set: (val: string) => onTextProp('textDefault', val),
+})
+
+const subTextDefaultContent = computed({
+  get: () => comp.value?.props?.subTextDefault ?? '',
+  set: (val: string) => onTextProp('subTextDefault', val),
 })
 
 function onTextProp(key: string, value: any) {
