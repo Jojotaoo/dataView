@@ -17,9 +17,9 @@
             <label class="prop-label">触发事件</label>
             <select class="prop-select" v-model="item.interactOn">
               <option value="click">点击</option>
-              <option value="dblclick">双击</option>
+              <!-- <option value="dblclick">双击</option>
               <option value="mouseenter">鼠标移入</option>
-              <option value="mouseleave">鼠标移出</option>
+              <option value="mouseleave">鼠标移出</option> -->
             </select>
           </div>
 

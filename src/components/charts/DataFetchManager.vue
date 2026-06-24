@@ -19,6 +19,7 @@ const globalConfig = computed(() => store.requestGlobalConfig)
 const interactOverrides = computed(() => comp.value?.interactOverrides)
 
 let pollingTimer: ReturnType<typeof setInterval> | null = null
+let fetchSeq = 0
 
 function getRequestSource(): RequestConfigType | null {
   const config = request.value
@@ -35,7 +36,7 @@ function getPondId(): string | null {
   return request.value?.requestDataType === 2 ? (request.value.requestDataPondId ?? null) : null
 }
 
-async function fetchData(isPolling = false) {
+async function fetchData(isPolling = false, forceFresh = false) {
   const config = request.value
   if (!config || config.requestDataType === 0) return
 
@@ -47,9 +48,9 @@ async function fetchData(isPolling = false) {
     let result: any | null = null
 
     if (pondId) {
-      if (isPolling) clearPondCache(pondId)
+      if (isPolling || forceFresh) clearPondCache(pondId)
       const cached = getPondCache(pondId)
-      if (cached !== undefined) {
+      if (cached !== undefined && !forceFresh) {
         result = cached
       } else {
         const merged = mergeRequestConfig(source, globalConfig.value, interactOverrides.value)
@@ -103,10 +104,12 @@ function toMilliseconds(interval: number, unit: string): number {
   return interval * (map[unit] ?? 1000)
 }
 
-function handleConfigChange() {
+async function handleConfigChange() {
   stopPolling()
   if (props.mode === 'preview' && request.value && request.value.requestDataType !== 0) {
-    fetchData()
+    const seq = ++fetchSeq
+    await fetchData(false, true)
+    if (seq !== fetchSeq) return
     startPolling()
   }
 }

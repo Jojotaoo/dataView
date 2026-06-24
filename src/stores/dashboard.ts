@@ -491,6 +491,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
   function applyInteractAction(targetId: string, method: string, value: any) {
     if (method === 'setFilter') {
+      // 数据过滤
       const currentFilters = interactFilters.value[targetId] || {}
       let newFilters: Record<string, any>
       
@@ -511,6 +512,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       const { [targetId]: _, ...rest } = interactFilters.value
       interactFilters.value = rest
     } else if (method === 'setRequestParams') {
+      // 设置请求参数
       const target = findComponent(targetId)
       if (target) {
         if (!target.interactOverrides) target.interactOverrides = {}

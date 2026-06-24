@@ -14,6 +14,7 @@ import type { ChartStyleConfig } from '../../types'
 import { DEFAULT_CHART_STYLE } from '../../types'
 import GeoJSON from '../../assets/maps/heilongjiang.json'
 import { useInteractDispatch } from '../../composables/useInteractDispatch'
+import { useInteractClear } from '../../composables/useInteractClear'
 
 const props = withDefaults(defineProps<{
   componentId?: string
@@ -55,6 +56,7 @@ const chartInstance = shallowRef<echarts.ECharts>()
 
 const componentIdRef = toRef(props, 'componentId')
 const { dispatch } = useInteractDispatch(componentIdRef)
+const { clearTargetInteractions } = useInteractClear()
 const mapReady = ref(false)
 const isZoomed = ref(false)
 const currentCity = ref('')
@@ -118,7 +120,7 @@ function buildOption(): any {
   result.series = [{
     type: 'map',
     map: props.geoKey,
-    roam: true,
+    roam: false, // 不允许缩放控制，设置为不允许缩放
     scaleLimit: { min: 1, max: 10 },
     selectedMode: 'single',
     label: {
@@ -203,10 +205,13 @@ function handleMapClick(params: any) {
   const center = cityCenterMap.value.get(name)
   if (!center) return
 
+  clearTargetInteractions(componentIdRef.value)
+
   if (currentCity.value === name) {
     updateChart()
     currentCity.value = ''
     isZoomed.value = false
+    return
   } else {
     chartInstance.value?.setOption({
       series: [{ center, zoom: 5.5, animationDurationUpdate: 800 }],
@@ -221,6 +226,7 @@ function handleResetView() {
   updateChart()
   isZoomed.value = false
   currentCity.value = ''
+  clearTargetInteractions(componentIdRef.value)
 }
 
 const resizeObserver = new ResizeObserver(handleResize)
