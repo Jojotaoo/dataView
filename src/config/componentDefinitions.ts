@@ -21,8 +21,8 @@ const chartInteractActions: InteractActionItem[] = [
     componentEmitEvents: {},
   },
   {
-    interactType: 'setRequestParams',
-    interactName: '修改请求参数',
+    interactType: 'setRequestConfig',
+    interactName: '修改请求配置',
     componentEmitEvents: {},
   },
   {
@@ -46,6 +46,11 @@ const textInteractActions: InteractActionItem[] = [
   {
     interactType: 'clearFilter',
     interactName: '清除筛选',
+    componentEmitEvents: {},
+  },
+  {
+    interactType: 'setRequestConfig',
+    interactName: '修改请求配置',
     componentEmitEvents: {},
   },
   {

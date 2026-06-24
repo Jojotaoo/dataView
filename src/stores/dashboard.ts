@@ -489,22 +489,26 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  function ensureStructuredOverrides(target: any) {
+    if (!target.interactOverrides) {
+      target.interactOverrides = { params: {}, body: {} }
+      return
+    }
+    if (!target.interactOverrides.params && !target.interactOverrides.body) {
+      target.interactOverrides = { params: target.interactOverrides, body: {} }
+    }
+  }
+
   function applyInteractAction(targetId: string, method: string, value: any) {
     if (method === 'setFilter') {
-      // 数据过滤
       const currentFilters = interactFilters.value[targetId] || {}
       let newFilters: Record<string, any>
-      
       if (typeof value === 'object' && value !== null) {
         newFilters = { ...currentFilters, ...value }
       } else {
         newFilters = { ...currentFilters, _primary: value }
       }
-      
-      interactFilters.value = {
-        ...interactFilters.value,
-        [targetId]: newFilters,
-      }
+      interactFilters.value = { ...interactFilters.value, [targetId]: newFilters }
     } else if (method === 'setData') {
       const target = findComponent(targetId)
       if (target) target.option.dataset = value
@@ -512,15 +516,20 @@ export const useDashboardStore = defineStore('dashboard', () => {
       const { [targetId]: _, ...rest } = interactFilters.value
       interactFilters.value = rest
     } else if (method === 'setRequestParams') {
-      // 设置请求参数
       const target = findComponent(targetId)
       if (target) {
-        if (!target.interactOverrides) target.interactOverrides = {}
-        Object.assign(target.interactOverrides, value)
+        ensureStructuredOverrides(target)
+        Object.assign(target.interactOverrides!.params, value)
+      }
+    } else if (method === 'setRequestBody') {
+      const target = findComponent(targetId)
+      if (target) {
+        ensureStructuredOverrides(target)
+        Object.assign(target.interactOverrides!.body, value)
       }
     } else if (method === 'clearOverrides') {
       const target = findComponent(targetId)
-      if (target) target.interactOverrides = {}
+      if (target) target.interactOverrides = { params: {}, body: {} }
     } else if (method === 'setRequestUrl') {
       const target = findComponent(targetId)
       if (target?.request) {

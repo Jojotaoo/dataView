@@ -17,9 +17,6 @@
             <label class="prop-label">触发事件</label>
             <select class="prop-select" v-model="item.interactOn">
               <option value="click">点击</option>
-              <!-- <option value="dblclick">双击</option>
-              <option value="mouseenter">鼠标移入</option>
-              <option value="mouseleave">鼠标移出</option> -->
             </select>
           </div>
 
@@ -46,54 +43,102 @@
             <label class="prop-label">执行动作</label>
             <select class="prop-select" v-model="item._method">
               <option value="setFilter">筛选数据</option>
-              <option value="setRequestParams">修改请求参数</option>
+              <option value="setRequestConfig">修改请求配置</option>
               <option value="setData">设置数据</option>
               <option value="clearFilter">清除筛选</option>
               <option value="clearOverrides">清除交互参数</option>
             </select>
           </div>
 
-          <div class="prop-group row" v-if="item._method === 'setFilter'">
-            <label class="prop-label">筛选字段</label>
-            <select class="prop-select" v-model="item._filterKey">
-              <option value="">请选择</option>
-              <option v-for="dim in getTargetDimensions(item.interactComponentIds)" :key="dim" :value="dim">
-                {{ dim }}
-              </option>
-            </select>
-          </div>
-
-          <div class="prop-group row" v-if="item._method === 'setFilter'">
-            <label class="prop-label">取值来源</label>
-            <select class="prop-select" v-model="item._valueSource">
-              <option value="name">点击项的名称</option>
-              <option value="value">点击项的值</option>
-              <option value="data">点击项的数据</option>
-              <option value="custom">自定义字段</option>
-            </select>
-          </div>
-
-          <div class="prop-group row" v-if="item._method === 'setFilter' && item._valueSource === 'custom'">
-            <label class="prop-label">字段名</label>
-            <input class="prop-input" v-model="item._customField" placeholder="如: city" />
-          </div>
-
-          <div class="prop-group" v-if="item._method === 'setRequestParams'">
-            <label class="prop-label">请求参数</label>
-            <div class="kv-row">
-              <input class="prop-input kv-key" placeholder="参数名" v-model="item._paramKey" />
-              <input class="prop-input kv-val" placeholder="取值来源" v-model="item._paramValue" />
+          <!-- setFilter 配置 -->
+          <template v-if="item._method === 'setFilter'">
+            <div class="prop-group row">
+              <label class="prop-label">筛选字段</label>
+              <select class="prop-select" v-model="item._filterKey">
+                <option value="">请选择</option>
+                <option v-for="dim in getTargetDimensions(item.interactComponentIds)" :key="dim" :value="dim">
+                  {{ dim }}
+                </option>
+              </select>
             </div>
-            <span class="prop-hint">取值来源: name / value / data / 自定义字段</span>
-          </div>
-
-          <div class="prop-group" v-if="item._method === 'setData'">
-            <label class="prop-label">数据字段</label>
-            <div class="kv-row">
-              <input class="prop-input kv-key" placeholder="字段名" v-model="item._dataKey" />
-              <input class="prop-input kv-val" placeholder="取值来源" v-model="item._dataValue" />
+            <div class="prop-group row">
+              <label class="prop-label">取值来源</label>
+              <select class="prop-select" v-model="item._valueSource">
+                <option value="name">点击项的名称</option>
+                <option value="value">点击项的值</option>
+                <option value="data">点击项的数据</option>
+                <option value="custom">自定义字段</option>
+              </select>
             </div>
-          </div>
+            <div class="prop-group row" v-if="item._valueSource === 'custom'">
+              <label class="prop-label">字段名</label>
+              <input class="prop-input" v-model="item._customField" placeholder="如: city" />
+            </div>
+          </template>
+
+          <!-- setRequestConfig 配置：同时显示查询参数和请求体 -->
+          <template v-if="item._method === 'setRequestConfig'">
+            <!-- 查询参数 -->
+            <div class="override-section">
+              <div class="override-section-header">查询参数</div>
+              <div v-if="!item._paramRows || item._paramRows.length === 0" class="static-hint-sm">
+                点击下方按钮添加参数
+              </div>
+              <div v-for="(row, ri) in item._paramRows" :key="ri" class="override-row">
+                <input class="prop-input override-key" placeholder="参数名" v-model="row.key" />
+                <select class="prop-select override-val" v-model="row.valueSource">
+                  <option value="name">维度值</option>
+                  <option value="value">指标值</option>
+                  <option value="data">完整数据</option>
+                  <option value="custom">自定义</option>
+                </select>
+                <input v-if="row.valueSource === 'custom'" class="prop-input override-custom"
+                       v-model="row.customField" placeholder="字段名" />
+                <button class="kv-remove" @click="removeParamRow(item, ri)">×</button>
+              </div>
+              <button class="add-row-btn" @click="addParamRow(item)">+ 添加参数</button>
+            </div>
+
+            <!-- 请求体 -->
+            <div class="override-section">
+              <div class="override-section-header">
+                请求体
+                <span class="body-type-hint">({{ getBodyTypeLabel(comp) }})</span>
+              </div>
+              <div v-if="isUnsupportedBodyType(comp)" class="static-hint-sm warn">
+                json/xml 类型暂不支持交互修改，仅 form-data/urlencoded 生效
+              </div>
+              <template v-else>
+                <div v-if="!item._bodyRows || item._bodyRows.length === 0" class="static-hint-sm">
+                  点击下方按钮添加字段
+                </div>
+                <div v-for="(row, ri) in item._bodyRows" :key="ri" class="override-row">
+                  <input class="prop-input override-key" placeholder="字段名" v-model="row.key" />
+                  <select class="prop-select override-val" v-model="row.valueSource">
+                    <option value="name">维度值</option>
+                    <option value="value">指标值</option>
+                    <option value="data">完整数据</option>
+                    <option value="custom">自定义</option>
+                  </select>
+                  <input v-if="row.valueSource === 'custom'" class="prop-input override-custom"
+                         v-model="row.customField" placeholder="字段名" />
+                  <button class="kv-remove" @click="removeBodyRow(item, ri)">×</button>
+                </div>
+                <button class="add-row-btn" @click="addBodyRow(item)">+ 添加字段</button>
+              </template>
+            </div>
+          </template>
+
+          <!-- setData 配置 -->
+          <template v-if="item._method === 'setData'">
+            <div class="prop-group">
+              <label class="prop-label">数据字段</label>
+              <div class="kv-row">
+                <input class="prop-input kv-key" placeholder="字段名" v-model="item._dataKey" />
+                <input class="prop-input kv-val" placeholder="取值来源" v-model="item._dataValue" />
+              </div>
+            </div>
+          </template>
         </div>
 
         <button class="add-btn" @click="addInteract">+ 添加交互</button>
@@ -120,6 +165,12 @@
 import { ref, computed, watchEffect } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 
+interface OverrideRow {
+  key: string
+  valueSource: string
+  customField: string
+}
+
 interface InteractEventItemUI {
   interactOn: string
   interactComponentIds: string[]
@@ -132,6 +183,8 @@ interface InteractEventItemUI {
   _paramValue: string
   _dataKey: string
   _dataValue: string
+  _paramRows: OverrideRow[]
+  _bodyRows: OverrideRow[]
 }
 
 const store = useDashboardStore()
@@ -181,16 +234,68 @@ function resolveValueSource(valueSource: string, customField: string): string {
   return `params.${valueSource}`
 }
 
+function getBodyTypeLabel(c: any): string {
+  const t = c?.request?.requestParamsBodyType ?? 'none'
+  if (t === 'form-data') return 'form-data'
+  if (t === 'x-www-form-urlencoded') return 'x-www-form-urlencoded'
+  return t
+}
+
+function canEditBody(c: any): boolean {
+  const t = c?.request?.requestParamsBodyType
+  return t === 'form-data' || t === 'x-www-form-urlencoded'
+}
+
+function isUnsupportedBodyType(c: any): boolean {
+  const t = c?.request?.requestParamsBodyType
+  return t === 'json' || t === 'xml'
+}
+
+function ensureRows(item: InteractEventItemUI) {
+  if (!item._paramRows) item._paramRows = []
+  if (!item._bodyRows) item._bodyRows = []
+}
+
+function addParamRow(item: InteractEventItemUI) {
+  ensureRows(item)
+  item._paramRows.push({ key: '', valueSource: 'name', customField: '' })
+}
+
+function removeParamRow(item: InteractEventItemUI, index: number) {
+  item._paramRows.splice(index, 1)
+}
+
+function addBodyRow(item: InteractEventItemUI) {
+  ensureRows(item)
+  item._bodyRows.push({ key: '', valueSource: 'name', customField: '' })
+}
+
+function removeBodyRow(item: InteractEventItemUI, index: number) {
+  item._bodyRows.splice(index, 1)
+}
+
 function buildInteractFn(item: InteractEventItemUI): Record<string, string> {
   const method = item._method || 'setFilter'
   if (method === 'setFilter') {
     const expr = resolveValueSource(item._valueSource || 'name', item._customField || '')
     const key = item._filterKey || '_primary'
     return { setFilter: key === '_primary' ? expr : `{ ${key}: ${expr} }` }
-  } else if (method === 'setRequestParams') {
-    const key = item._paramKey || 'param'
-    const val = item._paramValue || 'name'
-    return { setRequestParams: `{ ${key}: params.${val} }` }
+  } else if (method === 'setRequestConfig') {
+    const paramsRows = item._paramRows ?? []
+    const bodyRows = item._bodyRows ?? []
+
+    const paramsEntries = paramsRows
+      .filter(r => r.key)
+      .map(r => `${JSON.stringify(r.key)}: ${resolveValueSource(r.valueSource, r.customField)}`)
+
+    const bodyEntries = bodyRows
+      .filter(r => r.key)
+      .map(r => `${JSON.stringify(r.key)}: ${resolveValueSource(r.valueSource, r.customField)}`)
+
+    const result: Record<string, string> = {}
+    if (paramsEntries.length > 0) result.setRequestParams = `{ ${paramsEntries.join(', ')} }`
+    if (bodyEntries.length > 0) result.setRequestBody = `{ ${bodyEntries.join(', ')} }`
+    return result
   } else if (method === 'setData') {
     const key = item._dataKey || 'data'
     const val = item._dataValue || 'data'
@@ -207,9 +312,31 @@ watchEffect(() => {
   const events = comp.value?.events?.interactEvents as unknown as InteractEventItemUI[] | undefined
   if (!events) return
   for (const item of events) {
+    ensureRows(item)
+    migrateOldFormat(item)
     item.interactFn = buildInteractFn(item)
   }
 })
+
+function migrateOldFormat(item: InteractEventItemUI) {
+  if (item._method === 'setRequestParams' && item._paramKey && item._paramRows.length === 0) {
+    item._paramRows.push({ key: item._paramKey, valueSource: item._paramValue || 'name', customField: '' })
+    item._paramKey = ''
+    item._paramValue = ''
+    item._method = 'setRequestConfig'
+  }
+  if (item._method === 'setRequestBody' && item._paramKey && item._bodyRows.length === 0) {
+    item._bodyRows.push({ key: item._paramKey, valueSource: item._paramValue || 'name', customField: '' })
+    item._paramKey = ''
+    item._paramValue = ''
+    item._method = 'setRequestConfig'
+  }
+  if (item._method === 'setRequestConfig' && item._paramKey && item._paramRows.length === 0) {
+    item._paramRows.push({ key: item._paramKey, valueSource: item._paramValue || 'name', customField: '' })
+    item._paramKey = ''
+    item._paramValue = ''
+  }
+}
 
 function addInteract() {
   if (!comp.value) return
@@ -225,6 +352,8 @@ function addInteract() {
     _paramValue: '',
     _dataKey: '',
     _dataValue: '',
+    _paramRows: [],
+    _bodyRows: [],
   } as InteractEventItemUI)
 }
 
@@ -377,5 +506,76 @@ function removeInteract(index: number) {
 .multi-select-option input[type="checkbox"] {
   margin: 0;
   cursor: pointer;
+}
+
+.override-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #313244;
+}
+
+.override-section-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #89b4fa;
+  margin-bottom: 6px;
+}
+
+.body-type-hint {
+  font-weight: 400;
+  color: #6c7086;
+}
+
+.static-hint-sm {
+  font-size: 11px;
+  color: #6c7086;
+  padding: 4px 0;
+}
+
+.static-hint-sm.warn {
+  color: #fab387;
+}
+
+.override-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.override-key {
+  flex: 1;
+  min-width: 0;
+}
+
+.override-val {
+  width: 80px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.override-custom {
+  width: 70px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.add-row-btn {
+  width: 100%;
+  padding: 4px 0;
+  background: transparent;
+  border: 1px dashed #45475a;
+  border-radius: 4px;
+  color: #6c7086;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 4px;
+}
+
+.add-row-btn:hover {
+  background: #313244;
+  color: #cdd6f4;
+  border-color: #89b4fa;
 }
 </style>

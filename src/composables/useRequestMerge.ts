@@ -15,7 +15,7 @@ export interface MergedRequestConfig {
 export function mergeRequestConfig(
   componentConfig: RequestConfigType,
   globalConfig: RequestGlobalConfigType,
-  interactOverrides?: Record<string, any>
+  interactOverrides?: { params?: Record<string, any>; body?: Record<string, any> }
 ): MergedRequestConfig | null {
   if (componentConfig.requestDataType === 0) {
     return null
@@ -33,13 +33,17 @@ export function mergeRequestConfig(
 
   const params = {
     ...(componentConfig.requestParams?.Params ?? {}),
-    ...(interactOverrides ?? {}),
+    ...(interactOverrides?.params ?? {}),
   }
 
-  const body = getBodyByType(
-    componentConfig.requestParamsBodyType ?? 'none',
-    componentConfig.requestParams?.Body
-  )
+  const bodyType = componentConfig.requestParamsBodyType ?? 'none'
+  let body = getBodyByType(bodyType, componentConfig.requestParams?.Body)
+
+  if (interactOverrides?.body && Object.keys(interactOverrides.body).length > 0) {
+    if ((bodyType === 'form-data' || bodyType === 'x-www-form-urlencoded') && body && typeof body === 'object') {
+      body = { ...body, ...interactOverrides.body }
+    }
+  }
 
   const pollingInterval = componentConfig.requestInterval ?? globalConfig.requestInterval
   const pollingUnit = componentConfig.requestIntervalUnit ?? globalConfig.requestIntervalUnit
