@@ -14,7 +14,7 @@
     <div class="prop-form">
       <template v-if="isKvBody">
         <div v-for="(val, key, idx) in bodyEntries" :key="'pb-' + idx" class="kv-row">
-          <input type="text" class="prop-input kv-key" placeholder="key" :value="key" disabled />
+          <input type="text" class="prop-input kv-key" placeholder="key" :value="key" @input="emit('updateBodyKvKey', idx, ($event.target as HTMLInputElement).value)" />
           <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="emit('updateBodyKvValue', idx, ($event.target as HTMLInputElement).value)" />
           <button class="kv-remove" @click="emit('removeBodyKv', key)">✕</button>
         </div>
@@ -46,6 +46,7 @@ const emit = defineEmits<{
   (e: 'updateHeaderValue', idx: number, value: string): void
   (e: 'addHeader'): void
   (e: 'removeHeader', key: string): void
+  (e: 'updateBodyKvKey', idx: number, newKey: string): void
   (e: 'updateBodyKvValue', idx: number, value: string): void
   (e: 'addBodyKv'): void
   (e: 'removeBodyKv', key: string): void

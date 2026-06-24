@@ -81,6 +81,7 @@
               @update-header-value="updateHeaderValue"
               @add-header="addHeader"
               @remove-header="removeHeader"
+              @update-body-kv-key="updateBodyKvKey"
               @update-body-kv-value="updateBodyKvValue"
               @add-body-kv="addBodyKv"
               @remove-body-kv="removeBodyKv"
@@ -213,6 +214,19 @@ function updateBodyKvValue(idx: number, value: string) {
   const keys = Object.keys(target)
   if (keys[idx] !== undefined) {
     target[keys[idx]] = value
+  }
+}
+
+function updateBodyKvKey(idx: number, newKey: string) {
+  const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
+  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
+  if (!target) return
+  const keys = Object.keys(target)
+  if (keys[idx] !== undefined) {
+    const oldKey = keys[idx]
+    if (oldKey === newKey) return
+    target[newKey] = target[oldKey]
+    delete target[oldKey]
   }
 }
 
