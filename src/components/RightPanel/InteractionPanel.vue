@@ -44,9 +44,10 @@
             <select class="prop-select" v-model="item._method">
               <option value="setFilter">筛选数据</option>
               <option value="setRequestConfig">修改请求配置</option>
+              <!-- 以下配置暂不使用 -->
               <option value="setData">设置数据</option>
-              <option value="clearFilter">清除筛选</option>
-              <option value="clearOverrides">清除交互参数</option>
+              <!-- <option value="clearFilter">清除筛选</option>
+              <option value="clearOverrides">清除交互参数</option> -->
             </select>
           </div>
 
