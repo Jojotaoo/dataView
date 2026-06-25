@@ -13,6 +13,7 @@ import YAxisSection from '../components/RightPanel/chart-props/YAxisSection.vue'
 import SeriesSection from '../components/RightPanel/chart-props/SeriesSection.vue'
 import TooltipSection from '../components/RightPanel/chart-props/TooltipSection.vue'
 import BackgroundColorSection from '../components/RightPanel/chart-props/BackgroundColorSection.vue'
+import BackgroundCardProps from '../components/RightPanel/chart-props/BackgroundCardProps.vue'
 
 export const universalSections: Component[] = [
   BasicInfoSection,
@@ -51,4 +52,5 @@ export const chartSectionRegistry: Record<string, Component[]> = {
   HeilongjiangMap: nonAxisEChartsSections,
   ScrollList: [SeriesSection],
   TextDisplay: [SeriesSection],
+  BackgroundCard: [BackgroundCardProps],
 }

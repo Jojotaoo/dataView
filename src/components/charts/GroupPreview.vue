@@ -64,6 +64,14 @@
         :height="child.attr.h"
         :text-props="(child as any).props"
       />
+      <BackgroundCard
+        v-else-if="child.key === 'BackgroundCard'"
+        :component-id="child.id"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :bg-props="(child as any).props"
+      />
       <DataFetchManager :component-id="child.id" mode="preview" />
     </div>
   </div>
@@ -77,6 +85,7 @@ import PieChart from './PieChart.vue'
 import ScrollList from './ScrollList.vue'
 import MapChart from './MapChart.vue'
 import TextDisplay from './TextDisplay.vue'
+import BackgroundCard from './BackgroundCard.vue'
 import GroupPreview from './GroupPreview.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import type { CreateComponentType } from '../../types'
