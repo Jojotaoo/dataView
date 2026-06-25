@@ -71,6 +71,13 @@
         :height="child.attr.h"
         :bg-props="(child as any).props"
       />
+      <RiskScrollList
+        v-else-if="child.key === 'RiskScrollList'"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :risk-props="(child as any).props"
+      />
       <DataFetchManager :component-id="child.id" mode="design" />
     </div>
   </div>
@@ -85,6 +92,7 @@ import ScrollList from './ScrollList.vue'
 import MapChart from './MapChart.vue'
 import TextDisplay from './TextDisplay.vue'
 import BackgroundCard from './BackgroundCard.vue'
+import RiskScrollList from './RiskScrollList.vue'
 import GroupComponent from './GroupComponent.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import { useDashboardStore } from '../../stores/dashboard'

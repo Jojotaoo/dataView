@@ -78,6 +78,13 @@
           :height="comp.attr.h"
           :bg-props="comp.props"
         />
+        <RiskScrollList
+          v-else-if="comp.key === 'RiskScrollList'"
+          :option="comp.option"
+          :width="comp.attr.w"
+          :height="comp.attr.h"
+          :risk-props="comp.props"
+        />
         <DataFetchManager :component-id="comp.id" mode="preview" />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -99,6 +106,7 @@ import ScrollList from './charts/ScrollList.vue'
 import MapChart from './charts/MapChart.vue'
 import TextDisplay from './charts/TextDisplay.vue'
 import BackgroundCard from './charts/BackgroundCard.vue'
+import RiskScrollList from './charts/RiskScrollList.vue'
 import GroupPreview from './charts/GroupPreview.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'

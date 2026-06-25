@@ -122,6 +122,13 @@
                 :height="comp.attr.h"
                 :bg-props="comp.props"
               />
+              <RiskScrollList
+                v-else-if="comp.key === 'RiskScrollList'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :risk-props="comp.props"
+              />
             </div>
             <div
               v-if="!comp.status.lock && comp.key !== 'group'"
@@ -169,6 +176,7 @@ import ScrollList from './charts/ScrollList.vue'
 import MapChart from './charts/MapChart.vue'
 import TextDisplay from './charts/TextDisplay.vue'
 import BackgroundCard from './charts/BackgroundCard.vue'
+import RiskScrollList from './charts/RiskScrollList.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
