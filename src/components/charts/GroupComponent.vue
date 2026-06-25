@@ -78,6 +78,14 @@
         :height="child.attr.h"
         :risk-props="(child as any).props"
       />
+      <ImageDisplay
+        v-else-if="child.key === 'ImageDisplay'"
+        :component-id="child.id"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :image-props="(child as any).props"
+      />
       <DataFetchManager :component-id="child.id" mode="design" />
     </div>
   </div>
@@ -93,6 +101,7 @@ import MapChart from './MapChart.vue'
 import TextDisplay from './TextDisplay.vue'
 import BackgroundCard from './BackgroundCard.vue'
 import RiskScrollList from './RiskScrollList.vue'
+import ImageDisplay from './ImageDisplay.vue'
 import GroupComponent from './GroupComponent.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import { useDashboardStore } from '../../stores/dashboard'

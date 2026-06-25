@@ -15,6 +15,7 @@ import TooltipSection from '../components/RightPanel/chart-props/TooltipSection.
 import BackgroundColorSection from '../components/RightPanel/chart-props/BackgroundColorSection.vue'
 import BackgroundCardProps from '../components/RightPanel/chart-props/BackgroundCardProps.vue'
 import RiskScrollListProps from '../components/RightPanel/chart-props/RiskScrollListProps.vue'
+import ImageDisplayProps from '../components/RightPanel/chart-props/ImageDisplayProps.vue'
 
 export const universalSections: Component[] = [
   BasicInfoSection,
@@ -55,4 +56,5 @@ export const chartSectionRegistry: Record<string, Component[]> = {
   TextDisplay: [SeriesSection],
   BackgroundCard: [BackgroundCardProps],
   RiskScrollList: [RiskScrollListProps],
+  ImageDisplay: [ImageDisplayProps],
 }

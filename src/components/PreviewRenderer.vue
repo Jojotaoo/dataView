@@ -85,6 +85,14 @@
           :height="comp.attr.h"
           :risk-props="comp.props"
         />
+        <ImageDisplay
+          v-else-if="comp.key === 'ImageDisplay'"
+          :component-id="comp.id"
+          :option="comp.option"
+          :width="comp.attr.w"
+          :height="comp.attr.h"
+          :image-props="comp.props"
+        />
         <DataFetchManager :component-id="comp.id" mode="preview" />
       </div>
       <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -107,6 +115,7 @@ import MapChart from './charts/MapChart.vue'
 import TextDisplay from './charts/TextDisplay.vue'
 import BackgroundCard from './charts/BackgroundCard.vue'
 import RiskScrollList from './charts/RiskScrollList.vue'
+import ImageDisplay from './charts/ImageDisplay.vue'
 import GroupPreview from './charts/GroupPreview.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'
