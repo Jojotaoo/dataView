@@ -96,12 +96,20 @@ export function useCanvasInteraction(ctxMenu: Ref<ContextMenuState>) {
     }
   }
 
+  function handleDelete() {
+    ctxMenu.value.show = false
+    if (ctxMenu.value.ctxId) {
+      store.removeComponent(ctxMenu.value.ctxId)
+    }
+  }
+
   return {
     onDraggableChange,
     onComponentClick,
     onContextMenu,
     handleGroup,
     handleUngroup,
+    handleDelete,
     findParentGroup,
   }
 }

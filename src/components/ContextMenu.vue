@@ -13,6 +13,7 @@
         :disabled="!canUngroup"
         @click="emit('ungroup')"
       >取消分组</button>
+      <button class="cm-item delete" @click="emit('delete')">删除</button>
     </div>
   </div>
 </template>
@@ -21,6 +22,7 @@
 const emit = defineEmits<{
   group: []
   ungroup: []
+  delete: []
   close: []
 }>()
 
@@ -70,5 +72,10 @@ defineProps<{
 .cm-item.disabled {
   color: #6c7086;
   cursor: default;
+}
+
+.cm-item.delete:hover {
+  background: #f38ba8;
+  color: #1e1e2e;
 }
 </style>

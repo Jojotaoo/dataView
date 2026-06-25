@@ -56,13 +56,6 @@
             @dragstart.prevent
             @click.stop="onComponentClick($event, comp.id)"
           >
-            <div class="comp-header">
-              <span class="comp-label">{{ comp.chartConfig.title }}</span>
-              <div class="header-badges">
-                <span v-if="comp.status.lock" class="badge lock-badge">🔒</span>
-                <button class="remove-btn" @click.stop="store.removeComponent(comp.id)">✕</button>
-              </div>
-            </div>
             <div class="comp-body">
               <GroupComponent
                 v-if="comp.key === 'group'"
@@ -74,7 +67,7 @@
                 :component-id="comp.id"
                 :option="comp.option"
                 :width="comp.attr.w"
-                :height="comp.attr.h - 32"
+                :height="comp.attr.h"
                 :bg-color="comp.props?.bgColor"
                 :chart-style="comp.chartStyle"
               />
@@ -83,7 +76,7 @@
                 :component-id="comp.id"
                 :option="comp.option"
                 :width="comp.attr.w"
-                :height="comp.attr.h - 32"
+                :height="comp.attr.h"
                 :bg-color="comp.props?.bgColor"
                 :chart-style="comp.chartStyle"
               />
@@ -92,7 +85,7 @@
                 :component-id="comp.id"
                 :option="comp.option"
                 :width="comp.attr.w"
-                :height="comp.attr.h - 32"
+                :height="comp.attr.h"
                 :bg-color="comp.props?.bgColor"
                 :chart-style="comp.chartStyle"
               />
@@ -100,7 +93,7 @@
                 v-else-if="comp.key === 'ScrollList'"
                 :option="comp.option"
                 :width="comp.attr.w"
-                :height="comp.attr.h - 32"
+                :height="comp.attr.h"
                 :scroll-props="comp.props"
               />
               <MapChart
@@ -108,7 +101,7 @@
                 :component-id="comp.id"
                 :option="comp.option"
                 :width="comp.attr.w"
-                :height="comp.attr.h - 32"
+                :height="comp.attr.h"
                 :bg-color="comp.props?.bgColor"
                 :chart-style="comp.chartStyle"
                 geo-key="heilongjiang"
@@ -118,7 +111,7 @@
                 :component-id="comp.id"
                 :option="comp.option"
                 :width="comp.attr.w"
-                :height="comp.attr.h - 32"
+                :height="comp.attr.h"
                 :text-props="comp.props"
               />
               <BackgroundCard
@@ -126,7 +119,7 @@
                 :component-id="comp.id"
                 :option="comp.option"
                 :width="comp.attr.w"
-                :height="comp.attr.h - 32"
+                :height="comp.attr.h"
                 :bg-props="comp.props"
               />
             </div>
@@ -155,6 +148,7 @@
       :can-ungroup="ctxMenu.isGroup"
       @group="handleGroup"
       @ungroup="handleUngroup"
+      @delete="handleDelete"
       @close="ctxMenu.show = false"
     />
   </div>
@@ -216,7 +210,7 @@ const { selRect, onCanvasMouseDown, cleanup: cleanupBoxSelect } = useBoxSelect(
   () => store.clearSelection(),
 )
 
-const { onDraggableChange, onComponentClick, onContextMenu, handleGroup, handleUngroup, findParentGroup } = useCanvasInteraction(ctxMenu)
+const { onDraggableChange, onComponentClick, onContextMenu, handleGroup, handleUngroup, handleDelete, findParentGroup } = useCanvasInteraction(ctxMenu)
 
 const selRectStyle = computed(() => {
   if (!selRect.value) return {}
@@ -350,7 +344,7 @@ function handleResizeStart(event: MouseEvent, id: string) {
 .canvas-component {
   position: absolute;
   background: transparent;
-  border: 2px solid #45475a;
+  border: 2px solid transparent;
   border-radius: 6px;
   display: flex;
   flex-direction: column;
@@ -384,51 +378,6 @@ function handleResizeStart(event: MouseEvent, id: string) {
   background: rgba(137, 180, 250, 0.08);
   pointer-events: none;
   z-index: 100;
-}
-
-.comp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 8px;
-  background: #313244;
-  user-select: none;
-  flex-shrink: 0;
-  cursor: move;
-  min-height: 28px;
-}
-
-.comp-label {
-  font-size: 11px;
-  color: #a6adc8;
-  font-weight: 500;
-}
-
-.header-badges {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.badge {
-  font-size: 11px;
-  line-height: 1;
-}
-
-.remove-btn {
-  background: none;
-  border: none;
-  color: #6c7086;
-  cursor: pointer;
-  font-size: 11px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: all 0.15s;
-}
-
-.remove-btn:hover {
-  background: #f38ba8;
-  color: #1e1e2e;
 }
 
 .comp-body {
