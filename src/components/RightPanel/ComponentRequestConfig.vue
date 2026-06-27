@@ -44,7 +44,18 @@
           请先在全局配置中添加数据池
         </div>
       </div>
-      <button class="send-btn" @click="emit('testRequest')" :disabled="!request.requestDataPondId">发送请求</button>
+      <button class="send-btn" @click="emit('testRequest')" :disabled="!request.requestDataPondId || pondLoading?.[request.requestDataPondId!]">
+        {{ pondLoading?.[request.requestDataPondId!] ? '请求中...' : '发送请求' }}
+      </button>
+      <div v-if="pondError?.[request.requestDataPondId!]" class="pond-error">{{ pondError?.[request.requestDataPondId!] }}</div>
+      <div v-if="pondResponse?.[request.requestDataPondId!]" class="pond-data-table">
+        <div class="table-header">
+          <span v-for="(dim, di) in getTableData(request.requestDataPondId!).dimensions" :key="di" class="th">{{ dim }}</span>
+        </div>
+        <div v-for="(row, ri) in getTableData(request.requestDataPondId!).source" :key="ri" class="table-row">
+          <span v-for="(cell, ci) in row" :key="ci" class="cell">{{ cell }}</span>
+        </div>
+      </div>
     </template>
 
     <template v-else>
@@ -77,6 +88,9 @@ const props = defineProps<{
     dimensions: string[]
     source: any[][]
   }
+  pondLoading?: Record<string, boolean>
+  pondResponse?: Record<string, any>
+  pondError?: Record<string, string | null>
 }>()
 
 const emit = defineEmits<{
@@ -107,6 +121,26 @@ function updateDataType(value: number) {
     requestDataType: value,
     requestParamsBodyType: value === 1 ? 'none' : undefined,
   })
+}
+
+function getTableData(pondId: string) {
+  const data = props.pondResponse?.[pondId]
+  if (!data) return { dimensions: [] as string[], source: [] as any[][] }
+  if (data.dimensions && data.source) return data
+  if (Array.isArray(data) && data.length > 0) {
+    if (typeof data[0] === 'object' && data[0] !== null) {
+      const dims = Object.keys(data[0])
+      const src = data.map((row: any) => dims.map(k => row[k]))
+      return { dimensions: dims, source: src }
+    }
+    return { dimensions: ['数据'], source: data.map((v: any) => [v]) }
+  }
+  if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+    const dims = Object.keys(data)
+    const src = [dims.map(k => data[k])]
+    return { dimensions: dims, source: src }
+  }
+  return { dimensions: ['数据'], source: [[data]] }
 }
 </script>
 
@@ -205,5 +239,50 @@ function updateDataType(value: number) {
 }
 .create-dataset-btn:hover {
   background: #74c7ec;
+}
+.pond-error {
+  font-size: 10px;
+  color: #f38ba8;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: #313244;
+  border-radius: 4px;
+}
+.pond-data-table {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.pond-data-table .table-header {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+  border-bottom: 1px solid #45475a;
+  margin-bottom: 2px;
+}
+.pond-data-table .th {
+  flex: 1;
+  font-size: 10px;
+  color: #6c7086;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0 4px;
+}
+.pond-data-table .table-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.pond-data-table .cell {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 6px;
+  color: #a6adc8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

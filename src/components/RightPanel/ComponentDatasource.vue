@@ -4,6 +4,9 @@
       v-if="comp.request"
       :request="comp.request"
       :dataset="comp.option.dataset"
+      :pond-loading="pondLoading"
+      :pond-response="pondResponse"
+      :pond-error="pondError"
       @update="updateRequest"
       @updateDatasetDimension="updateDimension"
       @updateDatasetCell="updateSourceCell"
@@ -17,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import type { RequestConfigType } from '../../types'
 import { executeRequest } from '../../composables/useRequestMerge'
@@ -25,6 +28,10 @@ import ComponentRequestConfig from './ComponentRequestConfig.vue'
 
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)
+
+const pondLoading = ref<Record<string, boolean>>({})
+const pondResponse = ref<Record<string, any>>({})
+const pondError = ref<Record<string, string | null>>({})
 
 // ... existing functions ...
 
@@ -64,27 +71,37 @@ function createDataset() {
 async function handleTestRequest() {
   if (!store.selectedComponent || !comp.value.request) return
 
+  const config = comp.value.request
+  let source: RequestConfigType | null = null
+  let pondId = ''
+
+  if (config.requestDataType === 1) {
+    source = config
+  } else if (config.requestDataType === 2 && config.requestDataPondId) {
+    pondId = config.requestDataPondId
+    const pond = store.requestGlobalConfig.requestDataPond.find(
+      p => p.dataPondId === config.requestDataPondId
+    )
+    if (pond) source = pond.dataPondRequestConfig
+  }
+
+  if (!source) return
+
+  const key = pondId || '__direct__'
+  pondLoading.value[key] = true
+  pondError.value[key] = null
+  pondResponse.value[key] = null
+
   try {
-    const config = comp.value.request
-    let source: RequestConfigType | null = null
-
-    if (config.requestDataType === 1) {
-      source = config
-    } else if (config.requestDataType === 2 && config.requestDataPondId) {
-      const pond = store.requestGlobalConfig.requestDataPond.find(
-        p => p.dataPondId === config.requestDataPondId
-      )
-      if (pond) source = pond.dataPondRequestConfig
-    }
-
-    if (!source) return
-
     const result = await executeRequest(source, store.requestGlobalConfig)
     if (result !== null) {
       store.updateComponentOption(store.selectedComponent.id, 'dataset', result)
+      pondResponse.value[key] = result
     }
-  } catch (err) {
-    console.error('[TestRequest] Failed:', err)
+  } catch (err: any) {
+    pondError.value[key] = err?.message || '请求失败'
+  } finally {
+    pondLoading.value[key] = false
   }
 }
 </script>

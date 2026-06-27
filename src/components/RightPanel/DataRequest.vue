@@ -48,8 +48,20 @@
           <span class="pond-url">{{ pond.dataPondRequestConfig.requestUrl }}</span>
         </div>
         <div class="pond-actions">
+          <button class="pond-btn send" :disabled="pondLoading[pond.dataPondId]" @click="sendPondRequest(pond)">
+            {{ pondLoading[pond.dataPondId] ? '请求中...' : '发送请求' }}
+          </button>
           <button class="pond-btn" @click="editPond(pond)">编辑</button>
           <button class="pond-btn danger" @click="deletePond(pond.dataPondId)">删除</button>
+        </div>
+        <div v-if="pondError[pond.dataPondId]" class="pond-error">{{ pondError[pond.dataPondId] }}</div>
+        <div v-if="pondResponse[pond.dataPondId]" class="pond-data-table">
+          <div class="table-header">
+            <span v-for="(dim, di) in getTableData(pond.dataPondId).dimensions" :key="di" class="th">{{ dim }}</span>
+          </div>
+          <div v-for="(row, ri) in getTableData(pond.dataPondId).source" :key="ri" class="table-row">
+            <span v-for="(cell, ci) in row" :key="ci" class="cell">{{ cell }}</span>
+          </div>
         </div>
       </div>
       <button class="add-btn" @click="showModal = true">+ 添加数据池</button>
@@ -67,12 +79,52 @@
 import { ref } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 import type { DataPondItem } from '../../types'
+import { executeRequest } from '../../composables/useRequestMerge'
 import DataPondModal from './DataPondModal.vue'
 
 const store = useDashboardStore()
 
 const showModal = ref(false)
 const editingPond = ref<DataPondItem | null>(null)
+
+const pondLoading = ref<Record<string, boolean>>({})
+const pondResponse = ref<Record<string, any>>({})
+const pondError = ref<Record<string, string | null>>({})
+
+async function sendPondRequest(pond: DataPondItem) {
+  const id = pond.dataPondId
+  pondLoading.value[id] = true
+  pondError.value[id] = null
+  pondResponse.value[id] = null
+  try {
+    const result = await executeRequest(pond.dataPondRequestConfig, store.requestGlobalConfig)
+    pondResponse.value[id] = result
+  } catch (err: any) {
+    pondError.value[id] = err?.message || '请求失败'
+  } finally {
+    pondLoading.value[id] = false
+  }
+}
+
+function getTableData(pondId: string) {
+  const data = pondResponse.value[pondId]
+  if (!data) return { dimensions: [] as string[], source: [] as any[][] }
+  if (data.dimensions && data.source) return data
+  if (Array.isArray(data) && data.length > 0) {
+    if (typeof data[0] === 'object' && data[0] !== null) {
+      const dims = Object.keys(data[0])
+      const src = data.map((row: any) => dims.map(k => row[k]))
+      return { dimensions: dims, source: src }
+    }
+    return { dimensions: ['数据'], source: data.map((v: any) => [v]) }
+  }
+  if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+    const dims = Object.keys(data)
+    const src = [dims.map(k => data[k])]
+    return { dimensions: dims, source: src }
+  }
+  return { dimensions: ['数据'], source: [[data]] }
+}
 
 function updateRequestGlobal(key: string, value: any) {
   store.updateRequestGlobalConfig({ [key]: value })
@@ -262,8 +314,62 @@ function handlePondConfirm(item: DataPondItem) {
 .pond-btn.danger {
   color: #f38ba8;
 }
-.pond-btn.danger:hover {
-  background: #f38ba8;
+.pond-btn.send {
+  color: #89b4fa;
+}
+.pond-btn.send:hover {
+  background: #89b4fa;
   color: #1e1e2e;
+}
+.pond-btn.send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #45475a;
+  color: #6c7086;
+}
+.pond-error {
+  font-size: 10px;
+  color: #f38ba8;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: #313244;
+  border-radius: 4px;
+}
+.pond-data-table {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.pond-data-table .table-header {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+  border-bottom: 1px solid #45475a;
+  margin-bottom: 2px;
+}
+.pond-data-table .th {
+  flex: 1;
+  font-size: 10px;
+  color: #6c7086;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0 4px;
+}
+.pond-data-table .table-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.pond-data-table .cell {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 6px;
+  color: #a6adc8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
