@@ -52,6 +52,7 @@ const seriesComponentMap: Record<string, any> = {
   BarCommon: BarSeriesProps,
   LineCommon: LineSeriesProps,
   PieCommon: PieSeriesProps,
+  PieGrid: PieSeriesProps,
   HeilongjiangMap: MapSeriesProps,
   ScrollList: ScrollListProps,
   TextDisplay: TextDisplayProps,

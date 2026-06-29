@@ -51,6 +51,7 @@ export const chartSectionRegistry: Record<string, Component[]> = {
   BarCommon: axisEChartsSections,
   LineCommon: axisEChartsSections,
   PieCommon: nonAxisEChartsSections,
+  PieGrid: nonAxisEChartsSections,
   HeilongjiangMap: nonAxisEChartsSections,
   ScrollList: [SeriesSection],
   TextDisplay: [SeriesSection],

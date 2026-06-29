@@ -89,6 +89,15 @@
                 :bg-color="comp.props?.bgColor"
                 :chart-style="comp.chartStyle"
               />
+              <PieGridChart
+                v-else-if="comp.key === 'PieGrid'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+              />
               <ScrollList
                 v-else-if="comp.key === 'ScrollList'"
                 :option="comp.option"
@@ -180,6 +189,7 @@ import 'vue3-sketch-ruler/lib/style.css'
 import BarChart from './charts/BarChart.vue'
 import LineChart from './charts/LineChart.vue'
 import PieChart from './charts/PieChart.vue'
+import PieGridChart from './charts/PieGridChart.vue'
 import ScrollList from './charts/ScrollList.vue'
 import MapChart from './charts/MapChart.vue'
 import TextDisplay from './charts/TextDisplay.vue'

@@ -38,6 +38,14 @@
         :height="child.attr.h"
         :chart-style="(child as any).chartStyle"
       />
+      <PieGridChart
+        v-else-if="child.key === 'PieGrid'"
+        :component-id="child.id"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :chart-style="(child as any).chartStyle"
+      />
       <ScrollList
         v-else-if="child.key === 'ScrollList'"
         :option="child.option"
@@ -96,6 +104,7 @@ import { computed } from 'vue'
 import BarChart from './BarChart.vue'
 import LineChart from './LineChart.vue'
 import PieChart from './PieChart.vue'
+import PieGridChart from './PieGridChart.vue'
 import ScrollList from './ScrollList.vue'
 import MapChart from './MapChart.vue'
 import TextDisplay from './TextDisplay.vue'

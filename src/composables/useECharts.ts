@@ -24,7 +24,7 @@ export function useECharts(
     const titleTopPx = typeof cs.titleStyle.top === 'number' ? cs.titleStyle.top : 8
     const titleBottom = hasTitle ? titleTopPx + cs.titleStyle.fontSize + 8 : 0
 
-    const hasLegend = cs.legend.show
+    const hasLegend = cs.legend.show && cs.legend.layoutMode !== 'grid'
     const legendTopPx = typeof cs.legend.top === 'number' ? cs.legend.top : 38
     const legendBottom = hasLegend ? legendTopPx + 24 : 0
 

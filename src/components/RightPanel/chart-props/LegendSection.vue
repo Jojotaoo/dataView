@@ -9,7 +9,24 @@
           <span class="switch-slider"></span>
         </label>
       </div>
-      <div class="prop-group">
+      <div class="prop-group" v-if="comp.key === 'PieGrid'">
+        <label class="prop-label">布局模式</label>
+        <select class="prop-select" :value="comp.chartStyle?.legend.layoutMode" @change="onChartStyle('legend.layoutMode', ($event.target as HTMLSelectElement).value)">
+          <option value="echarts">ECharts 原生</option>
+          <option value="grid">Grid 布局</option>
+        </select>
+      </div>
+      <template v-if="comp.chartStyle?.legend.layoutMode === 'grid' && comp.key === 'PieGrid'">
+        <div class="prop-group">
+          <label class="prop-label">列数</label>
+          <input type="number" class="prop-input" :value="comp.chartStyle?.legend.gridColumns" @input="onChartStyle('legend.gridColumns', numVal($event))" min="1" max="10" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">间距</label>
+          <input type="number" class="prop-input" :value="comp.chartStyle?.legend.itemGap" @input="onChartStyle('legend.itemGap', numVal($event))" min="0" max="50" />
+        </div>
+      </template>
+      <div class="prop-group" v-if="comp.chartStyle?.legend.layoutMode !== 'grid' || comp.key !== 'PieGrid'">
         <label class="prop-label">排列方向</label>
         <select class="prop-select" :value="comp.chartStyle?.legend.orient" @change="onChartStyle('legend.orient', ($event.target as HTMLSelectElement).value)">
           <option value="horizontal">水平</option>

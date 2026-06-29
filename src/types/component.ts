@@ -95,6 +95,9 @@ export interface ChartStyleConfig {
     fontSize: number
     icon: 'circle' | 'rect' | 'roundRect' | 'triangle' | 'diamond'
     textColor: string
+    layoutMode: 'echarts' | 'grid'
+    gridColumns: number
+    itemGap: number
   }
   xAxis: {
     show: boolean
@@ -169,7 +172,7 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
   themeName: 'catppuccin',
   grid: { top: 10, bottom: 30, left: 10, right: 10 },
   titleStyle: { show: true, fontSize: 14, color: '#cdd6f4', left: 'center', top: 8 },
-  legend: { show: true, orient: 'horizontal', left: 'center', top: 38, fontSize: 11, icon: 'circle', textColor: '#cdd6f4' },
+  legend: { show: true, orient: 'horizontal', left: 'center', top: 38, fontSize: 11, icon: 'circle', textColor: '#cdd6f4', layoutMode: 'echarts', gridColumns: 3, itemGap: 8 },
   xAxis: { show: true, name: '', labelFontSize: 11, labelRotate: 0, lineColor: '#45475a', labelColor: '#a6adc8' },
   yAxis: { show: true, name: '', labelFontSize: 11, min: null, max: null, splitLineShow: true, splitLineColor: '#313244', labelColor: '#a6adc8' },
   series: {
