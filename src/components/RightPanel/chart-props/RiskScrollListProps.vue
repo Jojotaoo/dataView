@@ -22,6 +22,27 @@
       </div>
     </details>
     <details class="style-section" :open="true">
+      <summary class="style-summary">布局</summary>
+      <div class="prop-grid">
+        <div class="prop-group">
+          <label class="prop-label">上边距</label>
+          <input type="number" class="prop-input" :value="rp.containerPaddingTop ?? 0" @input="onProp('containerPaddingTop', numVal($event))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">下边距</label>
+          <input type="number" class="prop-input" :value="rp.containerPaddingBottom ?? 0" @input="onProp('containerPaddingBottom', numVal($event))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">左边距</label>
+          <input type="number" class="prop-input" :value="rp.containerPaddingLeft ?? 0" @input="onProp('containerPaddingLeft', numVal($event))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">右边距</label>
+          <input type="number" class="prop-input" :value="rp.containerPaddingRight ?? 0" @input="onProp('containerPaddingRight', numVal($event))" />
+        </div>
+      </div>
+    </details>
+    <details class="style-section" :open="true">
       <summary class="style-summary">列表项</summary>
       <div class="prop-form" style="padding: 8px;">
         <div class="prop-group">
@@ -31,6 +52,41 @@
         <div class="prop-group">
           <label class="prop-label">分隔线颜色</label>
           <input type="color" class="prop-color" :value="rp.itemBorderColor ?? '#f0f2f5'" @input="onProp('itemBorderColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">分隔线宽度 ({{ rp.itemBorderWidth ?? 1 }}px)</label>
+          <input type="range" min="0" max="5" step="1" class="prop-range" :value="rp.itemBorderWidth ?? 1" @input="onProp('itemBorderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">行间距 ({{ rp.itemGap ?? 0 }}px)</label>
+          <input type="range" min="0" max="20" step="1" class="prop-range" :value="rp.itemGap ?? 0" @input="onProp('itemGap', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">圆角 ({{ rp.itemBorderRadius ?? 0 }}px)</label>
+          <input type="range" min="0" max="20" step="1" class="prop-range" :value="rp.itemBorderRadius ?? 0" @input="onProp('itemBorderRadius', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group row">
+          <label class="prop-label">斑马纹 (奇偶行)</label>
+          <label class="switch">
+            <input type="checkbox" :checked="rp.useZebra ?? false" @change="onProp('useZebra', ($event.target as HTMLInputElement).checked)" />
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div v-show="rp.useZebra ?? false" class="zebra-settings">
+          <div class="prop-group">
+            <label class="prop-label">奇数行背景</label>
+            <input type="color" class="prop-color" :value="rp.itemBgOdd ?? '#fafbfc'" @input="onProp('itemBgOdd', ($event.target as HTMLInputElement).value)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">偶数行背景</label>
+            <input type="color" class="prop-color" :value="rp.itemBgEven ?? '#ffffff'" @input="onProp('itemBgEven', ($event.target as HTMLInputElement).value)" />
+          </div>
+        </div>
+        <div v-show="!(rp.useZebra ?? false)" class="single-bg-setting">
+          <div class="prop-group">
+            <label class="prop-label">统一行背景</label>
+            <input type="color" class="prop-color" :value="rp.itemBgColor ?? '#ffffff'" @input="onProp('itemBgColor', ($event.target as HTMLInputElement).value)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">悬停背景色</label>
@@ -160,6 +216,10 @@ function onProp(key: string, value: any) {
   store.updateComponentProps(store.selectedComponent.id, props)
 }
 
+function numVal(event: Event): number {
+  return parseInt((event.target as HTMLInputElement).value) || 0
+}
+
 function addType() {
   const list = [...riskTypesList.value, { name: '', color: '#8c9aa8' }]
   onProp('riskTypes', list)
@@ -232,5 +292,17 @@ function updateTypeColor(idx: number, color: string) {
 .add-type-btn:hover {
   background: #45475a;
   border-color: #89b4fa;
+}
+
+.zebra-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.single-bg-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>

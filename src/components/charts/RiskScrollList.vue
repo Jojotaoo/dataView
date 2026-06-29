@@ -6,7 +6,11 @@
           v-for="(row, ri) in doubledSource"
           :key="ri"
           class="risk-list-item"
-          :style="{ ...itemStyle, '--item-hover-bg': itemHoverBg }"
+          :style="{
+            ...itemStyle,
+            '--item-hover-bg': itemHoverBg,
+            background: useZebra ? (ri % 2 === 0 ? itemBgOdd : itemBgEven) : itemBgColor,
+          }"
         >
           <span class="risk-dot" :style="dotStyle(row)"></span>
           <div class="risk-content">
@@ -64,6 +68,9 @@ const shadow = computed(() => rp.value.shadow ?? '0 1px 4px rgba(0,0,0,0.04)')
 const maxHeight = computed(() => rp.value.maxHeight ?? 500)
 const itemPadding = computed(() => rp.value.itemPadding ?? '16px 24px')
 const itemBorderColor = computed(() => rp.value.itemBorderColor ?? '#f0f2f5')
+const itemBorderWidth = computed(() => rp.value.itemBorderWidth ?? 1)
+const itemBorderRadius = computed(() => rp.value.itemBorderRadius ?? 0)
+const itemGap = computed(() => rp.value.itemGap ?? 0)
 const itemHoverBg = computed(() => rp.value.itemHoverBg ?? '#fafbfc')
 const dotSize = computed(() => rp.value.dotSize ?? 10)
 const nameFontSize = computed(() => rp.value.nameFontSize ?? 15)
@@ -78,6 +85,18 @@ const footerBg = computed(() => rp.value.footerBg ?? '#fafbfc')
 const footerColor = computed(() => rp.value.footerColor ?? '#8c9aa8')
 const footerFontSize = computed(() => rp.value.footerFontSize ?? 13)
 const footerAlign = computed(() => rp.value.footerAlign ?? 'right')
+
+// Container padding props
+const containerPaddingTop = computed(() => rp.value.containerPaddingTop ?? 0)
+const containerPaddingRight = computed(() => rp.value.containerPaddingRight ?? 0)
+const containerPaddingBottom = computed(() => rp.value.containerPaddingBottom ?? 0)
+const containerPaddingLeft = computed(() => rp.value.containerPaddingLeft ?? 0)
+
+// Item background color props
+const itemBgColor = computed(() => rp.value.itemBgColor ?? '#ffffff')
+const itemBgOdd = computed(() => rp.value.itemBgOdd ?? '#fafbfc')
+const itemBgEven = computed(() => rp.value.itemBgEven ?? '#ffffff')
+const useZebra = computed(() => rp.value.useZebra ?? false)
 
 const riskTypes = computed(() => rp.value.riskTypes ?? [])
 const defaultColor = computed(() => rp.value.defaultColor ?? '#b0bec5')
@@ -110,12 +129,13 @@ const containerStyle = computed(() => ({
   height: '100%',
   background: bgColor.value,
   borderRadius: borderRadius.value + 'px',
-  border: `1px solid ${borderColor.value}`,
+  border: `0px solid ${borderColor.value}`,
   boxShadow: shadow.value,
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
   fontFamily: "'PingFang SC', 'Microsoft YaHei', sans-serif",
+  padding: `${containerPaddingTop.value}px ${containerPaddingRight.value}px ${containerPaddingBottom.value}px ${containerPaddingLeft.value}px`,
 }))
 
 const viewportStyle = computed(() => ({
@@ -133,10 +153,12 @@ const itemStyle = computed(() => ({
   display: 'flex',
   alignItems: 'flex-start',
   padding: itemPadding.value,
-  borderBottom: `1px solid ${itemBorderColor.value}`,
+  borderBottom: `${itemBorderWidth.value}px solid ${itemBorderColor.value}`,
   gap: '14px',
   transition: 'background 0.15s',
   cursor: 'default',
+  marginBottom: itemGap.value + 'px',
+  borderRadius: itemBorderRadius.value + 'px',
 }))
 
 const nameStyle = computed(() => ({
@@ -244,6 +266,7 @@ const footerStyle = computed(() => ({
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  justify-content: space-between;
   margin-bottom: 6px;
 }
 
