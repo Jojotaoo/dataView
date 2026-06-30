@@ -8,8 +8,14 @@
       @mouseenter="onLegendEnter(item.name)"
       @mouseleave="onLegendLeave"
     >
-      <span class="legend-icon" :class="`icon-${icon}`" :style="{ backgroundColor: item.color }"></span>
-      <span class="legend-text" :style="{ fontSize: `${fontSize}px`, color: textColor }">{{ item.name }}</span>
+      <div class="legend-left">
+        <span class="legend-icon" :class="`icon-${icon}`" :style="{ backgroundColor: item.color }"></span>
+        <span class="legend-text" :style="{ fontSize: `${fontSize}px`, color: textColor }">{{ item.name }}</span>
+      </div>
+      <div class="legend-right" :style="{ fontSize: `${fontSize}px`, color: textColor }">
+        <span>{{ item.value }}{{ unit }}</span>
+        <span class="legend-percent">({{ item.percent }}%)</span>
+      </div>
     </div>
   </div>
 </template>
@@ -18,7 +24,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
-  data: Array<{ name: string }>
+  data: Array<{ name: string; value?: number | string; percent?: string }>
   colorList: string[]
   chartInstance: any
   icon?: 'circle' | 'rect' | 'roundRect' | 'triangle' | 'diamond'
@@ -27,6 +33,7 @@ const props = withDefaults(defineProps<{
   gridColumns?: number
   itemGap?: number
   position?: 'bottom' | 'left' | 'right' | 'top' | 'bottom-flow'
+  unit?: string
 }>(), {
   icon: 'circle',
   fontSize: 11,
@@ -34,6 +41,7 @@ const props = withDefaults(defineProps<{
   gridColumns: 3,
   itemGap: 8,
   position: 'bottom',
+  unit: '',
 })
 
 const hoveredName = ref<string | null>(null)
@@ -42,6 +50,8 @@ const items = computed(() =>
   props.data.map((d, i) => ({
     name: d.name,
     color: props.colorList[i % props.colorList.length] || '#89b4fa',
+    value: d.value ?? '',
+    percent: d.percent ?? '',
   }))
 )
 
@@ -155,7 +165,7 @@ onUnmounted(() => {
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
   cursor: pointer;
   user-select: none;
   transition: opacity 0.2s;
@@ -165,6 +175,21 @@ onUnmounted(() => {
 }
 .legend-item.inactive {
   opacity: 0.35;
+}
+.legend-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.legend-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.legend-percent {
+  opacity: 0.6;
 }
 .legend-icon {
   flex-shrink: 0;

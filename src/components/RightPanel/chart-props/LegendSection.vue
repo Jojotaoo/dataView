@@ -25,6 +25,10 @@
           <label class="prop-label">间距</label>
           <input type="number" class="prop-input" :value="comp.chartStyle?.legend.itemGap" @input="onChartStyle('legend.itemGap', numVal($event))" min="0" max="50" />
         </div>
+        <div class="prop-group">
+          <label class="prop-label">数值单位</label>
+          <input type="text" class="prop-input" :value="comp.chartStyle?.legend.unit" @input="onChartStyle('legend.unit', ($event.target as HTMLInputElement).value)" placeholder="如 元、人、次" />
+        </div>
       </template>
       <div class="prop-group" v-if="comp.chartStyle?.legend.layoutMode !== 'grid' || comp.key !== 'PieGrid'">
         <label class="prop-label">排列方向</label>

@@ -1,9 +1,15 @@
 <template>
   <div class="pie-grid-chart" :style="{ backgroundColor: containerBg }">
-    <div ref="chartRef" class="pie-chart"></div>
+    <div class="chart-area">
+      <div ref="chartRef" class="pie-chart"></div>
+      <div v-if="chartStyle?.series.subTitle" :class="['center-text', { fontSize: chartStyle.series.labelFontSize }]">
+        <div class="total-label">{{ totalValue }}</div>
+        <div class="sub-title">{{ chartStyle.series.subTitle }}</div>
+      </div>
+    </div>
     <CustomLegend
       v-if="chartStyle?.legend.show && chartStyle?.legend.layoutMode === 'grid'"
-      :data="filteredData"
+      :data="legendData"
       :color-list="colorList"
       :chart-instance="chartInstance"
       :icon="chartStyle.legend.icon"
@@ -11,6 +17,7 @@
       :text-color="chartStyle.legend.textColor"
       :grid-columns="chartStyle.legend.gridColumns"
       :item-gap="chartStyle.legend.itemGap"
+      :unit="chartStyle.legend.unit || ''"
       position="bottom-flow"
     />
   </div>
@@ -77,7 +84,20 @@ const filteredData = computed(() =>
   filteredSource.value.map((item: any) => ({ name: item?.[0] ?? '' }))
 )
 
+const legendData = computed(() => {
+  const total = filteredSource.value.reduce((sum: number, item: any) => sum + (Number(item?.[1]) || 0), 0)
+  return filteredSource.value.map((item: any) => ({
+    name: item?.[0] ?? '',
+    value: item?.[1] ?? 0,
+    percent: total > 0 ? ((Number(item?.[1]) / total) * 100).toFixed(1) : '0',
+  }))
+})
+
 const colorList = computed(() => chartStyleRef.value.series.colorList)
+
+const totalValue = computed(() =>
+  filteredSource.value.reduce((sum: number, item: any) => sum + (Number(item?.[1]) || 0), 0)
+)
 
 const seriesOption = computed((): SeriesOption => {
   const s = chartStyleRef.value.series
@@ -101,6 +121,43 @@ const seriesOption = computed((): SeriesOption => {
       position: s.pieLabelPosition,
       color: s.labelColor,
       fontSize: s.labelFontSize,
+      // formatter: ['{a|{c}}','{b|{b}}'].join('\n'),
+      // rich: {
+      //   a: {
+      //     fontSize: s.labelFontSize,
+      //     color: s.labelColor,
+      //     fontWeight: 900,
+      //   },
+      //   b: {
+      //     fontSize: s.labelFontSize / 2,
+      //     color: 'gray',
+      //     lineHeight: 18,
+      //     padding: [s.labelFontSize / 5, 0, 0, 0],
+      //   }
+      // }
+    //   formatter: [
+    //     '{a|{b} ({d}%)}',
+    //     '{b|这段文本采用样式b}这段用默认样式{x|这段用样式x}'
+    // ].join('\n'),
+
+    // rich: {
+    //     a: {
+    //         color: 'red',
+    //         lineHeight: 10
+    //     },
+    //     b: {
+    //         backgroundColor: {
+    //             image: 'xxx/xxx.jpg'
+    //         },
+    //         height: 40
+    //     },
+    //     x: {
+    //         fontSize: 18,
+    //         fontFamily: 'Microsoft YaHei',
+    //         borderColor: '#449933',
+    //         borderRadius: 4
+    //     },
+    // }
     },
     emphasis: {
       focus: 'self',
@@ -135,8 +192,31 @@ const { chartRef, chartInstance } = useECharts(filteredOption, widthRef, heightR
   border-radius: 8px;
   overflow: hidden;
 }
-.pie-chart {
+.chart-area {
   flex: 1;
+  position: relative;
   min-height: 0;
+}
+.pie-chart {
+  width: 100%;
+  height: 100%;
+}
+.center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.total-label {
+  font-size: 14px;
+  font-weight: 900;
+  color: #cdd6f4;
+}
+.sub-title {
+  font-size: 11px;
+  color: #a6adc8;
+  margin-top: 4px;
 }
 </style>

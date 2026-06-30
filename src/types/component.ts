@@ -98,6 +98,7 @@ export interface ChartStyleConfig {
     layoutMode: 'echarts' | 'grid'
     gridColumns: number
     itemGap: number
+    unit: string
   }
   xAxis: {
     show: boolean
@@ -136,6 +137,7 @@ export interface ChartStyleConfig {
     pieRadius: number
     pieRoseType: boolean
     pieLabelPosition: 'inside' | 'outside' | 'center'
+    subTitle: string
     mapRegionColor: string
     mapRegionBorderColor: string
     mapRegionHoverColor: string
@@ -172,7 +174,7 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
   themeName: 'catppuccin',
   grid: { top: 10, bottom: 30, left: 10, right: 10 },
   titleStyle: { show: true, fontSize: 14, color: '#cdd6f4', left: 'center', top: 8 },
-  legend: { show: true, orient: 'horizontal', left: 'center', top: 38, fontSize: 11, icon: 'circle', textColor: '#cdd6f4', layoutMode: 'echarts', gridColumns: 3, itemGap: 8 },
+  legend: { show: true, orient: 'horizontal', left: 'center', top: 38, fontSize: 11, icon: 'circle', textColor: '#cdd6f4', layoutMode: 'echarts', gridColumns: 3, itemGap: 8, unit: '' },
   xAxis: { show: true, name: '', labelFontSize: 11, labelRotate: 0, lineColor: '#45475a', labelColor: '#a6adc8' },
   yAxis: { show: true, name: '', labelFontSize: 11, min: null, max: null, splitLineShow: true, splitLineColor: '#313244', labelColor: '#a6adc8' },
   series: {
@@ -183,7 +185,7 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
     colorList: ['#89b4fa', '#f38ba8', '#a6e3a1', '#fab387', '#cba6f7', '#94e2d5', '#f9e2af', '#74c7ec'],
     areaOpacityStart: 0.4, areaOpacityEnd: 0.02,
     labelColor: '#cdd6f4',
-    pieRadius: 0, pieRoseType: false, pieLabelPosition: 'outside',
+    pieRadius: 0, pieRoseType: false, pieLabelPosition: 'outside', subTitle: '',
     mapRegionColor: '#313244', mapRegionBorderColor: '#45475a', mapRegionHoverColor: '#89b4fa',
     mapLabelShow: true, mapLabelColor: '#cdd6f4', mapLabelFontSize: 11,
     mapVisualMin: 0, mapVisualMax: 200, mapVisualColors: ['#313244', '#89b4fa'],

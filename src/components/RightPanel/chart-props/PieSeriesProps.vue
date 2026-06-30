@@ -19,6 +19,10 @@
         <option value="center">中心</option>
       </select>
     </div>
+    <div class="prop-group">
+      <label class="prop-label">副标题</label>
+      <input type="text" class="prop-input" :value="comp.chartStyle?.series.subTitle" @input="onChartStyle('series.subTitle', ($event.target as HTMLInputElement).value)" />
+    </div>
   </div>
 </template>
 
