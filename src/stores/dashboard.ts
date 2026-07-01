@@ -461,6 +461,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   const interactFilters = ref<Record<string, Record<string, any>>>({})
+  const interactDataModified = new Set<string>()
 
   function updateComponentEvents(id: string, events: EventsType) {
     const comp = findComponent(id)
@@ -516,7 +517,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
       interactFilters.value = { ...interactFilters.value, [targetId]: newFilters }
     } else if (method === 'setData') {
       const target = findComponent(targetId)
-      if (target) target.option.dataset = value
+      if (target) {
+        target.option.dataset = value
+        interactDataModified.add(targetId)
+      }
     } else if (method === 'clearFilter') {
       const { [targetId]: _, ...rest } = interactFilters.value
       interactFilters.value = rest
@@ -547,8 +551,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (targetId) {
       const { [targetId]: _, ...rest } = interactFilters.value
       interactFilters.value = rest
+      if (interactDataModified.has(targetId)) {
+        const target = findComponent(targetId)
+        if (target?.option) target.option.dataset = { dimensions: [], source: [] }
+        interactDataModified.delete(targetId)
+      }
     } else {
       interactFilters.value = {}
+      interactDataModified.clear()
     }
   }
 
