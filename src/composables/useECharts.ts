@@ -36,7 +36,7 @@ export function useECharts(
     const result: any = {
       backgroundColor: cs.backgroundOpacity < 1 ? 'transparent' : cs.backgroundColor,
       color: cs.series.colorList.length > 0 ? cs.series.colorList : undefined,
-      series: [seriesOption.value],
+      series: Array.isArray(seriesOption.value) ? seriesOption.value : [seriesOption.value],
     }
 
     if (!isPie && !isGeo) {

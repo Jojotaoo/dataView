@@ -65,6 +65,15 @@ const cityCenterMap = ref(new Map<string, number[]>())
 const DEFAULT_CENTER: [number, number] = [126.5, 47.5]
 const DEFAULT_ZOOM = 1.2
 
+function formatTooltipValue(val: any, dim: string): string {
+  if (val === null || val === undefined || val === '') return '--'
+  const num = Number(val)
+  if (isNaN(num)) return String(val)
+  const formatted = num.toLocaleString()
+  const unit = chartStyleRef.value.series.mapTooltipDimensionUnits?.[dim]
+  return unit ? formatted + unit : formatted
+}
+
 function buildOption(): any {
   const cs = chartStyleRef.value ?? DEFAULT_CHART_STYLE
   const ds = optionRef.value.dataset ?? { dimensions: [], source: [] }
@@ -92,11 +101,20 @@ function buildOption(): any {
       textStyle: { color: cs.tooltip.textColor, fontSize: 12 },
       formatter: (params: any) => {
         if (params.seriesType !== 'map') return ''
-        if (params.data && params.data.coord) {
-          return `<b>${params.name}</b><br/>数值: ${params.data.value ?? '--'}`
-        }
-        const val = params.value ?? '-'
-        return `<b>${params.name}</b><br/>数值: ${val}`
+        const row = params.data?.fullRow
+        const dims = ds.dimensions ?? []
+        if (!row || !dims.length) return ''
+        let html = ''
+        dims.forEach((dim: string, idx: number) => {
+          const val = row[idx] ?? '--'
+          const formatted = formatTooltipValue(val, dim)
+          if (idx === 0) {
+            html += `<b>${dim}：${formatted}</b><br/>`
+          } else {
+            html += `${dim}：${formatted}<br/>`
+          }
+        })
+        return html
       },
     }
   }
@@ -147,6 +165,7 @@ function buildOption(): any {
     data: source.map((item: any) => ({
       name: item?.[0] ?? '',
       value: item?.[1] ?? 0,
+      fullRow: item,
     })),
     markPoint: s.mapMarkPointShow ? {
       symbol: 'circle',

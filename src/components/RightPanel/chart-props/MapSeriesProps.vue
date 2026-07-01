@@ -95,6 +95,17 @@
         </div>
       </div>
     </details>
+    <details class="style-section">
+      <summary class="style-summary">Tooltip 维度单位</summary>
+      <div class="prop-form" style="padding: 8px;">
+        <div v-for="(entry, idx) in unitEntries" :key="idx" class="prop-group" style="display:flex;gap:6px;align-items:center;">
+          <input type="text" class="prop-input" style="flex:1;" placeholder="维度名" :value="entry[0]" @input="onDimChange(idx, ($event.target as HTMLInputElement).value)" />
+          <input type="text" class="prop-input" style="flex:1;" placeholder="单位后缀" :value="entry[1]" @input="onUnitChange(idx, ($event.target as HTMLInputElement).value)" />
+          <button class="cell-remove" @click="removeUnit(idx)">✕</button>
+        </div>
+        <button class="add-btn" @click="addUnit">+ 添加映射</button>
+      </div>
+    </details>
   </div>
 </template>
 
@@ -105,12 +116,77 @@ import { useDashboardStore } from '../../../stores/dashboard'
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)
 
+const unitEntries = computed(() => {
+  const units = comp.chartStyle?.series.mapTooltipDimensionUnits || {}
+  return Object.entries(units) as [string, string][]
+})
+
 function onChartStyle(path: string, value: any) {
   if (!store.selectedComponent) return
   store.updateChartStyle(store.selectedComponent.id, path, value)
+}
+
+function onDimChange(idx: number, newDim: string) {
+  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  const entries = Object.entries(units)
+  const [, unit] = entries[idx]
+  delete units[entries[idx][0]]
+  if (newDim) units[newDim] = unit
+  onChartStyle('series.mapTooltipDimensionUnits', units)
+}
+
+function onUnitChange(idx: number, newUnit: string) {
+  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  const entries = Object.entries(units)
+  const [dim] = entries[idx]
+  units[dim] = newUnit
+  onChartStyle('series.mapTooltipDimensionUnits', units)
+}
+
+function addUnit() {
+  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  units[`维度${Object.keys(units).length + 1}`] = ''
+  onChartStyle('series.mapTooltipDimensionUnits', units)
+}
+
+function removeUnit(idx: number) {
+  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  const entries = Object.entries(units)
+  delete units[entries[idx][0]]
+  onChartStyle('series.mapTooltipDimensionUnits', units)
 }
 </script>
 
 <style>
 @import './shared-form-styles.css';
+</style>
+<style scoped>
+.cell-remove {
+  flex: 0 0 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: 1px solid #45475a;
+  border-radius: 4px;
+  color: #6c7086;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.15s;
+}
+.cell-remove:hover { background: #f38ba8; color: #1e1e2e; }
+.add-btn {
+  padding: 4px 8px;
+  background: #313244;
+  border: 1px dashed #45475a;
+  border-radius: 4px;
+  color: #6c7086;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 4px;
+  width: 100%;
+}
+.add-btn:hover { background: #45475a; color: #cdd6f4; border-color: #89b4fa; }
 </style>

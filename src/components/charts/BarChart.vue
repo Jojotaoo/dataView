@@ -46,15 +46,17 @@ const filteredOption = computed(() => {
   }
 })
 
-const seriesOption = computed((): SeriesOption => {
+const seriesOption = computed((): SeriesOption[] => {
   const s = chartStyleRef.value.series
-  const dims = optionRef.value.dataset?.dimensions
+  const dims = optionRef.value.dataset?.dimensions ?? []
   const useColorList = s.colorList.length > 0
-  return {
+  return dims.slice(1).map((dim: string, idx: number) => ({
     type: 'bar',
-    name: dims?.[1] ?? '',
-    encode: { x: 0, y: 1 },
+    name: dim,
+    encode: { x: 0, y: idx + 1 },
     barWidth: s.barWidth as any,
+    barGap: s.barGap as any,
+    barCategoryGap: s.barCategoryGap as any,
     itemStyle: {
       borderRadius: [s.barBorderRadius, s.barBorderRadius, 0, 0],
       ...(useColorList ? {} : {
@@ -70,10 +72,10 @@ const seriesOption = computed((): SeriesOption => {
           position: 'top',
           color: s.labelColor,
           fontSize: s.labelFontSize,
-          formatter: (p: any) => (p.data?.[1] ?? p.value),
+          formatter: (p: any) => (p.data?.[idx + 1] ?? p.value),
         }
       : { show: false },
-  }
+  }))
 })
 
 const containerBg = computed(() => {

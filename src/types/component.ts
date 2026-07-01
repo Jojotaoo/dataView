@@ -123,6 +123,8 @@ export interface ChartStyleConfig {
     symbol: string
     symbolSize: number
     barWidth: number | string
+    barGap: string | number
+    barCategoryGap: string | number
     barBorderRadius: number
     lineWidth: number
     showArea: boolean
@@ -158,6 +160,7 @@ export interface ChartStyleConfig {
     mapMiniMapShow: boolean
     mapMiniMapWidth: number
     mapMiniMapHeight: number
+    mapTooltipDimensionUnits: Record<string, string>
   }
   tooltip: {
     show: boolean
@@ -179,7 +182,7 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
   yAxis: { show: true, name: '', labelFontSize: 11, min: null, max: null, splitLineShow: true, splitLineColor: '#313244', labelColor: '#a6adc8' },
   series: {
     smooth: true, symbol: 'circle', symbolSize: 8,
-    barWidth: '50%', barBorderRadius: 4, lineWidth: 3,
+    barWidth: '50%', barGap: '30%', barCategoryGap: '20%', barBorderRadius: 4, lineWidth: 3,
     showArea: true, showLabel: true, labelFontSize: 11,
     color: '#89b4fa', colorEnd: '#45475a',
     colorList: ['#89b4fa', '#f38ba8', '#a6e3a1', '#fab387', '#cba6f7', '#94e2d5', '#f9e2af', '#74c7ec'],
@@ -193,6 +196,7 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
     mapMarkPointColor: '#e74c3c', mapMarkPointLabelShow: true, mapMarkPointLabelFontSize: 11,
     mapSelectColor: '#e76f51', mapSelectLabelColor: '#000',
     mapMiniMapShow: true, mapMiniMapWidth: 150, mapMiniMapHeight: 120,
+    mapTooltipDimensionUnits: {},
   },
   tooltip: { show: true, trigger: 'axis', backgroundColor: '#313244', borderColor: '#45475a', textColor: '#cdd6f4' },
   backgroundColor: '#1e1e2e',

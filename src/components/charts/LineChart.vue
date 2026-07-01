@@ -54,14 +54,14 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-const seriesOption = computed((): SeriesOption => {
+const seriesOption = computed((): SeriesOption[] => {
   const s = chartStyleRef.value.series
-  const dims = optionRef.value.dataset?.dimensions
+  const dims = optionRef.value.dataset?.dimensions ?? []
   const useColorList = s.colorList.length > 0
-  return {
+  return dims.slice(1).map((dim: string, idx: number) => ({
     type: 'line',
-    name: dims?.[1] ?? '',
-    encode: { x: 0, y: 1 },
+    name: dim,
+    encode: { x: 0, y: idx + 1 },
     smooth: s.smooth,
     symbol: s.symbol === 'none' ? 'none' : s.symbol,
     symbolSize: s.symbol === 'none' ? 0 : s.symbolSize,
@@ -75,7 +75,7 @@ const seriesOption = computed((): SeriesOption => {
     areaStyle: s.showArea
       ? {
           color: useColorList
-            ? hexToRgba(s.colorList[0] ?? s.color, s.areaOpacityStart)
+            ? hexToRgba(s.colorList[idx % s.colorList.length] ?? s.color, s.areaOpacityStart)
             : new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                 { offset: 0, color: hexToRgba(s.color, s.areaOpacityStart) },
                 { offset: 1, color: hexToRgba(s.color, s.areaOpacityEnd) },
@@ -88,10 +88,10 @@ const seriesOption = computed((): SeriesOption => {
           position: 'top',
           color: s.labelColor,
           fontSize: s.labelFontSize,
-          formatter: (p: any) => (p.data?.[1] ?? p.value),
+          formatter: (p: any) => (p.data?.[idx + 1] ?? p.value),
         }
       : { show: false },
-  }
+  }))
 })
 
 const containerBg = computed(() => {
