@@ -612,6 +612,52 @@ export const useDashboardStore = defineStore('dashboard', () => {
     selectedIds.value = [newId]
   }
 
+  function loadSchema(schema: { editCanvasConfig?: any; requestGlobalConfig?: any; componentList?: any[] }) {
+    if (schema.editCanvasConfig) {
+      Object.assign(editCanvasConfig.value, schema.editCanvasConfig)
+    }
+    if (schema.requestGlobalConfig) {
+      Object.assign(requestGlobalConfig.value, schema.requestGlobalConfig)
+    }
+
+    const newComponents: CanvasComponent[] = (schema.componentList ?? []).map((item: any, index: number) => {
+      const newId = generateId()
+      return {
+        id: newId,
+        key: item.key,
+        isGroup: item.isGroup,
+        chartConfig: item.chartConfig,
+        attr: { ...DEFAULT_ATTR, ...item.attr, zIndex: index },
+        styles: { ...DEFAULT_STYLES, ...(item.styles ?? {}) },
+        status: { ...DEFAULT_STATUS, ...(item.status ?? {}) },
+        preview: { ...DEFAULT_PREVIEW, ...(item.preview ?? {}) },
+        filter: item.filter,
+        option: item.option ?? {},
+        chartStyle: item.chartStyle ?? { ...DEFAULT_CHART_STYLE },
+        props: deepClone(item.props ?? {}),
+        events: item.events,
+        interactActions: item.interactActions,
+        request: item.request,
+        groupList: item.groupList
+          ? item.groupList.map((child: any) => ({
+              ...child,
+              id: generateId(),
+              attr: { ...DEFAULT_ATTR, ...child.attr },
+              styles: { ...DEFAULT_STYLES, ...(child.styles ?? {}) },
+              status: { ...DEFAULT_STATUS, ...(child.status ?? {}) },
+              preview: { ...DEFAULT_PREVIEW, ...(child.preview ?? {}) },
+              props: deepClone(child.props ?? {}),
+              chartStyle: child.chartStyle ?? { ...DEFAULT_CHART_STYLE },
+            }))
+          : undefined,
+      }
+    })
+
+    components.value = newComponents
+    selectedId.value = null
+    selectedIds.value = []
+  }
+
   return {
     components,
     selectedId,
@@ -667,5 +713,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     applyInteractAction,
     clearInteractFilters,
     duplicateComponent,
+    loadSchema,
   }
 })
