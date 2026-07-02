@@ -96,6 +96,14 @@
             :height="comp.attr.h"
             :image-props="comp.props"
           />
+          <HeaderLineChart
+            v-else-if="comp.key === 'HeaderLine'"
+            :component-id="comp.id"
+            :option="comp.option"
+            :width="comp.attr.w"
+            :height="comp.attr.h"
+            :line-props="comp.props"
+          />
           <DataFetchManager :component-id="comp.id" mode="preview" />
         </div>
         <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -121,6 +129,7 @@ import TextDisplay from '../components/charts/TextDisplay.vue'
 import BackgroundCard from '../components/charts/BackgroundCard.vue'
 import RiskScrollList from '../components/charts/RiskScrollList.vue'
 import ImageDisplay from '../components/charts/ImageDisplay.vue'
+import HeaderLineChart from '../components/charts/HeaderLineChart.vue'
 import GroupPreview from '../components/charts/GroupPreview.vue'
 import DataFetchManager from '../components/charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'
