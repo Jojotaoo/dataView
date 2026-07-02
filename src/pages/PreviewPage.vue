@@ -104,6 +104,14 @@
             :height="comp.attr.h"
             :line-props="comp.props"
           />
+          <DateTimeDisplay
+            v-else-if="comp.key === 'DateTimeDisplay'"
+            :component-id="comp.id"
+            :option="comp.option"
+            :width="comp.attr.w"
+            :height="comp.attr.h"
+            :datetime-props="comp.props"
+          />
           <DataFetchManager :component-id="comp.id" mode="preview" />
         </div>
         <div v-if="rootComponents.length === 0" class="preview-empty">
@@ -130,6 +138,7 @@ import BackgroundCard from '../components/charts/BackgroundCard.vue'
 import RiskScrollList from '../components/charts/RiskScrollList.vue'
 import ImageDisplay from '../components/charts/ImageDisplay.vue'
 import HeaderLineChart from '../components/charts/HeaderLineChart.vue'
+import DateTimeDisplay from '../components/charts/DateTimeDisplay.vue'
 import GroupPreview from '../components/charts/GroupPreview.vue'
 import DataFetchManager from '../components/charts/DataFetchManager.vue'
 import type { ChartEditStorage, CreateComponentType } from '../types'

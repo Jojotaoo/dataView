@@ -154,6 +154,14 @@
                 :height="comp.attr.h"
                 :line-props="comp.props"
               />
+              <DateTimeDisplay
+                v-else-if="comp.key === 'DateTimeDisplay'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :datetime-props="comp.props"
+              />
             </div>
             <div
               v-if="!comp.status.lock && comp.key !== 'group'"
@@ -205,6 +213,7 @@ import BackgroundCard from './charts/BackgroundCard.vue'
 import RiskScrollList from './charts/RiskScrollList.vue'
 import ImageDisplay from './charts/ImageDisplay.vue'
 import HeaderLineChart from './charts/HeaderLineChart.vue'
+import DateTimeDisplay from './charts/DateTimeDisplay.vue'
 import GroupComponent from './charts/GroupComponent.vue'
 import ContextMenu from './ContextMenu.vue'
 import DataFetchManager from './charts/DataFetchManager.vue'
