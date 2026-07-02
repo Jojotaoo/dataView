@@ -128,6 +128,7 @@ const containerStyle = computed(() => ({
   width: '100%',
   height: '100%',
   background: bgColor.value,
+  background: 'transparent',
   borderRadius: borderRadius.value + 'px',
   border: `0px solid ${borderColor.value}`,
   boxShadow: shadow.value,

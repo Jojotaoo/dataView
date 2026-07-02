@@ -173,7 +173,7 @@ const seriesOption = computed((): SeriesOption => {
       },
     },
     itemStyle: {
-      borderRadius: 4,
+      borderRadius: 0,
       borderColor: 'transparent',
       borderWidth: 2,
     },

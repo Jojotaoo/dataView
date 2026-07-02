@@ -21,6 +21,19 @@ import { rectsIntersect, findInGroupList, removeFromGroupList } from './utils'
 import { applyTheme, type ChartThemePreset } from '../config/chartThemes'
 
 export const useDashboardStore = defineStore('dashboard', () => {
+  function deepClone<T>(obj: T): T {
+    if (obj === null || typeof obj !== 'object') return obj
+    if (obj instanceof Date) return new Date(obj.getTime()) as unknown as T
+    if (Array.isArray(obj)) return obj.map(deepClone) as unknown as T
+    const result: any = {}
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = deepClone((obj as any)[key])
+      }
+    }
+    return result as T
+  }
+
   const components = ref<CanvasComponent[]>([])
   const selectedId = ref<string | null>(null)
   const selectedIds = ref<string[]>([])
@@ -66,7 +79,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     const comp: CanvasComponent = {
       id,
       key: def.key,
-      props: structuredClone(def.defaultProps),
+      props: deepClone(def.defaultProps),
       chartConfig: {
         key: def.key,
         chartKey: def.chartKey,
@@ -90,9 +103,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
       styles: { ...DEFAULT_STYLES },
       status: { ...DEFAULT_STATUS },
       preview: { ...DEFAULT_PREVIEW },
-      option: structuredClone(def.defaultOption),
-      chartStyle: structuredClone(DEFAULT_CHART_STYLE),
-      interactActions: def.defaultInteractActions ? structuredClone(def.defaultInteractActions) : [],
+      option: deepClone(def.defaultOption),
+      chartStyle: deepClone(DEFAULT_CHART_STYLE),
+      interactActions: def.defaultInteractActions ? deepClone(def.defaultInteractActions) : [],
       request: {
         requestDataType: 0,
         requestHttpType: 'get',
@@ -113,6 +126,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       },
     }
     components.value.push(comp)
+    // components.value = [...components.value, comp]
     selectedId.value = comp.id
     selectedIds.value = [comp.id]
   }
@@ -562,6 +576,42 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  function duplicateComponent(id: string) {
+    const source = findComponent(id)
+    if (!source) return
+
+    const newId = generateId()
+    const cloned: CanvasComponent = {
+      id: newId,
+      key: source.key,
+      isGroup: source.isGroup,
+      chartConfig: {
+        ...deepClone(source.chartConfig),
+        title: source.chartConfig.title + ' - 复制',
+      },
+      attr: {
+        ...deepClone(source.attr),
+        x: source.attr.x + 20,
+        y: source.attr.y + 20,
+        zIndex: components.value.length,
+      },
+      styles: deepClone(source.styles),
+      status: deepClone(source.status),
+      preview: deepClone(source.preview),
+      option: deepClone(source.option),
+      chartStyle: deepClone(source.chartStyle ?? DEFAULT_CHART_STYLE),
+      props: deepClone(source.props),
+    }
+
+    if (source.isGroup && source.groupList) {
+      cloned.groupList = deepClone(source.groupList)
+    }
+
+    components.value = [...components.value, cloned]
+    selectedId.value = newId
+    selectedIds.value = [newId]
+  }
+
   return {
     components,
     selectedId,
@@ -616,5 +666,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     updateInteractEvent,
     applyInteractAction,
     clearInteractFilters,
+    duplicateComponent,
   }
 })

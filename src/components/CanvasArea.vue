@@ -186,8 +186,10 @@
       :y="ctxMenu.y"
       :can-group="store.selectedIds.length >= 2"
       :can-ungroup="ctxMenu.isGroup"
+      :can-duplicate="canDuplicate"
       @group="handleGroup"
       @ungroup="handleUngroup"
+      @duplicate="handleDuplicate"
       @delete="handleDelete"
       @close="ctxMenu.show = false"
     />
@@ -255,7 +257,7 @@ const { selRect, onCanvasMouseDown, cleanup: cleanupBoxSelect } = useBoxSelect(
   () => store.clearSelection(),
 )
 
-const { onDraggableChange, onComponentClick, onContextMenu, handleGroup, handleUngroup, handleDelete, findParentGroup } = useCanvasInteraction(ctxMenu)
+const { onDraggableChange, onComponentClick, onContextMenu, handleGroup, handleUngroup, handleDelete, handleDuplicate, canDuplicate, findParentGroup } = useCanvasInteraction(ctxMenu)
 
 const selRectStyle = computed(() => {
   if (!selRect.value) return {}

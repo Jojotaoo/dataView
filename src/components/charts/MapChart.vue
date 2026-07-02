@@ -141,6 +141,7 @@ function buildOption(): any {
     roam: false, // 不允许缩放控制，设置为不允许缩放
     scaleLimit: { min: 1, max: 10 },
     selectedMode: 'single',
+    zoom: 1.2,
     label: {
       show: s.mapLabelShow,
       color: s.mapLabelColor,

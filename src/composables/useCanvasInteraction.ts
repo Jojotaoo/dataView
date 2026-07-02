@@ -1,4 +1,4 @@
-import { type Ref } from 'vue'
+import { type Ref, computed } from 'vue'
 import { useDashboardStore } from '../stores/dashboard'
 import type { CanvasComponent } from '../types'
 
@@ -103,6 +103,23 @@ export function useCanvasInteraction(ctxMenu: Ref<ContextMenuState>) {
     }
   }
 
+  function handleDuplicate() {
+    ctxMenu.value.show = false
+    if (ctxMenu.value.ctxId) {
+      store.duplicateComponent(ctxMenu.value.ctxId)
+    }
+  }
+
+  const canDuplicate = computed(() => {
+    if (!ctxMenu.value.ctxId) return false
+    if (ctxMenu.value.isGroup) return true
+    const comp = store.components.find(c => c.id === ctxMenu.value.ctxId)
+    if (comp) return true
+    const parentGroup = findParentGroup(ctxMenu.value.ctxId)
+    if (parentGroup) return true
+    return false
+  })
+
   return {
     onDraggableChange,
     onComponentClick,
@@ -110,6 +127,8 @@ export function useCanvasInteraction(ctxMenu: Ref<ContextMenuState>) {
     handleGroup,
     handleUngroup,
     handleDelete,
+    handleDuplicate,
+    canDuplicate,
     findParentGroup,
   }
 }

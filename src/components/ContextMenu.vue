@@ -3,6 +3,12 @@
     <div class="cm-menu" :style="{ left: x + 'px', top: y + 'px' }" @click.stop>
       <button
         class="cm-item"
+        :class="{ disabled: !canDuplicate }"
+        :disabled="!canDuplicate"
+        @click="emit('duplicate')"
+      >复制</button>
+      <button
+        class="cm-item"
         :class="{ disabled: !canGroup }"
         :disabled="!canGroup"
         @click="emit('group')"
@@ -23,6 +29,7 @@ const emit = defineEmits<{
   group: []
   ungroup: []
   delete: []
+  duplicate: []
   close: []
 }>()
 
@@ -31,6 +38,7 @@ defineProps<{
   y: number
   canGroup: boolean
   canUngroup: boolean
+  canDuplicate: boolean
 }>()
 </script>
 
