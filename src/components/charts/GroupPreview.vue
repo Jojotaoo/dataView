@@ -1,5 +1,5 @@
 <template>
-  <div class="group-preview" :style="{ backgroundColor: 'rgba(137, 180, 250, 0.04)' }">
+  <div class="group-preview"">
     <div
       v-for="child in groupList"
       :key="child.id"
@@ -95,6 +95,22 @@
         :height="child.attr.h"
         :image-props="(child as any).props"
       />
+      <HeaderLineChart
+        v-else-if="child.key === 'HeaderLine'"
+        :component-id="child.id"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :line-props="(child as any).props"
+      />
+      <DateTimeDisplay
+        v-else-if="child.key === 'DateTimeDisplay'"
+        :component-id="child.id"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :datetime-props="(child as any).props"
+      />
       <DataFetchManager :component-id="child.id" mode="preview" />
     </div>
   </div>
@@ -112,6 +128,8 @@ import TextDisplay from './TextDisplay.vue'
 import BackgroundCard from './BackgroundCard.vue'
 import RiskScrollList from './RiskScrollList.vue'
 import ImageDisplay from './ImageDisplay.vue'
+import HeaderLineChart from './HeaderLineChart.vue'
+import DateTimeDisplay from './DateTimeDisplay.vue'
 import GroupPreview from './GroupPreview.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import type { CreateComponentType } from '../../types'

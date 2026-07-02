@@ -94,6 +94,22 @@
         :height="child.attr.h"
         :image-props="(child as any).props"
       />
+      <HeaderLineChart
+        v-else-if="child.key === 'HeaderLine'"
+        :component-id="child.id"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :line-props="(child as any).props"
+      />
+      <DateTimeDisplay
+        v-else-if="child.key === 'DateTimeDisplay'"
+        :component-id="child.id"
+        :option="child.option"
+        :width="child.attr.w"
+        :height="child.attr.h"
+        :datetime-props="(child as any).props"
+      />
       <DataFetchManager :component-id="child.id" mode="design" />
     </div>
   </div>
@@ -111,6 +127,8 @@ import TextDisplay from './TextDisplay.vue'
 import BackgroundCard from './BackgroundCard.vue'
 import RiskScrollList from './RiskScrollList.vue'
 import ImageDisplay from './ImageDisplay.vue'
+import HeaderLineChart from './HeaderLineChart.vue'
+import DateTimeDisplay from './DateTimeDisplay.vue'
 import GroupComponent from './GroupComponent.vue'
 import DataFetchManager from './DataFetchManager.vue'
 import { useDashboardStore } from '../../stores/dashboard'
