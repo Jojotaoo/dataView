@@ -126,6 +126,7 @@ export interface ChartStyleConfig {
     barGap: string | number
     barCategoryGap: string | number
     barBorderRadius: number
+    barColorByData: boolean
     lineWidth: number
     showArea: boolean
     showLabel: boolean
@@ -182,7 +183,7 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
   yAxis: { show: true, name: '', labelFontSize: 11, min: null, max: null, splitLineShow: true, splitLineColor: '#313244', labelColor: '#a6adc8' },
   series: {
     smooth: true, symbol: 'circle', symbolSize: 8,
-    barWidth: '50%', barGap: '30%', barCategoryGap: '20%', barBorderRadius: 4, lineWidth: 3,
+    barWidth: '50%', barGap: '30%', barCategoryGap: '20%', barBorderRadius: 4, barColorByData: false, lineWidth: 3,
     showArea: true, showLabel: true, labelFontSize: 11,
     color: '#89b4fa', colorEnd: '#45475a',
     colorList: ['#89b4fa', '#f38ba8', '#a6e3a1', '#fab387', '#cba6f7', '#94e2d5', '#f9e2af', '#74c7ec'],

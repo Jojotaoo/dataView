@@ -59,12 +59,18 @@ const seriesOption = computed((): SeriesOption[] => {
     barCategoryGap: s.barCategoryGap as any,
     itemStyle: {
       borderRadius: [s.barBorderRadius, s.barBorderRadius, 0, 0],
-      ...(useColorList ? {} : {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: s.color },
-          { offset: 1, color: s.colorEnd },
-        ]),
-      }),
+      ...(s.barColorByData && useColorList
+        ? {
+            color: (params: any) => s.colorList[params.dataIndex % s.colorList.length],
+          }
+        : useColorList
+          ? {}
+          : {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: s.color },
+                { offset: 1, color: s.colorEnd },
+              ]),
+            }),
     },
     label: s.showLabel
       ? {

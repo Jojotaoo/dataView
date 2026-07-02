@@ -16,6 +16,13 @@
       <label class="prop-label">系列间距 (barGap)</label>
       <input type="text" class="prop-input" :value="comp.chartStyle?.series.barGap" @input="onChartStyle('series.barGap', ($event.target as HTMLInputElement).value)" placeholder="例如: 30% 或 10" />
     </div>
+    <div class="prop-group row">
+      <label class="prop-label">单柱不同色</label>
+      <label class="switch">
+        <input type="checkbox" :checked="comp.chartStyle?.series.barColorByData" @change="onChartStyle('series.barColorByData', ($event.target as HTMLInputElement).checked)" />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
   </div>
 </template>
 
