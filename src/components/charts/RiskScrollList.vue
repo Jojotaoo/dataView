@@ -64,12 +64,16 @@ const showFooter = computed(() => rp.value.showFooter ?? true)
 const bgColor = computed(() => rp.value.bgColor ?? '#ffffff')
 const borderRadius = computed(() => rp.value.borderRadius ?? 12)
 const borderColor = computed(() => rp.value.borderColor ?? '#e8ecf1')
+const containerBorderWidth = computed(() => rp.value.containerBorderWidth ?? 0)
 const shadow = computed(() => rp.value.shadow ?? '0 1px 4px rgba(0,0,0,0.04)')
 const maxHeight = computed(() => rp.value.maxHeight ?? 500)
 const itemPadding = computed(() => rp.value.itemPadding ?? '16px 24px')
 const itemBorderColor = computed(() => rp.value.itemBorderColor ?? '#f0f2f5')
 const itemBorderWidth = computed(() => rp.value.itemBorderWidth ?? 1)
 const itemBorderRadius = computed(() => rp.value.itemBorderRadius ?? 0)
+const itemBoxBorderColor = computed(() => rp.value.itemBoxBorderColor ?? '#e8ecf1')
+const itemBoxBorderWidth = computed(() => rp.value.itemBoxBorderWidth ?? 0)
+const itemBoxBorderRadius = computed(() => rp.value.itemBoxBorderRadius ?? 8)
 const itemGap = computed(() => rp.value.itemGap ?? 0)
 const itemHoverBg = computed(() => rp.value.itemHoverBg ?? '#fafbfc')
 const dotSize = computed(() => rp.value.dotSize ?? 10)
@@ -130,7 +134,7 @@ const containerStyle = computed(() => ({
   background: bgColor.value,
   background: 'transparent',
   borderRadius: borderRadius.value + 'px',
-  border: `0px solid ${borderColor.value}`,
+  border: `${containerBorderWidth.value}px solid ${borderColor.value}`,
   boxShadow: shadow.value,
   overflow: 'hidden',
   display: 'flex',
@@ -150,17 +154,26 @@ const scrollContentStyle = computed(() => ({
   '--scroll-duration': duration.value + 's',
 }))
 
-const itemStyle = computed(() => ({
-  display: 'flex',
-  alignItems: 'flex-start',
-  padding: itemPadding.value,
-  borderBottom: `${itemBorderWidth.value}px solid ${itemBorderColor.value}`,
-  gap: '14px',
-  transition: 'background 0.15s',
-  cursor: 'default',
-  marginBottom: itemGap.value + 'px',
-  borderRadius: itemBorderRadius.value + 'px',
-}))
+const useFullBorder = computed(() => rp.value.itemUseFullBorder ?? false)
+
+const itemStyle = computed(() => {
+  const hasBoxBorder = itemBoxBorderWidth.value > 0
+  return {
+    display: 'flex',
+    alignItems: 'flex-start',
+    padding: itemPadding.value,
+    ...(hasBoxBorder
+      ? { border: `${itemBoxBorderWidth.value}px solid ${itemBoxBorderColor.value}` }
+      : useFullBorder.value
+        ? { border: `${itemBorderWidth.value}px solid ${itemBorderColor.value}` }
+        : { borderBottom: `${itemBorderWidth.value}px solid ${itemBorderColor.value}` }),
+    gap: '14px',
+    transition: 'background 0.15s',
+    cursor: 'default',
+    marginBottom: itemGap.value + 'px',
+    borderRadius: hasBoxBorder ? itemBoxBorderRadius.value + 'px' : itemBorderRadius.value + 'px',
+  }
+})
 
 const nameStyle = computed(() => ({
   fontWeight: nameFontWeight.value,

@@ -16,6 +16,7 @@
         <option value="triangle">三角</option>
         <option value="diamond">菱形</option>
         <option value="none">无</option>
+        <option value="emptyCircle">123</option>
       </select>
     </div>
     <div class="prop-group">

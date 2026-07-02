@@ -16,6 +16,10 @@
           <input type="color" class="prop-color" :value="rp.borderColor ?? '#e8ecf1'" @input="onProp('borderColor', ($event.target as HTMLInputElement).value)" />
         </div>
         <div class="prop-group">
+          <label class="prop-label">边框宽度 ({{ rp.containerBorderWidth ?? 0 }}px)</label>
+          <input type="range" min="0" max="10" step="1" class="prop-range" :value="rp.containerBorderWidth ?? 0" @input="onProp('containerBorderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
           <label class="prop-label">最大高度 ({{ rp.maxHeight ?? 500 }}px)</label>
           <input type="range" min="200" max="1000" step="10" class="prop-range" :value="rp.maxHeight ?? 500" @input="onProp('maxHeight', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
@@ -56,6 +60,25 @@
         <div class="prop-group">
           <label class="prop-label">分隔线宽度 ({{ rp.itemBorderWidth ?? 1 }}px)</label>
           <input type="range" min="0" max="5" step="1" class="prop-range" :value="rp.itemBorderWidth ?? 1" @input="onProp('itemBorderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group row">
+          <label class="prop-label">完整边框</label>
+          <label class="switch">
+            <input type="checkbox" :checked="rp.itemUseFullBorder ?? false" @change="onProp('itemUseFullBorder', ($event.target as HTMLInputElement).checked)" />
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">边框颜色</label>
+          <input type="color" class="prop-color" :value="rp.itemBoxBorderColor ?? '#e8ecf1'" @input="onProp('itemBoxBorderColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">边框宽度 ({{ rp.itemBoxBorderWidth ?? 0 }}px)</label>
+          <input type="range" min="0" max="5" step="1" class="prop-range" :value="rp.itemBoxBorderWidth ?? 0" @input="onProp('itemBoxBorderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">边框圆角 ({{ rp.itemBoxBorderRadius ?? 8 }}px)</label>
+          <input type="range" min="0" max="20" step="1" class="prop-range" :value="rp.itemBoxBorderRadius ?? 8" @input="onProp('itemBoxBorderRadius', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
         <div class="prop-group">
           <label class="prop-label">行间距 ({{ rp.itemGap ?? 0 }}px)</label>
