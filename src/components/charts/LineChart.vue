@@ -74,12 +74,10 @@ const seriesOption = computed((): SeriesOption[] => {
     },
     areaStyle: s.showArea
       ? {
-          color: useColorList
-            ? hexToRgba(s.colorList[idx % s.colorList.length] ?? s.color, s.areaOpacityStart)
-            : new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: hexToRgba(s.color, s.areaOpacityStart) },
-                { offset: 1, color: hexToRgba(s.color, s.areaOpacityEnd) },
-              ]),
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: hexToRgba(useColorList ? (s.colorList[idx % s.colorList.length] ?? s.color) : s.color, s.areaOpacityStart) },
+            { offset: 1, color: hexToRgba(useColorList ? (s.colorList[idx % s.colorList.length] ?? s.color) : s.color, s.areaOpacityEnd) },
+          ]),
         }
       : undefined,
     label: s.showLabel
