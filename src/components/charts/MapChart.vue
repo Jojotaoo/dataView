@@ -269,7 +269,7 @@ function handleMapClick(params: any) {
     return
   } else {
     chartInstance.value?.setOption({
-      series: [{ center, zoom: 3.5, animationDurationUpdate: 800 }],
+      series: [{ center, zoom: 2.5, animationDurationUpdate: 800 }],
     })
     currentCity.value = name
     isZoomed.value = true
