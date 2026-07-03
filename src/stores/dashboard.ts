@@ -13,6 +13,7 @@ import {
   DEFAULT_STATUS,
   DEFAULT_PREVIEW,
   DEFAULT_CHART_STYLE,
+  DEFAULT_REQUEST,
 } from '../types'
 import type { EventsType, InteractActionItem, InteractEventItem } from '../types/events'
 import { useIdGenerator } from '../composables/useId'
@@ -106,24 +107,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       option: deepClone(def.defaultOption),
       chartStyle: deepClone(DEFAULT_CHART_STYLE),
       interactActions: def.defaultInteractActions ? deepClone(def.defaultInteractActions) : [],
-      request: {
-        requestDataType: 0,
-        requestHttpType: 'get',
-        requestUrl: '',
-        requestInterval: null,
-        requestIntervalUnit: 'second',
-        requestParamsBodyType: 'none',
-        requestParams: {
-          Params: {},
-          Header: {},
-          Body: {
-            'form-data': {},
-            'x-www-form-urlencoded': {},
-            json: '',
-            xml: '',
-          },
-        },
-      },
+      request: deepClone(DEFAULT_REQUEST),
     }
     components.value.push(comp)
     // components.value = [...components.value, comp]
@@ -601,6 +585,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
       option: deepClone(source.option),
       chartStyle: deepClone(source.chartStyle ?? DEFAULT_CHART_STYLE),
       props: deepClone(source.props),
+      filter: source.filter,
+      request: deepClone(source.request) ?? deepClone(DEFAULT_REQUEST),
+      events: deepClone(source.events),
+      interactActions: deepClone(source.interactActions),
     }
 
     if (source.isGroup && source.groupList) {

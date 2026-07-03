@@ -24,6 +24,25 @@ export interface ComponentRequestConfigType {
 
 export interface RequestConfigType extends ComponentRequestConfigType {}
 
+export const DEFAULT_REQUEST: RequestConfigType = {
+  requestDataType: 0,
+  requestHttpType: 'get',
+  requestUrl: '',
+  requestInterval: null,
+  requestIntervalUnit: 'second',
+  requestParamsBodyType: 'none',
+  requestParams: {
+    Params: {},
+    Header: {},
+    Body: {
+      'form-data': {},
+      'x-www-form-urlencoded': {},
+      json: '',
+      xml: '',
+    },
+  },
+}
+
 export interface ChartConfigType {
   key: string
   chartKey: string
