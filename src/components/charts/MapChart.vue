@@ -1,9 +1,9 @@
 <template>
   <div class="map-chart" :style="{ backgroundColor: containerBg }">
     <div ref="chartRef" class="map-chart-canvas"></div>
-    <button v-if="isZoomed" class="map-back-btn" @click="handleResetView">
+    <!-- <button v-if="isZoomed" class="map-back-btn" @click="handleResetView">
       ← 返回全省
-    </button>
+    </button> -->
   </div>
 </template>
 
