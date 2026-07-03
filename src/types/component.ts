@@ -154,10 +154,23 @@ export interface ChartStyleConfig {
     mapMarkPointShow: boolean
     mapMarkPointSymbolSize: number
     mapMarkPointColor: string
+    mapMarkPointBorderWidth: number
+    mapMarkPointShadowColor: string
     mapMarkPointLabelShow: boolean
     mapMarkPointLabelFontSize: number
     mapSelectColor: string
     mapSelectLabelColor: string
+    mapSelectBorderColor: string
+    mapSelectBorderWidth: number
+    mapSelectShadowBlur: number
+    mapSelectShadowColor: string
+    mapHoverBorderColor: string
+    mapHoverBorderWidth: number
+    mapHoverShadowBlur: number
+    mapHoverShadowColor: string
+    mapEmphasisLabelColor: string
+    mapEmphasisLabelFontSize: number
+    mapLabelFontWeight: number
     mapMiniMapShow: boolean
     mapMiniMapWidth: number
     mapMiniMapHeight: number
@@ -190,12 +203,15 @@ export const DEFAULT_CHART_STYLE: ChartStyleConfig = {
     areaOpacityStart: 0.4, areaOpacityEnd: 0.02,
     labelColor: '#cdd6f4',
     pieRadius: 0, pieRoseType: false, pieLabelPosition: 'outside', subTitle: '',
-    mapRegionColor: '#313244', mapRegionBorderColor: '#45475a', mapRegionHoverColor: '#89b4fa',
+    mapRegionColor: 'rgba(0,60,120,0.3)', mapRegionBorderColor: 'rgba(0,128,255,0.45)', mapRegionHoverColor: 'rgba(0,160,255,0.3)',
     mapLabelShow: true, mapLabelColor: '#cdd6f4', mapLabelFontSize: 11,
     mapVisualMin: 0, mapVisualMax: 200, mapVisualColors: ['#313244', '#89b4fa'],
-    mapVisualMapShow: true, mapMarkPointShow: true, mapMarkPointSymbolSize: 12,
-    mapMarkPointColor: '#e74c3c', mapMarkPointLabelShow: true, mapMarkPointLabelFontSize: 11,
-    mapSelectColor: '#e76f51', mapSelectLabelColor: '#000',
+    mapVisualMapShow: true,     mapMarkPointShow: true, mapMarkPointSymbolSize: 12,
+    mapMarkPointColor: '#0080ff', mapMarkPointBorderWidth: 0, mapMarkPointShadowColor: 'rgba(0,0,0,0.4)', mapMarkPointLabelShow: true, mapMarkPointLabelFontSize: 11,
+    mapSelectColor: 'rgba(0,180,255,0.35)', mapSelectLabelColor: '#00c8ff',
+    mapSelectBorderColor: '#00c8ff', mapSelectBorderWidth: 2, mapSelectShadowBlur: 8, mapSelectShadowColor: 'rgba(0,200,255,0.4)',
+    mapHoverBorderColor: '#40b0ff', mapHoverBorderWidth: 1, mapHoverShadowBlur: 6, mapHoverShadowColor: 'rgba(0,200,255,0.3)',
+    mapEmphasisLabelColor: '#00c8ff', mapEmphasisLabelFontSize: 12, mapLabelFontWeight: 500,
     mapMiniMapShow: true, mapMiniMapWidth: 150, mapMiniMapHeight: 120,
     mapTooltipDimensionUnits: {},
   },

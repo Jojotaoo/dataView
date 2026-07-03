@@ -16,8 +16,40 @@
           <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapRegionHoverColor" @input="onChartStyle('series.mapRegionHoverColor', ($event.target as HTMLInputElement).value)" />
         </div>
         <div class="prop-group">
+          <label class="prop-label">悬浮边界色</label>
+          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapHoverBorderColor" @input="onChartStyle('series.mapHoverBorderColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">悬浮边界宽度 ({{ comp.chartStyle?.series.mapHoverBorderWidth ?? 1 }}px)</label>
+          <input type="range" min="0" max="5" step="1" class="prop-range" :value="comp.chartStyle?.series.mapHoverBorderWidth ?? 1" @input="onChartStyle('series.mapHoverBorderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">悬浮发光 ({{ comp.chartStyle?.series.mapHoverShadowBlur ?? 6 }}px)</label>
+          <input type="range" min="0" max="20" step="1" class="prop-range" :value="comp.chartStyle?.series.mapHoverShadowBlur ?? 6" @input="onChartStyle('series.mapHoverShadowBlur', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">悬浮发光色</label>
+          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapHoverShadowColor ?? 'rgba(0,200,255,0.3)'" @input="onChartStyle('series.mapHoverShadowColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
           <label class="prop-label">选中颜色</label>
           <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapSelectColor" @input="onChartStyle('series.mapSelectColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">选中边界色</label>
+          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapSelectBorderColor" @input="onChartStyle('series.mapSelectBorderColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">选中边界宽度 ({{ comp.chartStyle?.series.mapSelectBorderWidth ?? 2 }}px)</label>
+          <input type="range" min="0" max="5" step="1" class="prop-range" :value="comp.chartStyle?.series.mapSelectBorderWidth ?? 2" @input="onChartStyle('series.mapSelectBorderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">选中发光 ({{ comp.chartStyle?.series.mapSelectShadowBlur ?? 8 }}px)</label>
+          <input type="range" min="0" max="20" step="1" class="prop-range" :value="comp.chartStyle?.series.mapSelectShadowBlur ?? 8" @input="onChartStyle('series.mapSelectShadowBlur', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">选中发光色</label>
+          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapSelectShadowColor ?? 'rgba(0,200,255,0.4)'" @input="onChartStyle('series.mapSelectShadowColor', ($event.target as HTMLInputElement).value)" />
         </div>
         <div class="prop-group row">
           <label class="prop-label">显示区域名称</label>
@@ -33,6 +65,23 @@
         <div class="prop-group">
           <label class="prop-label">标签字号 ({{ comp.chartStyle?.series.mapLabelFontSize }}px)</label>
           <input type="range" min="8" max="20" step="1" class="prop-range" :value="comp.chartStyle?.series.mapLabelFontSize" @input="onChartStyle('series.mapLabelFontSize', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">标签字重</label>
+          <select class="prop-select" :value="comp.chartStyle?.series.mapLabelFontWeight ?? 500" @change="onChartStyle('series.mapLabelFontWeight', parseInt(($event.target as HTMLSelectElement).value))">
+            <option :value="400">400</option>
+            <option :value="500">500</option>
+            <option :value="600">600</option>
+            <option :value="700">700</option>
+          </select>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">悬停标签颜色</label>
+          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapEmphasisLabelColor ?? '#00c8ff'" @input="onChartStyle('series.mapEmphasisLabelColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">悬停标签字号 ({{ comp.chartStyle?.series.mapEmphasisLabelFontSize ?? 12 }}px)</label>
+          <input type="range" min="8" max="20" step="1" class="prop-range" :value="comp.chartStyle?.series.mapEmphasisLabelFontSize ?? 12" @input="onChartStyle('series.mapEmphasisLabelFontSize', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
       </div>
     </details>
@@ -73,6 +122,20 @@
         <div class="prop-group">
           <label class="prop-label">标记点颜色</label>
           <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapMarkPointColor" @input="onChartStyle('series.mapMarkPointColor', ($event.target as HTMLInputElement).value)" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">边框宽度 ({{ comp.chartStyle?.series.mapMarkPointBorderWidth ?? 0 }}px)</label>
+          <input type="range" min="0" max="6" step="1" class="prop-range" :value="comp.chartStyle?.series.mapMarkPointBorderWidth ?? 0" @input="onChartStyle('series.mapMarkPointBorderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">阴影颜色</label>
+          <div class="color-picker-wrap">
+            <el-color-picker
+              :model-value="comp.chartStyle?.series.mapMarkPointShadowColor ?? 'rgba(0,0,0,0.4)'"
+              show-alpha
+              @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapMarkPointShadowColor', val)"
+            />
+          </div>
         </div>
         <div class="prop-group row">
           <label class="prop-label">显示标记标签</label>
@@ -159,6 +222,16 @@ function removeUnit(idx: number) {
 
 <style>
 @import './shared-form-styles.css';
+.color-picker-wrap {
+  display: flex;
+  align-items: center;
+}
+.color-picker-wrap .el-color-picker {
+  width: 100%;
+}
+.color-picker-wrap .el-color-picker__trigger {
+  width: 100%;
+}
 </style>
 <style scoped>
 .cell-remove {

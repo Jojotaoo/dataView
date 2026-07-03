@@ -96,23 +96,33 @@ function buildOption(): any {
   if (cs.tooltip.show && cs.tooltip.trigger !== 'none') {
     result.tooltip = {
       trigger: 'item',
-      backgroundColor: cs.tooltip.backgroundColor,
-      borderColor: cs.tooltip.borderColor,
-      textStyle: { color: cs.tooltip.textColor, fontSize: 12 },
+      backgroundColor: 'rgba(0,32,71,0.92)',
+      borderColor: 'rgba(0,200,255,0.4)',
+      borderWidth: 1,
+      borderRadius: 6,
+      padding: [12, 16],
+      textStyle: { color: '#ffffff', fontSize: 12 },
+      extraCssText: 'box-shadow: 0 4px 20px rgba(0,200,255,0.1); backdrop-filter: blur(8px);',
+      minWidth: 180,
       formatter: (params: any) => {
         if (params.seriesType !== 'map') return ''
         const row = params.data?.fullRow
         const dims = ds.dimensions ?? []
         if (!row || !dims.length) return ''
-        let html = ''
+        let html = `<div style="border-bottom: 1px solid rgba(0,200,255,0.2); margin-bottom: 8px; padding-bottom: 6px;">`
         dims.forEach((dim: string, idx: number) => {
           const val = row[idx] ?? '--'
           const formatted = formatTooltipValue(val, dim)
           if (idx === 0) {
-            html += `<b>${dim}：${formatted}</b><br/>`
-          } else {
-            html += `${dim}：${formatted}<br/>`
+            html += `<span style="color: #00c8ff; font-size: 14px; font-weight: 600;">${dim}：${formatted}</span>`
           }
+        })
+        html += `</div>`
+        dims.forEach((dim: string, idx: number) => {
+          if (idx === 0) return
+          const val = row[idx] ?? '--'
+          const formatted = formatTooltipValue(val, dim)
+          html += `<div style="color: rgba(255,255,255,0.7); font-size: 12px; line-height: 1.8;">${dim}：${formatted}</div>`
         })
         return html
       },
@@ -146,22 +156,46 @@ function buildOption(): any {
       show: s.mapLabelShow,
       color: s.mapLabelColor,
       fontSize: s.mapLabelFontSize,
+      fontWeight: s.mapLabelFontWeight ?? 500,
+      position: 'top' as const,
+      distance: 10,
     },
     select: {
-      label: { color: s.mapSelectLabelColor, fontWeight: 'bold' },
-      itemStyle: { areaColor: s.mapSelectColor },
+      label: { color: s.mapSelectLabelColor, fontWeight: 700, fontSize: (s.mapLabelFontSize ?? 11) + 1 },
+      itemStyle: {
+        areaColor: s.mapSelectColor,
+        borderColor: s.mapSelectBorderColor,
+        borderWidth: s.mapSelectBorderWidth,
+        shadowBlur: s.mapSelectShadowBlur,
+        shadowColor: s.mapSelectShadowColor,
+      },
     },
     emphasis: {
-      label: { show: true, fontSize: 13, fontWeight: 'bold', color: '#000' },
-      itemStyle: { areaColor: s.mapRegionHoverColor, borderColor: '#cdd6f4', borderWidth: 2 },
+      label: { show: true, fontSize: s.mapEmphasisLabelFontSize ?? 12, fontWeight: 700, color: s.mapEmphasisLabelColor },
+      itemStyle: {
+        areaColor: s.mapRegionHoverColor,
+        borderColor: s.mapHoverBorderColor,
+        borderWidth: s.mapHoverBorderWidth,
+        shadowBlur: s.mapHoverShadowBlur,
+        shadowColor: s.mapHoverShadowColor,
+      },
     },
     itemStyle: {
-      areaColor: s.mapRegionColor,
+      // areaColor: s.mapRegionColor,
+      areaColor: {
+        type: 'linear',
+        x: 0,      // 起始点百分比（左下）
+        y: 0.5,
+        x2: 0,     // 结束点百分比（右上）
+        y2: 0,
+        colorStops: [
+            { offset: 0, color: 'rgba(8,39,73,1)' }, // 0% 处为深蓝
+            { offset: 1, color: 'rgba(34,69,104,1)' }  // 100% 处为浅蓝
+        ],
+        global: false // 是否使用像素坐标，通常设为false
+      }, //s.mapRegionColor,
       borderColor: s.mapRegionBorderColor,
-      borderWidth: 1.2,
-      shadowBlur: 4,
-      shadowColor: 'rgba(0,0,0,0.06)',
-      shadowOffsetY: 2,
+      borderWidth: 1,
     },
     data: source.map((item: any) => ({
       name: item?.[0] ?? '',
@@ -174,9 +208,10 @@ function buildOption(): any {
       itemStyle: {
         color: s.mapMarkPointColor,
         borderColor: '#fff',
-        borderWidth: 2,
-        shadowBlur: 6,
-        shadowColor: 'rgba(0,0,0,0.3)',
+        borderWidth: s.mapMarkPointBorderWidth ?? 0,
+        shadowBlur: 2,
+        shadowColor: s.mapMarkPointShadowColor ?? 'rgba(0,0,0,0.4)',
+        shadowOffsetY: 1,
       },
       label: {
         show: s.mapMarkPointLabelShow,
@@ -190,7 +225,7 @@ function buildOption(): any {
         borderRadius: 4,
         borderColor: s.mapRegionBorderColor,
         borderWidth: 0.5,
-        distance: 8,
+        distance: 10,
       },
       data: GeoJSON.features.map((item: any) => ({
         name: item.properties.name,
@@ -234,7 +269,7 @@ function handleMapClick(params: any) {
     return
   } else {
     chartInstance.value?.setOption({
-      series: [{ center, zoom: 5.5, animationDurationUpdate: 800 }],
+      series: [{ center, zoom: 3.5, animationDurationUpdate: 800 }],
     })
     currentCity.value = name
     isZoomed.value = true
