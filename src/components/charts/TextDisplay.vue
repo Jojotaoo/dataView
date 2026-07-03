@@ -56,6 +56,10 @@ const localSubTextDefault = ref('')
 const localBorderColor = ref('transparent')
 const localBorderWidth = ref(0)
 const localBorderRadius = ref(8)
+const localShadowColor = ref('transparent')
+const localShadowX = ref(0)
+const localShadowY = ref(0)
+const localShadowBlur = ref(0)
 
 function buildDatasetMap(): Record<string, any> {
   const ds = props.option?.dataset
@@ -120,6 +124,10 @@ function syncFromProps() {
   localBorderColor.value = tp.borderColor ?? 'transparent'
   localBorderWidth.value = tp.borderWidth ?? 0
   localBorderRadius.value = tp.borderRadius ?? 8
+  localShadowColor.value = tp.shadowColor ?? 'transparent'
+  localShadowX.value = tp.shadowX ?? 0
+  localShadowY.value = tp.shadowY ?? 0
+  localShadowBlur.value = tp.shadowBlur ?? 0
 }
 
 watch(() => props.textProps, syncFromProps, { deep: true, immediate: true })
@@ -168,6 +176,10 @@ function rebuildStyles() {
     base.color = localTextColor.value
   }
 
+  if (localShadowBlur.value > 0 || localShadowX.value !== 0 || localShadowY.value !== 0) {
+    base.textShadow = `${localShadowX.value}px ${localShadowY.value}px ${localShadowBlur.value}px ${localShadowColor.value}`
+  }
+
   textStyle.value = base
 
   subtitleStyle.value = {
@@ -182,7 +194,7 @@ function rebuildStyles() {
   }
 }
 
-watch([rawText, localBgColor, localPaddingTop, localPaddingRight, localPaddingBottom, localPaddingLeft, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection, rawSubText, localSubFontSize, localSubFontWeight, localSubTextColor, localSubTextAlign, localSubLineHeight, localTextDefault, localSubTextDefault, localBorderColor, localBorderWidth, localBorderRadius], rebuildStyles, { immediate: true })
+watch([rawText, localBgColor, localPaddingTop, localPaddingRight, localPaddingBottom, localPaddingLeft, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection, rawSubText, localSubFontSize, localSubFontWeight, localSubTextColor, localSubTextAlign, localSubLineHeight, localTextDefault, localSubTextDefault, localBorderColor, localBorderWidth, localBorderRadius, localShadowColor, localShadowX, localShadowY, localShadowBlur], rebuildStyles, { immediate: true })
 </script>
 
 <style scoped>

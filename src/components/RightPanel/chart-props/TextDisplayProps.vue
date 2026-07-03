@@ -214,6 +214,34 @@
         </div>
       </div>
     </details>
+    <details class="style-section" :open="true">
+      <summary class="style-summary">阴影</summary>
+      <div class="prop-form" style="padding: 8px;">
+        <div class="prop-group">
+          <label class="prop-label">阴影颜色</label>
+          <div class="color-picker-wrap">
+            <el-color-picker
+              :model-value="comp.props?.shadowColor ?? 'transparent'"
+              show-alpha
+              :predefine="predefineColors"
+              @update:model-value="(val: string | null) => val !== null && onTextProp('shadowColor', val)"
+            />
+          </div>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">水平偏移 ({{ comp.props?.shadowX ?? 0 }}px)</label>
+          <input type="range" min="-20" max="20" step="1" class="prop-range" :value="comp.props?.shadowX ?? 0" @input="onTextProp('shadowX', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">垂直偏移 ({{ comp.props?.shadowY ?? 0 }}px)</label>
+          <input type="range" min="-20" max="20" step="1" class="prop-range" :value="comp.props?.shadowY ?? 0" @input="onTextProp('shadowY', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">模糊半径 ({{ comp.props?.shadowBlur ?? 0 }}px)</label>
+          <input type="range" min="0" max="30" step="1" class="prop-range" :value="comp.props?.shadowBlur ?? 0" @input="onTextProp('shadowBlur', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+      </div>
+    </details>
   </div>
 </template>
 
