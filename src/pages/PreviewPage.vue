@@ -1,6 +1,6 @@
 <template>
   <div class="preview-overlay">
-    <div class="preview-wrap" ref="wrapRef">
+    <div class="preview-wrap" ref="wrapRef" :style="wrapStyle">
       <div
         class="preview-stage"
         :style="stageStyle"
@@ -199,6 +199,11 @@ onUnmounted(() => {
 })
 
 const wrapRef = ref<HTMLDivElement>()
+
+const wrapStyle = computed(() => ({
+  backgroundColor: schema.value?.editCanvasConfig?.background || '#11111b',
+}))
+
 const { scale } = usePreviewScale(
   computed(() => schema.value?.editCanvasConfig.width ?? 1920),
   computed(() => schema.value?.editCanvasConfig.height ?? 1080),
