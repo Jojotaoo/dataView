@@ -141,7 +141,7 @@ import HeaderLineChart from '../components/charts/HeaderLineChart.vue'
 import DateTimeDisplay from '../components/charts/DateTimeDisplay.vue'
 import GroupPreview from '../components/charts/GroupPreview.vue'
 import DataFetchManager from '../components/charts/DataFetchManager.vue'
-import type { ChartEditStorage, CreateComponentType } from '../types'
+import type { ChartEditStorage, CreateComponentType, CanvasComponent } from '../types'
 
 const STORAGE_KEY = 'preview_schema'
 
@@ -177,6 +177,12 @@ onMounted(() => {
   }
   schema.value = JSON.parse(raw)
   localStorage.removeItem(STORAGE_KEY)
+
+  if (schema.value) {
+    store.editCanvasConfig = { ...store.editCanvasConfig, ...schema.value.editCanvasConfig }
+    store.requestGlobalConfig = { ...store.requestGlobalConfig, ...schema.value.requestGlobalConfig }
+    store.components = (schema.value.componentList ?? []) as unknown as CanvasComponent[]
+  }
 
   store.setPreviewMode(true)
   document.documentElement.requestFullscreen().catch(() => {})
