@@ -22,21 +22,12 @@
 
           <div class="prop-group row">
             <label class="prop-label">目标组件</label>
-            <div class="multi-select-dropdown" @click.stop>
-              <div class="multi-select-trigger" @click="toggleDropdown(index)">
-                <span class="multi-select-text">
-                  {{ getSelectedText(item.interactComponentIds) }}
-                </span>
-                <span class="multi-select-arrow" :class="{ open: openDropdownIndex === index }">&#9662;</span>
-              </div>
-              <div v-if="openDropdownIndex === index" class="multi-select-options">
-                <div v-for="c in otherComponents" :key="c.id" class="multi-select-option"
-                     @click.stop="toggleComponentSelection(item.interactComponentIds, c.id)">
-                  <input type="checkbox" :checked="item.interactComponentIds.includes(c.id)" />
-                  <span>{{ c.chartConfig.title }}</span>
-                </div>
-              </div>
-            </div>
+            <el-select v-model="item.interactComponentIds" multiple filterable
+                       collapse-tags :max-collapse-tags="2"
+                       placeholder="请选择目标组件" class="prop-select" style="flex:1;">
+              <el-option v-for="c in otherComponents" :key="c.id"
+                         :label="c.chartConfig.title" :value="c.id" />
+            </el-select>
           </div>
 
           <div class="prop-group row">
@@ -163,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { computed, watchEffect } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
 
 interface OverrideRow {
@@ -190,7 +181,6 @@ interface InteractEventItemUI {
 
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)
-const openDropdownIndex = ref<number | null>(null)
 
 const interactEvents = computed<InteractEventItemUI[]>(() => {
   return (comp.value?.events?.interactEvents as unknown as InteractEventItemUI[]) ?? []
@@ -205,29 +195,6 @@ function getTargetDimensions(targetIds: string[]) {
   if (!firstId) return []
   const target = store.findComponent(firstId)
   return target?.option?.dataset?.dimensions ?? []
-}
-
-function toggleDropdown(index: number) {
-  openDropdownIndex.value = openDropdownIndex.value === index ? null : index
-}
-
-function toggleComponentSelection(ids: string[], componentId: string) {
-  const idx = ids.indexOf(componentId)
-  if (idx >= 0) {
-    ids.splice(idx, 1)
-  } else {
-    ids.push(componentId)
-  }
-}
-
-function getSelectedText(ids: string[]): string {
-  if (!ids || ids.length === 0) return '请选择'
-  const names = ids
-    .map(id => store.findComponent(id)?.chartConfig.title)
-    .filter(Boolean)
-  if (names.length === 0) return '请选择'
-  if (names.length === 1) return names[0]
-  return `已选 ${names.length} 个`
 }
 
 function resolveValueSource(valueSource: string, customField: string): string {
