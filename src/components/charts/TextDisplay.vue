@@ -1,7 +1,7 @@
 <template>
   <div class="text-display" :style="containerStyle">
     <div class="text-content" :style="textStyle">{{ displayText }}</div>
-    <div v-if="displaySubText" class="text-subtitle" :style="subtitleStyle">{{ displaySubText }}</div>
+    <div v-if="displaySubText" class="text-subtitle" :style="subtitleStyle">{{ displayText.trim() && displaySubText }}</div>
   </div>
 </template>
 
