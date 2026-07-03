@@ -30,7 +30,10 @@ const { filteredSource } = useInteractFilter(componentIdRef, dimensions, source)
 
 const rawText = ref('文本内容')
 const localBgColor = ref('transparent')
-const localPadding = ref(12)
+const localPaddingTop = ref(12)
+const localPaddingRight = ref(12)
+const localPaddingBottom = ref(12)
+const localPaddingLeft = ref(12)
 const localFontSize = ref(32)
 const localFontWeight = ref('bold')
 const localTextAlign = ref('center')
@@ -50,6 +53,9 @@ const localSubTextAlign = ref('center')
 const localSubLineHeight = ref(1.5)
 const localTextDefault = ref('')
 const localSubTextDefault = ref('')
+const localBorderColor = ref('transparent')
+const localBorderWidth = ref(0)
+const localBorderRadius = ref(8)
 
 function buildDatasetMap(): Record<string, any> {
   const ds = props.option?.dataset
@@ -88,7 +94,10 @@ function syncFromProps() {
   const tp = props.textProps ?? {}
   rawText.value = tp.text ?? props.option?.title ?? '文本内容'
   localBgColor.value = tp.bgColor ?? 'transparent'
-  localPadding.value = tp.padding ?? 12
+  localPaddingTop.value = tp.paddingTop ?? 12
+  localPaddingRight.value = tp.paddingRight ?? 12
+  localPaddingBottom.value = tp.paddingBottom ?? 12
+  localPaddingLeft.value = tp.paddingLeft ?? 12
   localFontSize.value = tp.fontSize ?? 32
   localFontWeight.value = tp.fontWeight ?? 'bold'
   localTextAlign.value = tp.textAlign ?? 'center'
@@ -108,6 +117,9 @@ function syncFromProps() {
   localSubLineHeight.value = tp.subLineHeight ?? 1.5
   localTextDefault.value = tp.textDefault ?? ''
   localSubTextDefault.value = tp.subTextDefault ?? ''
+  localBorderColor.value = tp.borderColor ?? 'transparent'
+  localBorderWidth.value = tp.borderWidth ?? 0
+  localBorderRadius.value = tp.borderRadius ?? 8
 }
 
 watch(() => props.textProps, syncFromProps, { deep: true, immediate: true })
@@ -120,7 +132,7 @@ const subtitleStyle = ref({})
 function rebuildStyles() {
   containerStyle.value = {
     backgroundColor: localBgColor.value,
-    padding: `${localPadding.value}px`,
+    padding: `${localPaddingTop.value}px ${localPaddingRight.value}px ${localPaddingBottom.value}px ${localPaddingLeft.value}px`,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -128,7 +140,8 @@ function rebuildStyles() {
     width: '100%',
     height: '100%',
     boxSizing: 'border-box' as const,
-    borderRadius: '8px',
+    borderRadius: localBorderRadius.value + 'px',
+    border: localBorderWidth.value > 0 ? `${localBorderWidth.value}px solid ${localBorderColor.value}` : 'none',
   }
 
   const isGradient = localColorMode.value === 'gradient'
@@ -169,7 +182,7 @@ function rebuildStyles() {
   }
 }
 
-watch([rawText, localBgColor, localPadding, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection, rawSubText, localSubFontSize, localSubFontWeight, localSubTextColor, localSubTextAlign, localSubLineHeight, localTextDefault, localSubTextDefault], rebuildStyles, { immediate: true })
+watch([rawText, localBgColor, localPaddingTop, localPaddingRight, localPaddingBottom, localPaddingLeft, localFontSize, localFontWeight, localTextAlign, localLineHeight, localLetterSpacing, localColorMode, localTextColor, localGradientStart, localGradientEnd, localGradientDirection, rawSubText, localSubFontSize, localSubFontWeight, localSubTextColor, localSubTextAlign, localSubLineHeight, localTextDefault, localSubTextDefault, localBorderColor, localBorderWidth, localBorderRadius], rebuildStyles, { immediate: true })
 </script>
 
 <style scoped>

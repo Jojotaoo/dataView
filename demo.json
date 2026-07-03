@@ -23,7 +23,7 @@
   },
   "componentList": [
     {
-      "id": "0313c1fd-89e9-47c3-8220-94384ef7d11e",
+      "id": "dc254f7d-0c88-4db4-bfdd-2cf5ec260444",
       "key": "BackgroundCard",
       "chartConfig": {
         "key": "BackgroundCard",
@@ -230,7 +230,7 @@
       }
     },
     {
-      "id": "59c8998a-3aa9-4518-85c5-376ab2798f66",
+      "id": "a386a61f-cb25-456b-9230-3129b23f9ca6",
       "key": "BackgroundCard",
       "chartConfig": {
         "key": "BackgroundCard",
@@ -418,7 +418,7 @@
       }
     },
     {
-      "id": "edd689f2-c1ea-4235-b73e-1ce99df8c00f",
+      "id": "ee6891c3-7632-451a-a56b-8bec14e1c390",
       "key": "BackgroundCard",
       "chartConfig": {
         "key": "BackgroundCard",
@@ -606,7 +606,7 @@
       }
     },
     {
-      "id": "8fcbcf1b-f21e-4c63-98d2-a0446b9baa17",
+      "id": "04de71a2-aea8-47d5-b131-87d21051c9b2",
       "key": "BackgroundCard",
       "chartConfig": {
         "key": "BackgroundCard",
@@ -794,7 +794,7 @@
       }
     },
     {
-      "id": "0233ed4d-9cff-4b3d-9d17-c7c81d45cc47",
+      "id": "3743c96f-b998-4a60-8134-ab354562bc1f",
       "key": "HeilongjiangMap",
       "chartConfig": {
         "key": "HeilongjiangMap",
@@ -1062,7 +1062,7 @@
       "props": {}
     },
     {
-      "id": "a41d816b-fb24-4ab9-9421-4d3192928787",
+      "id": "092b9576-0cf9-4c5b-82a5-6ec015e97af3",
       "key": "BackgroundCard",
       "chartConfig": {
         "key": "BackgroundCard",
@@ -1250,7 +1250,7 @@
       }
     },
     {
-      "id": "02e12b1c-6eeb-473e-a35c-64f7ecd1bddb",
+      "id": "d9cc7c4d-d785-472e-ad49-7b81ebd1d5fc",
       "key": "BackgroundCard",
       "chartConfig": {
         "key": "BackgroundCard",
@@ -1438,7 +1438,7 @@
       }
     },
     {
-      "id": "3174eb32-d3b5-4061-8aaa-3e9ff07534da",
+      "id": "e468b752-b75a-47b4-8b70-0776f85cda09",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -1675,7 +1675,7 @@
       }
     },
     {
-      "id": "82575d4e-b8b8-4a99-bab5-2f308c931d52",
+      "id": "b27ede60-a0c4-4012-a561-1b232b05236b",
       "key": "HeaderLine",
       "chartConfig": {
         "key": "HeaderLine",
@@ -1861,7 +1861,7 @@
       }
     },
     {
-      "id": "b55f5d73-9879-40e4-8abd-b059a9fc9d90",
+      "id": "7539946e-8238-43b4-a1f0-0ffa540ac8ce",
       "key": "HeaderLine",
       "chartConfig": {
         "key": "HeaderLine",
@@ -2028,7 +2028,7 @@
       }
     },
     {
-      "id": "c2692728-f0de-4317-9616-f62a36a321ef",
+      "id": "dd5f7815-17f6-4f58-8352-566742ba63df",
       "key": "DateTimeDisplay",
       "chartConfig": {
         "key": "DateTimeDisplay",
@@ -2218,7 +2218,7 @@
       }
     },
     {
-      "id": "bf20adde-8f9a-41d7-9af0-08513a97df8b",
+      "id": "a7f6fb75-2494-46b3-bc0e-95b89faebc7c",
       "key": "PieGrid",
       "chartConfig": {
         "key": "PieGrid",
@@ -2450,7 +2450,7 @@
       "props": {}
     },
     {
-      "id": "8b7290e7-2cbe-406b-827c-0f5c372cd7b0",
+      "id": "84101367-f9f2-4d2a-a378-3b5be5ea09ae",
       "key": "BarCommon",
       "chartConfig": {
         "key": "BarCommon",
@@ -2691,7 +2691,7 @@
       "props": {}
     },
     {
-      "id": "0e0150dd-197c-4f13-80a9-4cb99e6e23a7",
+      "id": "070543c6-e235-401c-a520-1d517d0e601f",
       "key": "RiskScrollList",
       "chartConfig": {
         "key": "RiskScrollList",
@@ -2999,7 +2999,7 @@
       }
     },
     {
-      "id": "48874c7c-a78c-422b-b204-d4be07f8c35a",
+      "id": "d5e6e36c-aac2-4ff4-8447-e6ae2d4fd6ef",
       "key": "PieGrid",
       "chartConfig": {
         "key": "PieGrid",
@@ -3231,7 +3231,7 @@
       "props": {}
     },
     {
-      "id": "e21c0ee9-60b2-44b5-9fe3-f6bd56f03da7",
+      "id": "41db027a-c644-4778-a5d1-73b6c78c345f",
       "key": "LineCommon",
       "chartConfig": {
         "key": "LineCommon",
@@ -3494,7 +3494,7 @@
       "props": {}
     },
     {
-      "id": "013d291b-bef6-4491-a866-deb9efb90b90",
+      "id": "b0539c7f-b20a-4459-b19a-e446bdfd3762",
       "key": "ImageDisplay",
       "chartConfig": {
         "key": "ImageDisplay",
@@ -3684,7 +3684,7 @@
       }
     },
     {
-      "id": "ff6a4fcc-93f7-40a7-80ab-3fc9db3dead6",
+      "id": "ccf090e4-70d5-4b49-b4b9-a3415cf5a5d6",
       "key": "ImageDisplay",
       "chartConfig": {
         "key": "ImageDisplay",
@@ -3874,7 +3874,7 @@
       }
     },
     {
-      "id": "defeba94-8c93-4214-8760-5bf2f5b621bd",
+      "id": "a76d0372-0268-47e9-aa6c-f71c2ad7518f",
       "key": "ImageDisplay",
       "chartConfig": {
         "key": "ImageDisplay",
@@ -4064,7 +4064,7 @@
       }
     },
     {
-      "id": "f0be4aee-d1f3-475e-a6d3-ef2bf3fba7db",
+      "id": "350d188e-0850-4d19-a1a8-44b09ec4bd97",
       "key": "ImageDisplay",
       "chartConfig": {
         "key": "ImageDisplay",
@@ -4254,7 +4254,7 @@
       }
     },
     {
-      "id": "7be156cd-bfac-4e96-b1c6-0a709cafc4e4",
+      "id": "ab06d1bb-7972-41f1-a676-8e2585442571",
       "key": "ImageDisplay",
       "chartConfig": {
         "key": "ImageDisplay",
@@ -4444,7 +4444,7 @@
       }
     },
     {
-      "id": "a1250e6a-f04c-4635-9b4b-72d94b5c9cb0",
+      "id": "8f58c3a0-0f9a-49c8-aba2-fbfb2d3bf90d",
       "key": "ImageDisplay",
       "chartConfig": {
         "key": "ImageDisplay",
@@ -4634,7 +4634,7 @@
       }
     },
     {
-      "id": "d47320ee-1517-451b-a2a0-8ad3ef069f63",
+      "id": "ac7d7d7b-412a-4adc-af7d-f572422b2022",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -4649,10 +4649,10 @@
         "icon": "📝"
       },
       "attr": {
-        "x": 112,
-        "y": 170,
-        "w": 151.65169574577223,
-        "h": 60,
+        "x": 43,
+        "y": 165,
+        "w": 202,
+        "h": 67,
         "offsetX": 0,
         "offsetY": 0,
         "zIndex": 22
@@ -4857,7 +4857,7 @@
         "gradientStart": "#89b4fa",
         "gradientEnd": "#cba6f7",
         "gradientDirection": "to right",
-        "bgColor": "transparent",
+        "bgColor": "rgba(0, 64, 132, 0.3)",
         "lineHeight": 1,
         "letterSpacing": 0,
         "padding": 12,
@@ -4868,11 +4868,14 @@
         "subTextAlign": "left",
         "subLineHeight": 1.5,
         "textDefault": "459",
-        "subTextDefault": ""
+        "subTextDefault": "",
+        "paddingLeft": 80,
+        "borderWidth": 1,
+        "borderColor": "rgba(0, 128, 255, 0.1)"
       }
     },
     {
-      "id": "bb8deff9-346a-4816-91d3-438123edbba2",
+      "id": "94980b26-6890-4805-8eaf-fb900b3eb76a",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -4887,10 +4890,10 @@
         "icon": "📝"
       },
       "attr": {
-        "x": 327,
-        "y": 163,
-        "w": 165.56898050117786,
-        "h": 73.27969219022495,
+        "x": 262,
+        "y": 165,
+        "w": 220,
+        "h": 67,
         "offsetX": 0,
         "offsetY": 0,
         "zIndex": 23
@@ -5055,7 +5058,7 @@
         "gradientStart": "#89b4fa",
         "gradientEnd": "#cba6f7",
         "gradientDirection": "to right",
-        "bgColor": "transparent",
+        "bgColor": "rgba(0, 64, 132, 0.3)",
         "lineHeight": 1,
         "letterSpacing": 0,
         "padding": 12,
@@ -5066,11 +5069,14 @@
         "subTextAlign": "left",
         "subLineHeight": 1.5,
         "textDefault": "15",
-        "subTextDefault": ""
+        "subTextDefault": "",
+        "paddingLeft": 80,
+        "borderColor": "rgba(0, 128, 255, 0.1)",
+        "borderWidth": 1
       }
     },
     {
-      "id": "b77e0240-5564-42b6-97ae-f230225fff7d",
+      "id": "9a145f1b-02b8-4ebe-aea6-a9e4224c62ee",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -5085,10 +5091,10 @@
         "icon": "📝"
       },
       "attr": {
-        "x": 108,
-        "y": 252,
-        "w": 151.77086302973612,
-        "h": 64.41624257826129,
+        "x": 44,
+        "y": 249,
+        "w": 202.12765957446808,
+        "h": 67.16797530618607,
         "offsetX": 0,
         "offsetY": 0,
         "zIndex": 24
@@ -5253,7 +5259,7 @@
         "gradientStart": "#89b4fa",
         "gradientEnd": "#cba6f7",
         "gradientDirection": "to right",
-        "bgColor": "transparent",
+        "bgColor": "rgba(0, 64, 132, 0.3)",
         "lineHeight": 1,
         "letterSpacing": 0,
         "padding": 12,
@@ -5264,11 +5270,14 @@
         "subTextAlign": "left",
         "subLineHeight": 1.5,
         "textDefault": "37",
-        "subTextDefault": ""
+        "subTextDefault": "",
+        "paddingLeft": 80,
+        "borderWidth": 1,
+        "borderColor": "rgba(0, 128, 255, 0.1)"
       }
     },
     {
-      "id": "698fd695-e419-4e05-a852-79d64ce073be",
+      "id": "7936d611-01b3-4bc2-81f5-f9eaa4a17d49",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -5283,10 +5292,10 @@
         "icon": "📝"
       },
       "attr": {
-        "x": 109,
-        "y": 339,
-        "w": 151.77086302973612,
-        "h": 63.47697591995124,
+        "x": 46,
+        "y": 335,
+        "w": 201.5005628195956,
+        "h": 64.61478381682436,
         "offsetX": 0,
         "offsetY": 0,
         "zIndex": 25
@@ -5451,7 +5460,7 @@
         "gradientStart": "#89b4fa",
         "gradientEnd": "#cba6f7",
         "gradientDirection": "to right",
-        "bgColor": "transparent",
+        "bgColor": "rgba(0, 64, 132, 0.3)",
         "lineHeight": 1,
         "letterSpacing": 0,
         "padding": 12,
@@ -5462,11 +5471,14 @@
         "subTextAlign": "left",
         "subLineHeight": 1.5,
         "textDefault": "91.9%",
-        "subTextDefault": ""
+        "subTextDefault": "",
+        "paddingLeft": 80,
+        "borderColor": "rgba(0, 128, 255, 0.1)",
+        "borderWidth": 1
       }
     },
     {
-      "id": "f9fe539f-f65d-49e4-bf76-ef45e77f71e3",
+      "id": "c50e2b87-fa62-4ed5-a12a-684b6f7c39fc",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -5481,10 +5493,10 @@
         "icon": "📝"
       },
       "attr": {
-        "x": 323,
-        "y": 245,
-        "w": 164.62971384286777,
-        "h": 71.40115887360483,
+        "x": 263,
+        "y": 249,
+        "w": 220,
+        "h": 67,
         "offsetX": 0,
         "offsetY": 0,
         "zIndex": 26
@@ -5649,7 +5661,7 @@
         "gradientStart": "#89b4fa",
         "gradientEnd": "#cba6f7",
         "gradientDirection": "to right",
-        "bgColor": "transparent",
+        "bgColor": "rgba(0, 64, 132, 0.3)",
         "lineHeight": 1,
         "letterSpacing": 0,
         "padding": 12,
@@ -5660,11 +5672,14 @@
         "subTextAlign": "left",
         "subLineHeight": 1.5,
         "textDefault": "13",
-        "subTextDefault": ""
+        "subTextDefault": "",
+        "paddingLeft": 80,
+        "borderColor": "rgba(0, 128, 255, 0.1)",
+        "borderWidth": 1
       }
     },
     {
-      "id": "b0dde4cd-006d-48ee-9101-8b8bc0053aaa",
+      "id": "20055326-7b4f-4754-8324-bb5a04881bfa",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -5679,10 +5694,10 @@
         "icon": "📝"
       },
       "attr": {
-        "x": 326,
-        "y": 337,
-        "w": 143.96584736004638,
-        "h": 68.58335889867463,
+        "x": 264,
+        "y": 334,
+        "w": 220,
+        "h": 67,
         "offsetX": 0,
         "offsetY": 0,
         "zIndex": 27
@@ -5847,7 +5862,7 @@
         "gradientStart": "#89b4fa",
         "gradientEnd": "#cba6f7",
         "gradientDirection": "to right",
-        "bgColor": "transparent",
+        "bgColor": "rgba(0, 64, 132, 0.3)",
         "lineHeight": 1,
         "letterSpacing": 0,
         "padding": 12,
@@ -5858,11 +5873,14 @@
         "subTextAlign": "left",
         "subLineHeight": 1.5,
         "textDefault": "54.1%",
-        "subTextDefault": ""
+        "subTextDefault": "",
+        "paddingLeft": 80,
+        "borderColor": "rgba(0, 128, 255, 0.1)",
+        "borderWidth": 1
       }
     },
     {
-      "id": "a45568ed-6cdb-41d5-ae68-8bb37160b22d",
+      "id": "2e679bf5-abb4-434d-8e04-4cefca244aca",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",
@@ -5883,7 +5901,7 @@
         "h": 40,
         "offsetX": 0,
         "offsetY": 0,
-        "zIndex": 29
+        "zIndex": 28
       },
       "styles": {
         "filterShow": false,
@@ -6060,7 +6078,7 @@
       }
     },
     {
-      "id": "a4f060d9-e13f-4c9c-884c-fe327fb488a6",
+      "id": "3a8db30e-27a2-4b24-a184-7c58a0f873f4",
       "key": "TextDisplay",
       "chartConfig": {
         "key": "TextDisplay",

@@ -46,9 +46,23 @@
           <label class="prop-label">字间距 ({{ comp.props?.letterSpacing ?? 0 }}px)</label>
           <input type="range" min="0" max="20" step="1" class="prop-range" :value="comp.props?.letterSpacing ?? 0" @input="onTextProp('letterSpacing', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
-        <div class="prop-group">
-          <label class="prop-label">内边距 ({{ comp.props?.padding ?? 12 }}px)</label>
-          <input type="range" min="0" max="48" step="1" class="prop-range" :value="comp.props?.padding ?? 12" @input="onTextProp('padding', parseInt(($event.target as HTMLInputElement).value))" />
+        <div class="prop-grid">
+          <div class="prop-group">
+            <label class="prop-label">上边距</label>
+            <input type="number" class="prop-input" :value="comp.props?.paddingTop ?? 12" @input="onTextProp('paddingTop', parseInt(($event.target as HTMLInputElement).value) || 0)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">下边距</label>
+            <input type="number" class="prop-input" :value="comp.props?.paddingBottom ?? 12" @input="onTextProp('paddingBottom', parseInt(($event.target as HTMLInputElement).value) || 0)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">左边距</label>
+            <input type="number" class="prop-input" :value="comp.props?.paddingLeft ?? 12" @input="onTextProp('paddingLeft', parseInt(($event.target as HTMLInputElement).value) || 0)" />
+          </div>
+          <div class="prop-group">
+            <label class="prop-label">右边距</label>
+            <input type="number" class="prop-input" :value="comp.props?.paddingRight ?? 12" @input="onTextProp('paddingRight', parseInt(($event.target as HTMLInputElement).value) || 0)" />
+          </div>
         </div>
       </div>
     </details>
@@ -96,7 +110,14 @@
         </div>
         <div class="prop-group">
           <label class="prop-label">副标题颜色</label>
-          <input type="color" class="prop-color" :value="comp.props?.subTextColor ?? '#a6adc8'" @input="onTextProp('subTextColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker
+              :model-value="comp.props?.subTextColor ?? '#a6adc8'"
+              show-alpha
+              :predefine="predefineColors"
+              @update:model-value="(val: string | null) => val !== null && onTextProp('subTextColor', val)"
+            />
+          </div>
         </div>
       </div>
     </details>
@@ -113,17 +134,38 @@
         <template v-if="(comp.props?.colorMode ?? 'solid') === 'solid'">
           <div class="prop-group">
             <label class="prop-label">文本颜色</label>
-            <input type="color" class="prop-color" :value="comp.props?.textColor ?? '#cdd6f4'" @input="onTextProp('textColor', ($event.target as HTMLInputElement).value)" />
+            <div class="color-picker-wrap">
+              <el-color-picker
+                :model-value="comp.props?.textColor ?? '#cdd6f4'"
+                show-alpha
+                :predefine="predefineColors"
+                @update:model-value="(val: string | null) => val !== null && onTextProp('textColor', val)"
+              />
+            </div>
           </div>
         </template>
         <template v-else>
           <div class="prop-group">
             <label class="prop-label">起始色</label>
-            <input type="color" class="prop-color" :value="comp.props?.gradientStart ?? '#89b4fa'" @input="onTextProp('gradientStart', ($event.target as HTMLInputElement).value)" />
+            <div class="color-picker-wrap">
+              <el-color-picker
+                :model-value="comp.props?.gradientStart ?? '#89b4fa'"
+                show-alpha
+                :predefine="predefineColors"
+                @update:model-value="(val: string | null) => val !== null && onTextProp('gradientStart', val)"
+              />
+            </div>
           </div>
           <div class="prop-group">
             <label class="prop-label">结束色</label>
-            <input type="color" class="prop-color" :value="comp.props?.gradientEnd ?? '#cba6f7'" @input="onTextProp('gradientEnd', ($event.target as HTMLInputElement).value)" />
+            <div class="color-picker-wrap">
+              <el-color-picker
+                :model-value="comp.props?.gradientEnd ?? '#cba6f7'"
+                show-alpha
+                :predefine="predefineColors"
+                @update:model-value="(val: string | null) => val !== null && onTextProp('gradientEnd', val)"
+              />
+            </div>
           </div>
           <div class="prop-group">
             <label class="prop-label">渐变方向</label>
@@ -137,7 +179,38 @@
         </template>
         <div class="prop-group">
           <label class="prop-label">背景色</label>
-          <input type="color" class="prop-color" :value="comp.props?.bgColor === 'transparent' ? '#1e1e2e' : (comp.props?.bgColor ?? '#1e1e2e')" @input="onTextProp('bgColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker
+              :model-value="comp.props?.bgColor ?? 'transparent'"
+              show-alpha
+              :predefine="predefineColors"
+              @update:model-value="(val: string | null) => val !== null && onTextProp('bgColor', val)"
+            />
+          </div>
+        </div>
+      </div>
+    </details>
+    <details class="style-section" :open="true">
+      <summary class="style-summary">边框</summary>
+      <div class="prop-form" style="padding: 8px;">
+        <div class="prop-group">
+          <label class="prop-label">边框颜色</label>
+          <div class="color-picker-wrap">
+            <el-color-picker
+              :model-value="comp.props?.borderColor ?? 'transparent'"
+              show-alpha
+              :predefine="predefineColors"
+              @update:model-value="(val: string | null) => val !== null && onTextProp('borderColor', val)"
+            />
+          </div>
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">边框宽度 ({{ comp.props?.borderWidth ?? 0 }}px)</label>
+          <input type="range" min="0" max="10" step="1" class="prop-range" :value="comp.props?.borderWidth ?? 0" @input="onTextProp('borderWidth', parseInt(($event.target as HTMLInputElement).value))" />
+        </div>
+        <div class="prop-group">
+          <label class="prop-label">边框圆角 ({{ comp.props?.borderRadius ?? 8 }}px)</label>
+          <input type="range" min="0" max="30" step="1" class="prop-range" :value="comp.props?.borderRadius ?? 8" @input="onTextProp('borderRadius', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
       </div>
     </details>
@@ -170,6 +243,19 @@ const subTextDefaultContent = computed({
   set: (val: string) => onTextProp('subTextDefault', val),
 })
 
+const predefineColors = [
+  '#cdd6f4',
+  '#89b4fa',
+  '#f38ba8',
+  '#a6e3a1',
+  '#fab387',
+  '#cba6f7',
+  '#94e2d5',
+  '#f9e2af',
+  '#ffffff',
+  '#1e1e2e',
+]
+
 function onTextProp(key: string, value: any) {
   if (!store.selectedComponent) return
   const props = { ...(store.selectedComponent.props ?? {}), [key]: value }
@@ -191,5 +277,15 @@ function onTextProp(key: string, value: any) {
   border-radius: 3px;
   font-size: 10px;
   color: var(--ctp-blue);
+}
+.color-picker-wrap {
+  display: flex;
+  align-items: center;
+}
+.color-picker-wrap .el-color-picker {
+  width: 100%;
+}
+.color-picker-wrap .el-color-picker__trigger {
+  width: 100%;
 }
 </style>
