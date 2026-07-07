@@ -61,6 +61,7 @@ const mapReady = ref(false)
 const isZoomed = ref(false)
 const currentCity = ref('')
 const cityCenterMap = ref(new Map<string, number[]>())
+const cityZoomMap = ref(new Map<string, number>())
 const breathTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const DEFAULT_CENTER: [number, number] = [126.5, 47.5]
@@ -204,53 +205,104 @@ function buildOption(): any {
       name: item?.[0] ?? '',
       value: item?.[1] ?? 0,
       fullRow: item,
+      selected: currentCity.value && item?.[0] === currentCity.value ? true : undefined,
     })),
-    markPoint: s.mapMarkPointShow ? {
-      symbol: 'circle',
-      symbolSize: s.mapMarkPointSymbolSize,
-      z: 100,
-      itemStyle: {
-        color: s.mapMarkPointColor,
-        borderColor: 'rgba(255,255,255,0.3)',
-        borderWidth: 1,
-        shadowBlur: 8,
-        shadowColor: 'rgba(0,128,255,0.4)',
-        shadowOffsetY: 2,
-      },
-      emphasis: {
+    markPoint: s.mapMarkPointShow ? (() => {
+      const zoomScale = currentCity.value
+        ? Math.min(2.5, (cityZoomMap.value.get(currentCity.value) ?? 2.5) / DEFAULT_ZOOM)
+        : 1
+      const baseSize = s.mapMarkPointSymbolSize * zoomScale
+      const baseFontSize = Math.round(s.mapMarkPointLabelFontSize * zoomScale)
+      const activeMul = 1.15
+      return {
+        symbol: 'circle',
+        symbolSize: baseSize,
+        z: 100,
         itemStyle: {
-          color: '#00c8ff',
-          shadowBlur: 12,
-          shadowColor: 'rgba(0,200,255,0.5)',
+          color: s.mapMarkPointColor,
+          borderColor: 'rgba(255,255,255,0.3)',
+          borderWidth: 1,
+          shadowBlur: 8,
+          shadowColor: 'rgba(0,128,255,0.4)',
+          shadowOffsetY: 2,
+        },
+        emphasis: {
+          itemStyle: {
+            color: '#00c8ff',
+            shadowBlur: 12,
+            shadowColor: 'rgba(0,200,255,0.5)',
+          },
+          label: {
+            color: '#00c8ff',
+            fontWeight: 700,
+          },
         },
         label: {
-          color: '#00c8ff',
-          fontWeight: 700,
+          show: s.mapMarkPointLabelShow,
+          formatter: '{b}',
+          position: 'top',
+          fontSize: baseFontSize,
+          fontWeight: 500,
+          color: 'rgba(255,255,255,0.75)',
+          padding: [2, 6],
+          borderRadius: 4,
+          distance: 12,
         },
-      },
-      label: {
-        show: s.mapMarkPointLabelShow,
-        formatter: '{b}',
-        position: 'top',
-        fontSize: s.mapMarkPointLabelFontSize,
-        fontWeight: 500,
-        color: 'rgba(255,255,255,0.75)',
-        padding: [2, 6],
-        borderRadius: 4,
-        distance: 12,
-      },
-      data: GeoJSON.features.map((item: any) => ({
-        name: item.properties.name,
-        coord: item.properties.center,
-      })),
-    } : undefined,
+        data: GeoJSON.features.map((item: any) => {
+          const isActive = item.properties.name === currentCity.value
+          return {
+            name: item.properties.name,
+            coord: item.properties.center,
+            symbolSize: isActive ? baseSize * activeMul : undefined,
+            label: isActive ? {
+              fontSize: Math.round(baseFontSize * activeMul),
+              color: '#00c8ff',
+              fontWeight: 700,
+              textShadowColor: 'rgba(0,0,0)',
+              textShadowBlur: 4,
+              textShadowOffsetX: 1,
+              textShadowOffsetY: 1,
+            } : undefined,
+          }
+        }),
+      }
+    })() : undefined,
   }]
+
+  if (currentCity.value) {
+    const zoom = cityZoomMap.value.get(currentCity.value)
+    const center = cityCenterMap.value.get(currentCity.value)
+    if (zoom && center) {
+      result.series[0].center = center
+      result.series[0].zoom = zoom
+      result.series[0].animationDurationUpdate = 800
+    }
+  }
 
   return result
 }
 
 function getCityFeature(name: string): any {
   return (GeoJSON as any).features.find((f: any) => f.properties?.name === name)
+}
+
+function computeCityZoom(name: string): number {
+  const feature = getCityFeature(name)
+  if (!feature?.geometry?.coordinates) return 2.5
+  const multiPolygon = feature.geometry.coordinates as number[][][][]
+  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity
+  multiPolygon.forEach((polygon: any[][]) => {
+    const ring = polygon[0]
+    if (!ring) return
+    ring.forEach((p: number[]) => {
+      minLng = Math.min(minLng, p[0]); maxLng = Math.max(maxLng, p[0])
+      minLat = Math.min(minLat, p[1]); maxLat = Math.max(maxLat, p[1])
+    })
+  })
+  if (!isFinite(minLng)) return 2.5
+  const w = Math.max(maxLng - minLng, 0.5), h = Math.max(maxLat - minLat, 0.5)
+  const zx = 13.5 / (w / 0.55), zy = 10.2 / (h / 0.55)
+  return Math.min(8, Math.max(1.3, Math.round(Math.min(zx, zy) * 10) / 10))
 }
 
 function buildBreathGraphicElements(name: string): any[] {
@@ -262,6 +314,7 @@ function buildBreathGraphicElements(name: string): any[] {
   if (!multiPolygon) return []
 
   const elements: any[] = []
+  const zoomScale = Math.min(2.5, (cityZoomMap.value.get(name) ?? 2.5) / DEFAULT_ZOOM)
 
   multiPolygon.forEach((polygon: any[][], polyIdx: number) => {
     const outerRing = polygon[0]
@@ -278,8 +331,8 @@ function buildBreathGraphicElements(name: string): any[] {
       style: {
         fill: 'transparent',
         stroke: '#00c8ff',
-        lineWidth: 2,
-        shadowBlur: 8,
+        lineWidth: 2 * zoomScale,
+        shadowBlur: Math.round(8 * zoomScale),
         shadowColor: 'rgba(0,128,255,0.45)',
       },
       keyframeAnimation: {
@@ -289,27 +342,24 @@ function buildBreathGraphicElements(name: string): any[] {
           {
             percent: 0,
             style: {
-              // fill: 'rgba(137, 180, 250, 0.35)',
-              lineWidth: 4,
-              shadowBlur: 8,
+              lineWidth: Math.round(4 * zoomScale),
+              shadowBlur: Math.round(8 * zoomScale),
               shadowColor: 'rgba(0,128,255,0.45)',
             },
           },
           {
             percent: 0.5,
             style: {
-              // fill: 'rgba(137, 180, 250, 0.05)',
-              lineWidth: 4,
-              shadowBlur: 30,
+              lineWidth: Math.round(4 * zoomScale),
+              shadowBlur: Math.round(30 * zoomScale),
               shadowColor: 'rgba(0,200,255,0.6)',
             },
           },
           {
             percent: 1,
             style: {
-              // fill: 'rgba(137, 180, 250, 0.35)',
-              lineWidth: 4,
-              shadowBlur: 40,
+              lineWidth: Math.round(4 * zoomScale),
+              shadowBlur: Math.round(40 * zoomScale),
               shadowColor: '#00c8ff',
             },
           },
@@ -323,8 +373,8 @@ function buildBreathGraphicElements(name: string): any[] {
     const px = ci.convertToPixel({ seriesIndex: 0 }, [center[0], center[1]]) as number[] | null
     if (px) {
       const [cx, cy] = px
-      const RIPPLE_R = 4
-      const RIPPLE_R_MAX = 20
+      const RIPPLE_R = Math.round(4 * zoomScale)
+      const RIPPLE_R_MAX = Math.round(20 * zoomScale)
 
       for (let i = 0; i < 3; i++) {
         elements.push({
@@ -336,7 +386,7 @@ function buildBreathGraphicElements(name: string): any[] {
           style: {
             fill: 'none',
             stroke: `rgba(0,200,255,${(0.8 - i * 0.15).toFixed(2)})`,
-            lineWidth: 1.5 - i * 0.5,
+            lineWidth: (1.5 - i * 0.5) * zoomScale,
           },
           keyframeAnimation: {
             loop: true,
@@ -346,7 +396,7 @@ function buildBreathGraphicElements(name: string): any[] {
               {
                 percent: 0,
                 shape: { r: RIPPLE_R },
-                style: { lineWidth: 1.5 - i * 0.5, stroke: `rgba(0,200,255,${(0.8 - i * 0.15).toFixed(2)})` },
+                style: { lineWidth: (1.5 - i * 0.5) * zoomScale, stroke: `rgba(0,200,255,${(0.8 - i * 0.15).toFixed(2)})` },
               },
               {
                 percent: 1,
@@ -363,19 +413,19 @@ function buildBreathGraphicElements(name: string): any[] {
         type: 'circle',
         z: 102,
         silent: true,
-        shape: { cx, cy, r: 4 },
+        shape: { cx, cy, r: Math.round(4 * zoomScale) },
         style: {
           fill: '#00c8ff',
-          shadowBlur: 8,
+          shadowBlur: Math.round(8 * zoomScale),
           shadowColor: 'rgba(0,200,255,0.5)',
         },
         keyframeAnimation: {
           loop: true,
           duration: 1500,
           keyframes: [
-            { percent: 0, shape: { r: 4 }, style: { opacity: 1, shadowBlur: 8, shadowColor: 'rgba(0,200,255,0.5)' } },
-            { percent: 0.5, shape: { r: 5 }, style: { opacity: 0.8, shadowBlur: 12, shadowColor: 'rgba(0,200,255,0.8)' } },
-            { percent: 1, shape: { r: 4 }, style: { opacity: 1, shadowBlur: 8, shadowColor: 'rgba(0,200,255,0.5)' } },
+            { percent: 0, shape: { r: Math.round(4 * zoomScale) }, style: { opacity: 1, shadowBlur: Math.round(8 * zoomScale), shadowColor: 'rgba(0,200,255,0.5)' } },
+            { percent: 0.5, shape: { r: Math.round(5 * zoomScale) }, style: { opacity: 0.8, shadowBlur: Math.round(12 * zoomScale), shadowColor: 'rgba(0,200,255,0.8)' } },
+            { percent: 1, shape: { r: Math.round(4 * zoomScale) }, style: { opacity: 1, shadowBlur: Math.round(8 * zoomScale), shadowColor: 'rgba(0,200,255,0.5)' } },
           ],
         },
       })
@@ -446,18 +496,9 @@ function handleMapClick(params: any) {
     isZoomed.value = false
     return
   } else {
-    chartInstance.value?.setOption({
-      graphic: { elements: [] },
-      series: [
-        { 
-          center,
-          zoom: 2.5,
-          animationDurationUpdate: 800
-        }
-      ],
-    }, { replaceMerge: ['graphic'] })
-    applyBreath(name, 800)
     currentCity.value = name
+    updateChart()
+    applyBreath(name, 800)
     isZoomed.value = true
   }
   dispatch('click', { name, value: params.value })
@@ -491,6 +532,12 @@ onMounted(async () => {
       }
     })
     cityCenterMap.value = map
+
+    const zm = new Map<string, number>()
+    features.forEach((f: any) => {
+      if (f.properties?.name) zm.set(f.properties.name, computeCityZoom(f.properties.name))
+    })
+    cityZoomMap.value = zm
 
     mapReady.value = true
     await nextTick()
