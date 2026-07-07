@@ -5,19 +5,27 @@
       <div class="prop-form" style="padding: 8px;">
         <div class="prop-group">
           <label class="prop-label">区域填充色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapRegionColor" @input="onChartStyle('series.mapRegionColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapRegionColor ?? 'rgba(0,60,120,0.3)'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapRegionColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">边界颜色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapRegionBorderColor" @input="onChartStyle('series.mapRegionBorderColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapRegionBorderColor ?? 'rgba(0,128,255,0.45)'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapRegionBorderColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">悬浮高亮色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapRegionHoverColor" @input="onChartStyle('series.mapRegionHoverColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapRegionHoverColor ?? 'rgba(0,160,255,0.3)'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapRegionHoverColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">悬浮边界色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapHoverBorderColor" @input="onChartStyle('series.mapHoverBorderColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapHoverBorderColor ?? '#40b0ff'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapHoverBorderColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">悬浮边界宽度 ({{ comp.chartStyle?.series.mapHoverBorderWidth ?? 1 }}px)</label>
@@ -25,19 +33,25 @@
         </div>
         <div class="prop-group">
           <label class="prop-label">悬浮发光 ({{ comp.chartStyle?.series.mapHoverShadowBlur ?? 6 }}px)</label>
-          <input type="range" min="0" max="20" step="1" class="prop-range" :value="comp.chartStyle?.series.mapHoverShadowBlur ?? 6" @input="onChartStyle('series.mapHoverShadowBlur', parseInt(($event.target as HTMLInputElement).value))" />
+          <input type="range" min="0" max="100" step="1" class="prop-range" :value="comp.chartStyle?.series.mapHoverShadowBlur ?? 6" @input="onChartStyle('series.mapHoverShadowBlur', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
         <div class="prop-group">
           <label class="prop-label">悬浮发光色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapHoverShadowColor ?? 'rgba(0,200,255,0.3)'" @input="onChartStyle('series.mapHoverShadowColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapHoverShadowColor ?? 'rgba(0,200,255,0.3)'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapHoverShadowColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">选中颜色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapSelectColor" @input="onChartStyle('series.mapSelectColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapSelectColor ?? 'rgba(0,180,255,0.35)'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapSelectColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">选中边界色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapSelectBorderColor" @input="onChartStyle('series.mapSelectBorderColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapSelectBorderColor ?? '#00c8ff'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapSelectBorderColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">选中边界宽度 ({{ comp.chartStyle?.series.mapSelectBorderWidth ?? 2 }}px)</label>
@@ -45,11 +59,13 @@
         </div>
         <div class="prop-group">
           <label class="prop-label">选中发光 ({{ comp.chartStyle?.series.mapSelectShadowBlur ?? 8 }}px)</label>
-          <input type="range" min="0" max="20" step="1" class="prop-range" :value="comp.chartStyle?.series.mapSelectShadowBlur ?? 8" @input="onChartStyle('series.mapSelectShadowBlur', parseInt(($event.target as HTMLInputElement).value))" />
+          <input type="range" min="0" max="200" step="1" class="prop-range" :value="comp.chartStyle?.series.mapSelectShadowBlur ?? 8" @input="onChartStyle('series.mapSelectShadowBlur', parseInt(($event.target as HTMLInputElement).value))" />
         </div>
         <div class="prop-group">
           <label class="prop-label">选中发光色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapSelectShadowColor ?? 'rgba(0,200,255,0.4)'" @input="onChartStyle('series.mapSelectShadowColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapSelectShadowColor ?? 'rgba(0,200,255,0.4)'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapSelectShadowColor', val)" />
+          </div>
         </div>
         <div class="prop-group row">
           <label class="prop-label">显示区域名称</label>
@@ -60,7 +76,9 @@
         </div>
         <div class="prop-group">
           <label class="prop-label">标签颜色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapLabelColor" @input="onChartStyle('series.mapLabelColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapLabelColor ?? '#cdd6f4'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapLabelColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">标签字号 ({{ comp.chartStyle?.series.mapLabelFontSize }}px)</label>
@@ -77,7 +95,9 @@
         </div>
         <div class="prop-group">
           <label class="prop-label">悬停标签颜色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapEmphasisLabelColor ?? '#00c8ff'" @input="onChartStyle('series.mapEmphasisLabelColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapEmphasisLabelColor ?? '#00c8ff'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapEmphasisLabelColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">悬停标签字号 ({{ comp.chartStyle?.series.mapEmphasisLabelFontSize ?? 12 }}px)</label>
@@ -121,7 +141,9 @@
         </div>
         <div class="prop-group">
           <label class="prop-label">标记点颜色</label>
-          <input type="color" class="prop-color" :value="comp.chartStyle?.series.mapMarkPointColor" @input="onChartStyle('series.mapMarkPointColor', ($event.target as HTMLInputElement).value)" />
+          <div class="color-picker-wrap">
+            <el-color-picker :model-value="comp.chartStyle?.series.mapMarkPointColor ?? '#0080ff'" show-alpha :predefine="predefineColors" @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapMarkPointColor', val)" />
+          </div>
         </div>
         <div class="prop-group">
           <label class="prop-label">边框宽度 ({{ comp.chartStyle?.series.mapMarkPointBorderWidth ?? 0 }}px)</label>
@@ -133,6 +155,7 @@
             <el-color-picker
               :model-value="comp.chartStyle?.series.mapMarkPointShadowColor ?? 'rgba(0,0,0,0.4)'"
               show-alpha
+              :predefine="predefineColors"
               @update:model-value="(val: string | null) => val !== null && onChartStyle('series.mapMarkPointShadowColor', val)"
             />
           </div>
@@ -178,6 +201,21 @@ import { useDashboardStore } from '../../../stores/dashboard'
 
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)
+
+const predefineColors = [
+  'rgba(0,60,120,0.3)',
+  'rgba(0,128,255,0.45)',
+  'rgba(0,160,255,0.3)',
+  'rgba(0,180,255,0.35)',
+  'rgba(0,200,255,0.3)',
+  'rgba(0,200,255,0.4)',
+  'rgba(50,80,120,0.1)',
+  'rgba(100,150,200,0.1)',
+  '#00c8ff',
+  '#40b0ff',
+  '#0080ff',
+  '#cdd6f4',
+]
 
 const unitEntries = computed(() => {
   const units = comp.chartStyle?.series.mapTooltipDimensionUnits || {}

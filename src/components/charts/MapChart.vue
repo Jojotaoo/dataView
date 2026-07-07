@@ -161,17 +161,19 @@ function buildOption(): any {
       distance: 10,
     },
     select: {
-      label: { color: s.mapSelectLabelColor, fontWeight: 700, fontSize: (s.mapLabelFontSize ?? 11) + 1 },
+      label: { show: false, color: s.mapSelectLabelColor, fontWeight: 700, fontSize: (s.mapLabelFontSize ?? 11) + 1 },
       itemStyle: {
         areaColor: s.mapSelectColor,
         borderColor: s.mapSelectBorderColor,
         borderWidth: s.mapSelectBorderWidth,
         shadowBlur: s.mapSelectShadowBlur,
         shadowColor: s.mapSelectShadowColor,
+        shadowOffsetY: 0,
+        shadowOffsetX: 0,
       },
     },
     emphasis: {
-      label: { show: true, fontSize: s.mapEmphasisLabelFontSize ?? 12, fontWeight: 700, color: s.mapEmphasisLabelColor },
+      label: { show: false, fontSize: s.mapEmphasisLabelFontSize ?? 12, fontWeight: 700, color: s.mapEmphasisLabelColor },
       itemStyle: {
         areaColor: s.mapRegionHoverColor,
         borderColor: s.mapHoverBorderColor,
