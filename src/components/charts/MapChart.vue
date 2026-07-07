@@ -335,7 +335,7 @@ function removeBreath() {
     clearTimeout(breathTimer.value)
     breathTimer.value = null
   }
-  chartInstance.value?.setOption({ graphic: { elements: [] } })
+  chartInstance.value?.setOption({ graphic: { elements: [] } }, { replaceMerge: ['graphic'] })
 }
 
 function initChart() {
@@ -367,16 +367,16 @@ function handleMapClick(params: any) {
   clearTargetInteractions(componentIdRef.value)
 
   if (currentCity.value === name) {
+    currentCity.value = ''
     removeBreath()
     updateChart()
-    currentCity.value = ''
     isZoomed.value = false
     return
   } else {
-    removeBreath()
     chartInstance.value?.setOption({
+      graphic: { elements: [] },
       series: [{ center, zoom: 2.5, animationDurationUpdate: 800 }],
-    })
+    }, { replaceMerge: ['graphic'] })
     applyBreath(name, 800)
     currentCity.value = name
     isZoomed.value = true
@@ -385,10 +385,10 @@ function handleMapClick(params: any) {
 }
 
 function handleResetView() {
+  currentCity.value = ''
   removeBreath()
   updateChart()
   isZoomed.value = false
-  currentCity.value = ''
   clearTargetInteractions(componentIdRef.value)
 }
 
