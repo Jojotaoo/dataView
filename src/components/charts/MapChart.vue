@@ -61,6 +61,7 @@ const mapReady = ref(false)
 const isZoomed = ref(false)
 const currentCity = ref('')
 const cityCenterMap = ref(new Map<string, number[]>())
+const breathIntervalId = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const DEFAULT_CENTER: [number, number] = [126.5, 47.5]
 const DEFAULT_ZOOM = 1.2
@@ -239,6 +240,78 @@ function buildOption(): any {
   return result
 }
 
+const BREATH_PERIOD = 2000
+const BREATH_COLOR_R = 137
+const BREATH_COLOR_G = 180
+const BREATH_COLOR_B = 250
+const BREATH_SHADOW_BLUR_MIN = 12
+const BREATH_SHADOW_BLUR_MAX = 80
+
+function startBreathAnimation(delayMs = 0) {
+  stopBreathAnimation()
+  if (delayMs > 0) {
+    breathIntervalId.value = setTimeout(() => {
+      breathIntervalId.value = null
+      runBreathTick()
+    }, delayMs) as unknown as ReturnType<typeof setInterval>
+  } else {
+    runBreathTick()
+  }
+}
+
+function runBreathTick() {
+  const startTime = performance.now()
+  const tick = () => {
+    if (!chartInstance.value) return
+    const elapsed = performance.now() - startTime
+    const t = Math.sin((elapsed / BREATH_PERIOD) * Math.PI * 2) * 0.5 + 0.5
+    const alpha = 0.2 + 0.6 * t
+    const blur = BREATH_SHADOW_BLUR_MIN + (BREATH_SHADOW_BLUR_MAX - BREATH_SHADOW_BLUR_MIN) * t
+    chartInstance.value.setOption({
+      animationDurationUpdate: 500,
+      animationEasingUpdate: 'cubicInOut',
+      series: [{
+        select: {
+          itemStyle: {
+            // areaColor: `rgba(${BREATH_COLOR_R}, ${BREATH_COLOR_G}, ${BREATH_COLOR_B}, ${alpha.toFixed(3)})`,
+            shadowBlur: blur,
+            shadowColor: `rgba(${BREATH_COLOR_R}, ${BREATH_COLOR_G}, ${BREATH_COLOR_B}, ${(0.3 + 0.7 * t).toFixed(3)})`,
+          },
+        },
+      }],
+    })
+  }
+  tick()
+  breathIntervalId.value = setInterval(tick, 1000)
+}
+
+function stopBreathAnimation() {
+  if (breathIntervalId.value !== null) {
+    clearInterval(breathIntervalId.value as unknown as ReturnType<typeof setInterval>)
+    breathIntervalId.value = null
+  }
+}
+
+function resetSelectStyle() {
+  if (!chartInstance.value) return
+  const s = chartStyleRef.value.series
+  chartInstance.value.setOption({
+    animationDurationUpdate: 300,
+    animationEasingUpdate: 'cubicInOut',
+    series: [{
+      select: {
+        itemStyle: {
+          areaColor: s.mapSelectColor,
+          borderColor: s.mapSelectBorderColor,
+          borderWidth: s.mapSelectBorderWidth,
+          shadowBlur: s.mapSelectShadowBlur,
+          shadowColor: s.mapSelectShadowColor,
+        },
+      },
+    }],
+  })
+}
+
 function initChart() {
   if (!chartRef.value || !mapReady.value) return
   chartInstance.value?.dispose()
@@ -250,6 +323,9 @@ function initChart() {
 function updateChart() {
   if (!chartInstance.value || !mapReady.value) return
   chartInstance.value.setOption(buildOption(), { notMerge: true })
+  if (currentCity.value) {
+    startBreathAnimation()
+  }
 }
 
 function handleResize() {
@@ -265,14 +341,19 @@ function handleMapClick(params: any) {
   clearTargetInteractions(componentIdRef.value)
 
   if (currentCity.value === name) {
+    stopBreathAnimation()
+    resetSelectStyle()
     updateChart()
     currentCity.value = ''
     isZoomed.value = false
     return
   } else {
+    stopBreathAnimation()
+    resetSelectStyle()
     chartInstance.value?.setOption({
       series: [{ center, zoom: 2.5, animationDurationUpdate: 800 }],
     })
+    startBreathAnimation(800)
     currentCity.value = name
     isZoomed.value = true
   }
@@ -280,6 +361,8 @@ function handleMapClick(params: any) {
 }
 
 function handleResetView() {
+  stopBreathAnimation()
+  resetSelectStyle()
   updateChart()
   isZoomed.value = false
   currentCity.value = ''
@@ -316,6 +399,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  stopBreathAnimation()
   resizeObserver.disconnect()
   chartInstance.value?.dispose()
 })

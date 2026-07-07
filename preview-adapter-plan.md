@@ -1,398 +1,375 @@
-# 大屏预览适配方案
+# 地图选中区域呼吸灯效果实现方案
 
-## 一、业务背景
+## 一、需求概述
 
-当前预览器的 `PreviewRenderer` 组件渲染画布时，直接以设计稿的绝对像素值进行渲染（如 1920×1080px）。当用户显示器分辨率小于设计稿，或在大屏终端（4K/8K）上显示时，会出现以下问题：
+在地图组件中，用户点击某个市区后，该区域被选中并产生呼吸灯动画效果（光晕周期性闪烁），提升交互体验和视觉反馈。
 
-1. **小分辨率设备**：页面超出视口，出现横向/纵向滚动条，无法一屏展示。
-2. **大分辨率设备**：画布仅占屏幕一角，四周留下大量空白，视觉效果差。
-3. **比例不一致**：不同分辨率下组件拉伸变形，破坏设计美感。
+---
 
-## 二、设计目标
+## 二、技术选型
 
-1. **自适应缩放**：预览画面始终完整、清晰地显示在可视区域内。
-2. **保持比例**：严格按设计稿宽高比等比例缩放，绝不拉伸变形。
-3. **矢量清晰**：利用 CSS `transform: scale()`，文字和矢量图表自动保持清晰。
-4. **居中优雅**：空白区域自动用项目背景色填充，无突兀黑边。
-5. **窗口响应**：支持浏览器缩放/全屏切换时实时更新。
-
-## 三、技术选型
-
-### 3.1 核心方案：CSS Transform Scale（业界主流）
-
-大屏可视化领域，业界主流方案是 **用顶层容器 CSS Transform Scale 模拟缩放**：`transform: scale(x)` + `transform-origin: center center`，而不是直接修改所有组件的 px 数值，而是通过整体缩放一个父容器来实现适配。
-
-**选择理由**：
-
-| 方案 | 原理 | 优点 | 缺点 |
-|------|------|------|------|
-| **Scale (选中)** | `transform: scale()` 对整个容器缩放 | 代码侵入小；支持矢量图形和字体清晰度保持；兼容所有组件（包括 ECharts Canvas）；业界主流 | 对 `position: fixed` 的内嵌页不友好（本项目预览器无此问题） |
-| **Rem / %** | 所有尺寸改用 rem/百分比 | 精确控制每个元素 | 侵入性极大，需重写所有组件样式 |
-| **window.devicePixelRatio** | 用 Canvas DPI 缩放 | 对 Canvas 有效 | 对 DOM 元素无效，不适用于混合渲染场景 |
-
-### 3.2 缩放策略
-
-采用 **Full-Contain** 策略：
-
-```
-scale = min(viewportW / designW, viewportH / designH)
-```
-
-- 始终保持设计稿完整可见。
-- 空白区域用项目背景色填充，绝不拉伸裁剪。
-
-## 四、实现方案
-
-### 4.1 数据结构调研
-
-从 `src/types/canvas.ts` 中确认设计稿尺寸来源：
-
-```ts
-export interface EditCanvasConfigType {
-  projectName: string
-  width: number      // -> 设计稿宽度，默认 1920
-  height: number     // -> 设计稿高度，默认 1080
-  background: string
-  backgroundImage: string | null
-  // ...
-}
-```
-
-从 `src/components/PreviewRenderer.vue` 中确认目标容器：
-
-```vue
-<div class="preview-stage" :style="canvasStyle">
-  <!-- 所有 preview-component 的根节点 -->
-</div>
-```
-
-### 4.2 具体改动步骤
-
-#### 步骤 1：新增 `usePreviewScale` Composable
-
-在 `src/composables/usePreviewScale.ts` 中创建响应式缩放逻辑：
-
-```ts
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
-
-export function usePreviewScale(
-  designWidth: Ref<number>,
-  designHeight: Ref<number>,
-  containerRef: Ref<HTMLElement | undefined>
-) {
-  const scale = ref(1)
-
-  function updateScale() {
-    if (!containerRef.value) return
-    const { clientWidth, clientHeight } = containerRef.value
-    scale.value = Math.min(
-      clientWidth / designWidth.value,
-      clientHeight / designHeight.value
-    )
-  }
-
-  onMounted(() => {
-    updateScale()
-    window.addEventListener('resize', updateScale)
-  })
-
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateScale)
-  })
-
-  return { scale }
-}
-```
-
-**注意**：使用 `window.addEventListener('resize')` 而非 `ResizeObserver`，因为监听整个 window 的尺寸变化更轻量，且能覆盖所有视口变化场景（浏览器缩放、全屏切换、显示器切换）。
-
-#### 步骤 2：改造 `PreviewRenderer.vue`
-
-1. 新增 `wrapRef` 和 `scale` 变量。
-2. 引入中间层 `.preview-wrap`，负责背景填充和居中。
-3. 舞台 `.preview-stage` 固定设计稿尺寸，应用 `transform: scale()`。
-
-```vue
-<template>
-  <div class="preview-overlay">
-    <div class="preview-header">
-      <h2 class="preview-title">{{ schema.editCanvasConfig.projectName }} - 预览</h2>
-      <button class="exit-btn" @click="$emit('close')">✕ 退出预览</button>
-    </div>
-    <div class="preview-wrap" ref="wrapRef">
-      <div class="preview-stage" :style="stageStyle">
-        <!-- ... components unchanged ... -->
-      </div>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { computed, ref } from 'vue'
-import { usePreviewScale } from '../composables/usePreviewScale'
-
-const wrapRef = ref<HTMLDivElement>()
-const { scale } = usePreviewScale(
-  computed(() => props.schema.editCanvasConfig.width),
-  computed(() => props.schema.editCanvasConfig.height),
-  wrapRef
-)
-
-const stageStyle = computed(() => ({
-  width: props.schema.editCanvasConfig.width + 'px',
-  height: props.schema.editCanvasConfig.height + 'px',
-  backgroundColor: props.schema.editCanvasConfig.background,
-  backgroundImage: props.schema.editCanvasConfig.backgroundImage
-    ? `url(${props.schema.editCanvasConfig.backgroundImage})`
-    : undefined,
-  backgroundSize: props.schema.editCanvasConfig.backgroundImage ? 'cover' : undefined,
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  filter: /* ... unchanged ... */,
-  mixBlendMode: /* ... unchanged ... */,
-  transform: `scale(${scale.value})`,
-  transformOrigin: 'center center',
-  flexShrink: 0,
-}))
-</script>
-```
-
-#### 步骤 3：调整 CSS
-
-```css
-.preview-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: #11111b;
-  display: flex;
-  flex-direction: column;
-}
-
-.preview-wrap {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-stage {
-  position: relative;
-}
-```
-
-移出原 `canvasStyle` 中的 `width`/`height` 属性，改为在 `.preview-stage` 上通过 `style` 绑定设计稿尺寸；原 `canvasStyle` 改为 `stageStyle`，移除 `margin: 0 auto` 和 `flex: 1`。
-
-### 4.3 关键兼容性处理
-
-1. **ECharts 清晰度**：
-   - ECharts 使用 Canvas 渲染，`transform: scale()` 缩放后，底层 Canvas 像素数不变，清晰度由 `window.devicePixelRatio` 保证。本方案**无需调整 ECharts 清晰度**。
-
-2. **组件内部字体/图片**：
-   - 字体：矢量渲染，缩放后依然清晰。
-   - 图片：建议使用高分辨率素材（2x 或 4x），由 CSS 缩放保证清晰度。
-
-3. **嵌套组件 `GroupPreview`**：
-   - `GroupPreview` 内部继续使用 `px` 单位，不需要改动。`transform: scale()` 作用于父容器，其内部所有子元素自动继承缩放。
-
-4. **预览器内的组件交互（如点击）坐标偏移**：
-   - 组件处于 `transform: scale()` 容器内，事件冒泡/捕获正常，不影响交互逻辑。
-
-### 4.4 窗口响应性
-
-`usePreviewScale` 已绑定 `window.addEventListener('resize')`，浏览器放大缩小、F11 全屏等场景自动重算比例，无需刷新。
-
-## 五、运行效果预览
-
-| 场景 | 表现 |
+| 项目 | 方案 |
 |------|------|
-| **设计稿 1920×1080，视口 1920×1080** | `scale = 1`，1:1 完美呈现 |
-| **视口 1366×768** | `scale ≈ 0.71`，画布整体缩小，完整显示，无滚动条 |
-| **视口 3840×2160 (4K)** | `scale = 2`，画布放大 2 倍，内容清晰，完美铺满 |
-| **视口 2560×1440 (16:9)** | `scale ≈ 1.33`，等比放大并居中 |
+| 图表库 | ECharts 5.x |
+| 地图数据 | 中国地图 GeoJSON（`china.js`） |
+| 核心实现 | `graphic` 组件 + `keyframeAnimation` 关键帧动画 |
+| 坐标转换 | `chart.convertToPixel()` 经纬度转像素坐标 |
 
-## 六、风险评估与应对
+**方案优势：**
+- ✅ 纯配置实现，无需 `setInterval` 定时器
+- ✅ GPU 加速渲染，性能优异
+- ✅ 动画流畅自然，支持自定义曲线
+- ✅ 可叠加多层图形，创造丰富视觉效果
 
-| 风险点 | 等级 | 应对措施 |
-|--------|------|----------|
-| 浏览器整体缩放加此缩放双重影响 | 低 | `scale` 基于 `clientWidth`，不受系统缩放影响 |
-| 旋转屏幕（横竖屏切换） | 低 | 已绑定 `resize` 事件，自动重算 |
-| 预览器内的组件交互（点击坐标偏移） | 低 | 组件处于 `scale` 容器内，事件冒泡/捕获正常 |
+---
 
-## 七、实施记录
+## 三、实现思路
 
-| 文件 | 改动类型 | 说明 |
-|------|----------|------|
-| `src/composables/usePreviewScale.ts` | 新增 | 核心缩放逻辑 Composable |
-| `src/components/PreviewRenderer.vue` | 修改 | 应用缩放逻辑，调整模板和样式 |
-| `src/composables/useEventListener.ts` | 无需改动 | 已有工具封装，直接复用 |
+```
+用户点击地图区域
+       ↓
+获取区域名称 & 中心经纬度
+       ↓
+经纬度 → 像素坐标转换
+       ↓
+在坐标位置创建 graphic 图形（圆形）
+       ↓
+配置 keyframeAnimation 关键帧动画
+       ↓
+图形半径 & 阴影周期变化 → 呼吸灯效果
+       ↓
+点击其他区域 → 清除旧图形 + 创建新图形
+```
 
-## 八、完整代码实现
+---
 
-### 8.1 新增：`src/composables/usePreviewScale.ts`
+## 四、核心实现代码
 
-```ts
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+### 4.1 基础地图配置
 
-export function usePreviewScale(
-  designWidth: Ref<number>,
-  designHeight: Ref<number>,
-  containerRef: Ref<HTMLElement | undefined>
-) {
-  const scale = ref(1)
+```javascript
+// 省份中心坐标映射表
+const centerMap = {
+    '广东': [113.23, 23.12],
+    '江苏': [118.78, 32.06],
+    '浙江': [120.15, 30.28],
+    '山东': [117.00, 36.65],
+    '河南': [113.65, 34.76],
+    '四川': [104.06, 30.67],
+    '湖北': [114.30, 30.60],
+    '湖南': [112.98, 28.11],
+    '福建': [119.30, 26.08],
+    '安徽': [117.27, 31.86],
+    // ... 更多省份
+};
 
-  function updateScale() {
-    if (!containerRef.value) return
-    const { clientWidth, clientHeight } = containerRef.value
-    scale.value = Math.min(
-      clientWidth / designWidth.value,
-      clientHeight / designHeight.value
-    )
-  }
+// ECharts 配置
+const option = {
+    tooltip: { trigger: 'item' },
+    visualMap: {
+        min: 0,
+        max: 100,
+        left: 'left',
+        top: 'bottom',
+        text: ['高', '低'],
+        calculable: true,
+        inRange: {
+            color: ['#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43']
+        }
+    },
+    series: [{
+        type: 'map',
+        map: 'china',
+        roam: true,
+        data: data,
+        label: { show: true, color: '#333', fontSize: 10 },
+        itemStyle: {
+            areaColor: '#e0e0e0',
+            borderColor: '#fff',
+            borderWidth: 1
+        },
+        emphasis: {
+            label: { show: true, color: '#fff' },
+            itemStyle: {
+                areaColor: '#f46d43',
+                borderColor: '#fff',
+                borderWidth: 2
+            }
+        }
+    }],
+    graphic: []  // 动态填充呼吸灯图形
+};
+```
 
-  onMounted(() => {
-    updateScale()
-    window.addEventListener('resize', updateScale)
-  })
+### 4.2 创建呼吸灯图形
 
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateScale)
-  })
+```javascript
+function createBreathGraphic(centerGeo, name, chart) {
+    // 经纬度转像素坐标
+    const pixel = chart.convertToPixel('series', centerGeo);
+    if (!pixel || isNaN(pixel[0]) || isNaN(pixel[1])) {
+        console.warn('坐标转换失败:', name);
+        return null;
+    }
 
-  return { scale }
+    return {
+        id: 'breathLight_' + name,
+        type: 'circle',
+        shape: {
+            cx: pixel[0],
+            cy: pixel[1],
+            r: 25
+        },
+        style: {
+            fill: 'rgba(244, 109, 67, 0.25)',
+            stroke: 'rgba(244, 109, 67, 0.8)',
+            lineWidth: 3,
+            shadowBlur: 40,
+            shadowColor: 'rgba(244, 109, 67, 0.9)'
+        },
+        keyframeAnimation: {
+            duration: 1800,
+            loop: true,
+            keyframes: [
+                {
+                    percent: 0,
+                    shape: { r: 18 },
+                    style: {
+                        shadowBlur: 15,
+                        opacity: 0.5,
+                        fill: 'rgba(244, 109, 67, 0.15)'
+                    }
+                },
+                {
+                    percent: 0.5,
+                    shape: { r: 45 },
+                    style: {
+                        shadowBlur: 70,
+                        opacity: 1.0,
+                        fill: 'rgba(244, 109, 67, 0.35)'
+                    }
+                },
+                {
+                    percent: 1,
+                    shape: { r: 18 },
+                    style: {
+                        shadowBlur: 15,
+                        opacity: 0.5,
+                        fill: 'rgba(244, 109, 67, 0.15)'
+                    }
+                }
+            ]
+        },
+        z: 100,
+        zlevel: 1
+    };
 }
 ```
 
-### 8.2 改造：`src/components/PreviewRenderer.vue`
+### 4.3 交互事件绑定
 
-#### 模板改动
+```javascript
+let currentName = null;
 
-```vue
-<template>
-  <div class="preview-overlay">
-    <div class="preview-header">
-      <h2 class="preview-title">{{ schema.editCanvasConfig.projectName }} - 预览</h2>
-      <button class="exit-btn" @click="$emit('close')">✕ 退出预览</button>
-    </div>
-    <div class="preview-wrap" ref="wrapRef">
-      <div
-        class="preview-stage"
-        :style="stageStyle"
-      >
-        <div
-          v-for="comp in rootComponents"
-          :key="comp.id"
-          class="preview-component"
-          :class="{ hidden: comp.status.hide }"
-          :style="componentStyle(comp)"
-        >
-          <!-- ... 所有组件渲染保持不变 ... -->
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
+myChart.on('click', function (params) {
+    // 点击空白区域 → 清除呼吸灯
+    if (!params || params.componentType !== 'series') {
+        myChart.setOption({ graphic: [] });
+        currentName = null;
+        return;
+    }
+
+    const name = params.name;
+    const center = centerMap[name];
+    if (!center) {
+        console.warn('未找到省份中心:', name);
+        return;
+    }
+
+    // 点击同一区域 → 取消选中
+    if (currentName === name) {
+        myChart.setOption({ graphic: [] });
+        currentName = null;
+        return;
+    }
+
+    // 移除旧图形 → 创建新图形
+    myChart.setOption({ graphic: [] });
+    const graphic = createBreathGraphic(center, name, myChart);
+    if (graphic) {
+        myChart.setOption({ graphic: [graphic] });
+        currentName = name;
+    }
+});
 ```
 
-#### Script 改动
+### 4.4 窗口自适应处理
 
-```vue
-<script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import type { CSSProperties } from 'vue'
-import { useEventListener } from '../composables/useEventListener'
-import { useDashboardStore } from '../stores/dashboard'
-import { usePreviewScale } from '../composables/usePreviewScale'
-// ... 其他 imports ...
-
-const props = defineProps<{
-  schema: ChartEditStorage
-}>()
-
-const emit = defineEmits<{
-  close: []
-}>()
-
-const store = useDashboardStore()
-
-onMounted(() => store.setPreviewMode(true))
-onUnmounted(() => store.setPreviewMode(false))
-
-useEventListener(window, 'keydown', (event: Event) => {
-  if ((event as KeyboardEvent).key === 'Escape') emit('close')
-})
-
-// 新增：预览缩放逻辑
-const wrapRef = ref<HTMLDivElement>()
-const { scale } = usePreviewScale(
-  computed(() => props.schema.editCanvasConfig.width),
-  computed(() => props.schema.editCanvasConfig.height),
-  wrapRef
-)
-
-// 原 canvasStyle 改为 stageStyle，应用 scale
-const stageStyle = computed((): CSSProperties => ({
-  width: props.schema.editCanvasConfig.width + 'px',
-  height: props.schema.editCanvasConfig.height + 'px',
-  backgroundColor: props.schema.editCanvasConfig.background,
-  backgroundImage: props.schema.editCanvasConfig.backgroundImage
-    ? `url(${props.schema.editCanvasConfig.backgroundImage})`
-    : undefined,
-  backgroundSize: props.schema.editCanvasConfig.backgroundImage ? 'cover' : undefined,
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  filter: props.schema.editCanvasConfig.filterShow
-    ? `opacity(${props.schema.editCanvasConfig.opacity}) saturate(${props.schema.editCanvasConfig.saturate}) contrast(${props.schema.editCanvasConfig.contrast}) hue-rotate(${props.schema.editCanvasConfig.hueRotate}deg) brightness(${props.schema.editCanvasConfig.brightness})`
-    : undefined,
-  mixBlendMode: props.schema.editCanvasConfig.blendMode !== 'normal'
-    ? (props.schema.editCanvasConfig.blendMode as CSSProperties['mixBlendMode'])
-    : undefined,
-  transform: `scale(${scale.value})`,
-  transformOrigin: 'center center',
-  flexShrink: 0,
-}))
-
-// componentStyle 保持不变 ...
-</script>
+```javascript
+// 监听窗口变化，重新定位呼吸灯
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        myChart.resize();
+        // 如果有选中的区域，重新创建呼吸灯
+        if (currentName && centerMap[currentName]) {
+            const center = centerMap[currentName];
+            myChart.setOption({ graphic: [] });
+            const graphic = createBreathGraphic(center, currentName, myChart);
+            if (graphic) {
+                myChart.setOption({ graphic: [graphic] });
+            }
+        }
+    }, 300);
+});
 ```
 
-#### CSS 改动
+---
 
-```css
-.preview-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: #11111b;
-  display: flex;
-  flex-direction: column;
-}
+## 五、完整 HTML 示例
 
-.preview-wrap {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-stage {
-  position: relative;
-}
-
-.preview-header { /* ... unchanged ... */ }
-.preview-component { /* ... unchanged ... */ }
-.preview-component.hidden { display: none; }
-.preview-empty { /* ... unchanged ... */ }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>地图呼吸灯 - graphic 实现</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/map/js/china.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        #map { width: 95vw; height: 90vh; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // ===== 完整代码（包含上述所有模块） =====
+        // 此处粘贴 4.1 ~ 4.4 全部代码
+        // ...
+    </script>
+</body>
+</html>
 ```
 
-## 九、总结
+---
 
-此方案基于 **CSS Transform Scale**，是 DataV、SugarBI、阿里 DataWorks 等主流可视化平台的标准适配做法。
+## 六、样式自定义指南
 
-**优势总结**：
-- **零侵入组件代码**：`GroupPreview`、`BarChart` 等几十个组件无需改动。
-- **等比缩放**：严格保持设计稿比例，视觉无变形。
-- **矢量清晰**：ECharts Canvas 和文字清晰锐利。
-- **实现极简**：仅新增 1 个 Composable，修改 1 个 Vue 组件。
+### 6.1 呼吸颜色配置
+
+| 主题 | fill | stroke | shadowColor |
+|------|------|--------|-------------|
+| 🔥 火焰橙 | `rgba(244, 109, 67, 0.25)` | `rgba(244, 109, 67, 0.8)` | `rgba(244, 109, 67, 0.9)` |
+| 💙 科技蓝 | `rgba(52, 152, 219, 0.25)` | `rgba(52, 152, 219, 0.8)` | `rgba(52, 152, 219, 0.9)` |
+| 💜 梦幻紫 | `rgba(155, 89, 182, 0.25)` | `rgba(155, 89, 182, 0.8)` | `rgba(155, 89, 182, 0.9)` |
+| 🟢 生命绿 | `rgba(46, 204, 113, 0.25)` | `rgba(46, 204, 113, 0.8)` | `rgba(46, 204, 113, 0.9)` |
+| 🌟 金色 | `rgba(255, 215, 0, 0.25)` | `rgba(255, 215, 0, 0.8)` | `rgba(255, 215, 0, 0.9)` |
+
+### 6.2 呼吸节奏调节
+
+```javascript
+keyframeAnimation: {
+    duration: 1200,      // 数值越小，呼吸越快
+    loop: true,
+    keyframes: [
+        { percent: 0, shape: { r: 15 }, style: { shadowBlur: 10, opacity: 0.4 } },
+        { percent: 0.5, shape: { r: 50 }, style: { shadowBlur: 80, opacity: 1.0 } },
+        { percent: 1, shape: { r: 15 }, style: { shadowBlur: 10, opacity: 0.4 } }
+    ]
+}
+```
+
+| 参数 | 说明 | 推荐值 |
+|------|------|--------|
+| `duration` | 单次呼吸周期（毫秒） | 1500 ~ 2000 |
+| `r` 范围 | 光晕扩散大小 | 15 ~ 50 |
+| `shadowBlur` 范围 | 发光强度 | 10 ~ 80 |
+
+### 6.3 多层呼吸效果（叠加图形）
+
+```javascript
+// 同时创建两个同心圆，相位差 180°
+const graphic = [
+    {
+        id: 'breathOuter',
+        type: 'circle',
+        shape: { cx: x, cy: y, r: 20 },
+        style: { fill: 'rgba(244,109,67,0.1)', stroke: 'rgba(244,109,67,0.4)', lineWidth: 2 },
+        keyframeAnimation: {
+            duration: 2000,
+            loop: true,
+            keyframes: [
+                { percent: 0, shape: { r: 20 }, style: { opacity: 0.3 } },
+                { percent: 0.5, shape: { r: 60 }, style: { opacity: 0.8 } },
+                { percent: 1, shape: { r: 20 }, style: { opacity: 0.3 } }
+            ]
+        }
+    },
+    {
+        id: 'breathInner',
+        type: 'circle',
+        shape: { cx: x, cy: y, r: 10 },
+        style: { fill: 'rgba(244,109,67,0.6)', stroke: 'rgba(244,109,67,0.9)', lineWidth: 3 },
+        keyframeAnimation: {
+            duration: 2000,
+            loop: true,
+            delay: 1000,  // 延迟 1 秒，形成交替
+            keyframes: [
+                { percent: 0, shape: { r: 10 }, style: { opacity: 1.0 } },
+                { percent: 0.5, shape: { r: 25 }, style: { opacity: 0.4 } },
+                { percent: 1, shape: { r: 10 }, style: { opacity: 1.0 } }
+            ]
+        }
+    }
+];
+```
+
+---
+
+## 七、方案对比
+
+| 对比项 | graphic 方式 | setInterval 方式 |
+|--------|-------------|------------------|
+| 实现方式 | 纯配置 + 关键帧动画 | JavaScript 定时器 |
+| 性能 | ⭐⭐⭐⭐⭐（GPU 加速） | ⭐⭐⭐（频繁 setOption 重绘） |
+| 动画流畅度 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| 代码维护性 | ⭐⭐⭐⭐⭐（声明式） | ⭐⭐⭐（命令式） |
+| 适用场景 | 生产环境、复杂交互 | 快速原型、简单需求 |
+
+---
+
+## 八、注意事项
+
+1. **坐标转换依赖地图加载完成**：需确保 `china.js` 加载完毕后再执行 `convertToPixel`
+2. **graphic 的 z 层级**：设置 `z: 100, zlevel: 1` 确保显示在地图上层
+3. **窗口缩放适配**：`resize` 后需重新计算坐标（见 4.4）
+4. **重复点击优化**：点击同一区域应取消呼吸灯（toggle 效果）
+5. **中心点坐标精度**：建议使用 GeoJSON 中 `properties.center` 或 `cp` 字段
+
+---
+
+## 九、扩展能力
+
+- **支持市级地图**：替换 `china.js` 为对应城市 GeoJSON，调整 `centerMap` 映射表
+- **支持多点呼吸**：存储多个 `graphic` 对象，同时渲染
+- **支持自定义形状**：将 `type: 'circle'` 替换为 `'rect'`、`'polygon'` 或 SVG `'path'`
+- **支持渐变色**：`style.fill` 使用 `new echarts.graphic.LinearGradient()`
+- **支持点击反馈**：结合 `emphasis` 高亮 + `graphic` 光晕，双重反馈
+
+---
+
+## 十、相关资源
+
+| 资源 | 链接 |
+|------|------|
+| ECharts 官方文档 | https://echarts.apache.org/zh/option.html#graphic |
+| 中国地图 GeoJSON | https://cdn.jsdelivr.net/npm/echarts@5/map/js/china.js |
+| graphic 关键帧动画 | https://echarts.apache.org/zh/option.html#graphic.elements.keyframeAnimation |
+| convertToPixel API | https://echarts.apache.org/zh/api.html#echartsInstance.convertToPixel |
+
+---
+
+*文档版本：1.0 | 更新日期：2026-07-07*
