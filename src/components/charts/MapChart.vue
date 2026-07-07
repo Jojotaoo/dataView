@@ -201,12 +201,22 @@ function buildOption(): any {
       borderColor: s.mapRegionBorderColor,
       borderWidth: 1,
     },
-    data: source.map((item: any) => ({
-      name: item?.[0] ?? '',
-      value: item?.[1] ?? 0,
-      fullRow: item,
-      selected: currentCity.value && item?.[0] === currentCity.value ? true : undefined,
-    })),
+    data: source.map((item: any) => {
+      const name = item?.[0] ?? ''
+      const isActive = currentCity.value && name === currentCity.value
+      const isDimmed = currentCity.value && name !== currentCity.value
+      return {
+        name,
+        value: item?.[1] ?? 0,
+        fullRow: item,
+        selected: isActive ? true : undefined,
+        itemStyle: isDimmed ? {
+          areaColor: 'rgba(8,22,42,0.9)',
+          borderColor: 'rgba(0,60,120,0.15)',
+          borderWidth: 1,
+        } : undefined,
+      }
+    }),
     markPoint: s.mapMarkPointShow ? (() => {
       const zoomScale = currentCity.value
         ? Math.min(2.5, (cityZoomMap.value.get(currentCity.value) ?? 2.5) / DEFAULT_ZOOM)
@@ -250,10 +260,14 @@ function buildOption(): any {
         },
         data: GeoJSON.features.map((item: any) => {
           const isActive = item.properties.name === currentCity.value
+          const isDimmed = currentCity.value && !isActive
           return {
             name: item.properties.name,
             coord: item.properties.center,
             symbolSize: isActive ? baseSize * activeMul : undefined,
+            itemStyle: isDimmed ? {
+              color: 'rgba(0,128,255,0.05)',
+            } : undefined,
             label: isActive ? {
               fontSize: Math.round(baseFontSize * activeMul),
               color: '#00c8ff',
@@ -262,7 +276,9 @@ function buildOption(): any {
               textShadowBlur: 4,
               textShadowOffsetX: 1,
               textShadowOffsetY: 1,
-            } : undefined,
+            } : (isDimmed ? {
+              color: 'rgba(255,255,255,0.04)',
+            } : undefined),
           }
         }),
       }
