@@ -208,27 +208,36 @@ function buildOption(): any {
     markPoint: s.mapMarkPointShow ? {
       symbol: 'circle',
       symbolSize: s.mapMarkPointSymbolSize,
+      z: 100,
       itemStyle: {
         color: s.mapMarkPointColor,
-        borderColor: '#fff',
-        borderWidth: s.mapMarkPointBorderWidth ?? 0,
-        shadowBlur: 2,
-        shadowColor: s.mapMarkPointShadowColor ?? 'rgba(0,0,0,0.4)',
-        shadowOffsetY: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+        borderWidth: 1,
+        shadowBlur: 8,
+        shadowColor: 'rgba(0,128,255,0.4)',
+        shadowOffsetY: 2,
+      },
+      emphasis: {
+        itemStyle: {
+          color: '#00c8ff',
+          shadowBlur: 12,
+          shadowColor: 'rgba(0,200,255,0.5)',
+        },
+        label: {
+          color: '#00c8ff',
+          fontWeight: 700,
+        },
       },
       label: {
         show: s.mapMarkPointLabelShow,
         formatter: '{b}',
         position: 'top',
         fontSize: s.mapMarkPointLabelFontSize,
-        fontWeight: 'bold',
-        color: s.mapLabelColor,
-        backgroundColor: 'rgba(30,30,46,0.7)',
+        fontWeight: 500,
+        color: 'rgba(255,255,255,0.75)',
         padding: [2, 6],
         borderRadius: 4,
-        borderColor: s.mapRegionBorderColor,
-        borderWidth: 0.5,
-        distance: 10,
+        distance: 12,
       },
       data: GeoJSON.features.map((item: any) => ({
         name: item.properties.name,
@@ -309,6 +318,70 @@ function buildBreathGraphicElements(name: string): any[] {
     })
   })
 
+  const center = cityCenterMap.value.get(name)
+  if (center) {
+    const px = ci.convertToPixel({ seriesIndex: 0 }, [center[0], center[1]]) as number[] | null
+    if (px) {
+      const [cx, cy] = px
+      const RIPPLE_R = 4
+      const RIPPLE_R_MAX = 20
+
+      for (let i = 0; i < 3; i++) {
+        elements.push({
+          id: `breath-ripple-${i}`,
+          type: 'circle',
+          z: 101,
+          silent: true,
+          shape: { cx, cy, r: RIPPLE_R },
+          style: {
+            fill: 'none',
+            stroke: `rgba(0,200,255,${(0.8 - i * 0.15).toFixed(2)})`,
+            lineWidth: 1.5 - i * 0.5,
+          },
+          keyframeAnimation: {
+            loop: true,
+            duration: 2000,
+            delay: i * 600,
+            keyframes: [
+              {
+                percent: 0,
+                shape: { r: RIPPLE_R },
+                style: { lineWidth: 1.5 - i * 0.5, stroke: `rgba(0,200,255,${(0.8 - i * 0.15).toFixed(2)})` },
+              },
+              {
+                percent: 1,
+                shape: { r: RIPPLE_R_MAX },
+                style: { lineWidth: 0.3, stroke: 'rgba(0,200,255,0)' },
+              },
+            ],
+          },
+        })
+      }
+
+      elements.push({
+        id: 'breath-pulse-dot',
+        type: 'circle',
+        z: 102,
+        silent: true,
+        shape: { cx, cy, r: 4 },
+        style: {
+          fill: '#00c8ff',
+          shadowBlur: 8,
+          shadowColor: 'rgba(0,200,255,0.5)',
+        },
+        keyframeAnimation: {
+          loop: true,
+          duration: 1500,
+          keyframes: [
+            { percent: 0, shape: { r: 4 }, style: { opacity: 1, shadowBlur: 8, shadowColor: 'rgba(0,200,255,0.5)' } },
+            { percent: 0.5, shape: { r: 5 }, style: { opacity: 0.8, shadowBlur: 12, shadowColor: 'rgba(0,200,255,0.8)' } },
+            { percent: 1, shape: { r: 4 }, style: { opacity: 1, shadowBlur: 8, shadowColor: 'rgba(0,200,255,0.5)' } },
+          ],
+        },
+      })
+    }
+  }
+
   return elements
 }
 
@@ -375,7 +448,13 @@ function handleMapClick(params: any) {
   } else {
     chartInstance.value?.setOption({
       graphic: { elements: [] },
-      series: [{ center, zoom: 2.5, animationDurationUpdate: 800 }],
+      series: [
+        { 
+          center,
+          zoom: 2.5,
+          animationDurationUpdate: 800
+        }
+      ],
     }, { replaceMerge: ['graphic'] })
     applyBreath(name, 800)
     currentCity.value = name
