@@ -1,4 +1,4 @@
 packages:
   - 'packages/*'
-allowBuilds:
-  '@parcel/watcher': set this to true or false
+onlyBuiltDependencies:
+  - '@parcel/watcher'

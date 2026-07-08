@@ -4,9 +4,13 @@
   "scripts": {
     "dev": "vite packages/editor",
     "build": "vue-tsc -b && vite build packages/editor",
-    "preview": "vite preview packages/editor"
+    "preview": "vite preview packages/editor",
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install",
+    "release": "pnpm build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/language-core": "^3.3.6",
     "sass-embedded": "^1.100.0",
