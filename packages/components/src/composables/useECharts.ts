@@ -9,7 +9,7 @@ export function useECharts(
   width: Ref<number>,
   height: Ref<number>,
   chartStyle: Ref<ChartStyleConfig>,
-  seriesOption: Ref<SeriesOption>,
+  seriesOption: Ref<SeriesOption | SeriesOption[]>,
   seriesType: 'axis' | 'pie' | 'geo' = 'axis',
   tooltipFormatter?: (params: any) => string,
 ) {

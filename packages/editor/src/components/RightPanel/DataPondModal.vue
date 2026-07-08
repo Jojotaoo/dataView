@@ -74,9 +74,9 @@
 
           <template v-if="form.dataPondRequestConfig.requestParamsBodyType !== 'none'">
             <PondRequestBody
-              :body-type="form.dataPondRequestConfig.requestParamsBodyType"
-              :header="form.dataPondRequestConfig.requestParams.Header"
-              :body="form.dataPondRequestConfig.requestParams.Body"
+              :body-type="form.dataPondRequestConfig.requestParamsBodyType ?? ''"
+              :header="form.dataPondRequestConfig.requestParams!.Header"
+              :body="form.dataPondRequestConfig.requestParams!.Body"
               @update-header-key="updateHeaderKey"
               @update-header-value="updateHeaderValue"
               @add-header="addHeader"
@@ -180,7 +180,7 @@ watch(() => props.visible, (val) => {
 })
 
 function updateHeaderKey(idx: number, newKey: string) {
-  const header = form.value.dataPondRequestConfig.requestParams.Header
+  const header = form.value.dataPondRequestConfig.requestParams!.Header
   const keys = Object.keys(header)
   if (keys[idx] !== undefined) {
     const oldKey = keys[idx]
@@ -191,7 +191,7 @@ function updateHeaderKey(idx: number, newKey: string) {
 }
 
 function updateHeaderValue(idx: number, value: string) {
-  const header = form.value.dataPondRequestConfig.requestParams.Header
+  const header = form.value.dataPondRequestConfig.requestParams!.Header
   const keys = Object.keys(header)
   if (keys[idx] !== undefined) {
     header[keys[idx]] = value
@@ -199,17 +199,17 @@ function updateHeaderValue(idx: number, value: string) {
 }
 
 function addHeader() {
-  const header = form.value.dataPondRequestConfig.requestParams.Header
+  const header = form.value.dataPondRequestConfig.requestParams!.Header
   header[`header_${Object.keys(header).length + 1}`] = ''
 }
 
 function removeHeader(key: string) {
-  delete form.value.dataPondRequestConfig.requestParams.Header[key]
+  delete form.value.dataPondRequestConfig.requestParams!.Header[key]
 }
 
 function updateBodyKvValue(idx: number, value: string) {
   const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
+  const target = form.value.dataPondRequestConfig.requestParams!.Body[t]
   if (!target) return
   const keys = Object.keys(target)
   if (keys[idx] !== undefined) {
@@ -219,7 +219,7 @@ function updateBodyKvValue(idx: number, value: string) {
 
 function updateBodyKvKey(idx: number, newKey: string) {
   const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
+  const target = form.value.dataPondRequestConfig.requestParams!.Body[t]
   if (!target) return
   const keys = Object.keys(target)
   if (keys[idx] !== undefined) {
@@ -232,21 +232,21 @@ function updateBodyKvKey(idx: number, newKey: string) {
 
 function addBodyKv() {
   const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
+  const target = form.value.dataPondRequestConfig.requestParams!.Body[t]
   if (!target) return
   target[`field_${Object.keys(target).length + 1}`] = ''
 }
 
 function removeBodyKv(key: string) {
   const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  const target = form.value.dataPondRequestConfig.requestParams.Body[t]
+  const target = form.value.dataPondRequestConfig.requestParams!.Body[t]
   if (!target) return
   delete target[key]
 }
 
 function updateBodyText(value: string) {
   const t = form.value.dataPondRequestConfig.requestParamsBodyType as 'json' | 'xml'
-  form.value.dataPondRequestConfig.requestParams.Body[t] = value
+  form.value.dataPondRequestConfig.requestParams!.Body[t] = value
 }
 
 function handleCancel() {

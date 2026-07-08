@@ -118,7 +118,7 @@ function update(key: string, value: any) {
 
 function updateDataType(value: number) {
   emit('update', {
-    requestDataType: value,
+    requestDataType: value as 0 | 1 | 2,
     requestParamsBodyType: value === 1 ? 'none' : undefined,
   })
 }

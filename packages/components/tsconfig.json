@@ -2,10 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
+    "declarationMap": true,
+    "resolveJsonModule": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "types": ["vite/client"],
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.json"]
 }

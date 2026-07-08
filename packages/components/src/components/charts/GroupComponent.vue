@@ -36,7 +36,7 @@ import type { CreateComponentType } from '../../types'
 const store = useDashboardStore()
 
 const props = withDefaults(defineProps<{
-  component?: CanvasComponent
+  component?: CanvasComponent | CreateComponentType
   scale?: number
 }>(), {
   component: undefined,

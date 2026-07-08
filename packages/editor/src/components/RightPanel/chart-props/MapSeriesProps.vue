@@ -218,7 +218,7 @@ const predefineColors = [
 ]
 
 const unitEntries = computed(() => {
-  const units = comp.chartStyle?.series.mapTooltipDimensionUnits || {}
+  const units = comp.value.chartStyle?.series.mapTooltipDimensionUnits || {}
   return Object.entries(units) as [string, string][]
 })
 
@@ -228,7 +228,7 @@ function onChartStyle(path: string, value: any) {
 }
 
 function onDimChange(idx: number, newDim: string) {
-  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  const units = { ...(comp.value.chartStyle?.series.mapTooltipDimensionUnits || {}) }
   const entries = Object.entries(units)
   const [, unit] = entries[idx]
   delete units[entries[idx][0]]
@@ -237,7 +237,7 @@ function onDimChange(idx: number, newDim: string) {
 }
 
 function onUnitChange(idx: number, newUnit: string) {
-  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  const units = { ...(comp.value.chartStyle?.series.mapTooltipDimensionUnits || {}) }
   const entries = Object.entries(units)
   const [dim] = entries[idx]
   units[dim] = newUnit
@@ -245,13 +245,13 @@ function onUnitChange(idx: number, newUnit: string) {
 }
 
 function addUnit() {
-  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  const units = { ...(comp.value.chartStyle?.series.mapTooltipDimensionUnits || {}) }
   units[`维度${Object.keys(units).length + 1}`] = ''
   onChartStyle('series.mapTooltipDimensionUnits', units)
 }
 
 function removeUnit(idx: number) {
-  const units = { ...(comp.chartStyle?.series.mapTooltipDimensionUnits || {}) }
+  const units = { ...(comp.value.chartStyle?.series.mapTooltipDimensionUnits || {}) }
   const entries = Object.entries(units)
   delete units[entries[idx][0]]
   onChartStyle('series.mapTooltipDimensionUnits', units)

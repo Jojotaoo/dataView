@@ -6,7 +6,7 @@
         <div class="prop-group">
           <label class="prop-label">文本内容</label>
           <textarea class="prop-textarea" rows="3" v-model="textContent"></textarea>
-          <span class="prop-hint">支持 <code>{{字段名}}</code> 引用数据源字段</span>
+          <span class="prop-hint">支持 <code v-pre>{{字段名}}</code> 引用数据源字段</span>
         </div>
         <div class="prop-group">
           <label class="prop-label">主标题默认值</label>
@@ -72,7 +72,7 @@
         <div class="prop-group">
           <label class="prop-label">副标题内容</label>
           <textarea class="prop-textarea" rows="2" v-model="subTextContent"></textarea>
-          <span class="prop-hint">支持 <code>{{字段名}}</code> 引用数据源字段</span>
+          <span class="prop-hint">支持 <code v-pre>{{字段名}}</code> 引用数据源字段</span>
         </div>
         <div class="prop-group">
           <label class="prop-label">副标题默认值</label>

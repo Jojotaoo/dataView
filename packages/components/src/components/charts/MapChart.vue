@@ -622,7 +622,7 @@ onMounted(async () => {
 
   try {
     if (!echarts.getMap(props.geoKey)) {
-      echarts.registerMap(props.geoKey, GeoJSON)
+      echarts.registerMap(props.geoKey, GeoJSON as any)
     }
 
     const features: any[] = GeoJSON.features ?? []

@@ -134,9 +134,9 @@
       <summary class="style-summary">风险类型</summary>
       <div class="prop-form" style="padding: 8px;">
         <div v-for="(rt, idx) in riskTypesList" :key="idx" class="risk-type-row">
-          <input type="color" class="prop-color risk-type-color" :value="rt.color" @input="updateTypeColor(idx, ($event.target as HTMLInputElement).value)" />
-          <input type="text" class="prop-input" style="flex:1" :value="rt.name" @input="updateTypeName(idx, ($event.target as HTMLInputElement).value)" placeholder="匹配数据值（如：高、中、低）" />
-          <button class="remove-type-btn" @click="removeType(idx)">✕</button>
+          <input type="color" class="prop-color risk-type-color" :value="rt.color" @input="updateTypeColor(+idx, ($event.target as HTMLInputElement).value)" />
+          <input type="text" class="prop-input" style="flex:1" :value="rt.name" @input="updateTypeName(+idx, ($event.target as HTMLInputElement).value)" placeholder="匹配数据值（如：高、中、低）" />
+          <button class="remove-type-btn" @click="removeType(+idx)">✕</button>
         </div>
         <button class="add-type-btn" @click="addType">+ 添加风险类型</button>
         <div class="prop-group" style="margin-top: 8px;">

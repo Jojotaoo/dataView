@@ -1,14 +1,14 @@
 <template>
   <div class="scroll-list" :style="containerStyle">
     <div v-if="showHeader && dimensions.length > 0" class="scroll-header" :style="headerStyle">
-      <div v-for="(dim, ci) in dimensions" :key="ci" class="scroll-cell" :style="cellStyle(ci)">
+      <div v-for="(dim, ci) in dimensions" :key="ci" class="scroll-cell" :style="cellStyle(+ci)">
         {{ dim }}
       </div>
     </div>
     <div class="scroll-viewport" :style="viewportStyle">
       <div :class="contentClass" :style="contentStyle">
-        <div v-for="(row, ri) in doubledSource" :key="ri" class="scroll-row" :style="rowStyle(ri)">
-          <div v-for="(cell, ci) in row" :key="ci" class="scroll-cell" :style="cellStyle(ci)">
+        <div v-for="(row, ri) in doubledSource" :key="ri" class="scroll-row" :style="rowStyle(+ri)">
+          <div v-for="(cell, ci) in row" :key="ci" class="scroll-cell" :style="cellStyle(+ci)">
             {{ cell }}
           </div>
         </div>
@@ -106,7 +106,7 @@ function cellStyle(ci: number) {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const,
-    textAlign: ci === 0 ? 'left' : 'center',
+    textAlign: (ci === 0 ? 'left' : 'center') as 'left' | 'center',
   }
 }
 </script>

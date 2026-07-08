@@ -3,13 +3,16 @@
   "private": true,
   "scripts": {
     "dev": "vite packages/editor",
-    "build": "tsc -b && vite build packages/editor",
+    "build": "vue-tsc -b && vite build packages/editor",
     "preview": "vite preview packages/editor"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.7",
+    "@vue/language-core": "^3.3.6",
     "sass-embedded": "^1.100.0",
     "typescript": "~6.0.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vite-plugin-dts": "^5.0.3",
+    "vue-tsc": "^3.3.6"
   }
 }

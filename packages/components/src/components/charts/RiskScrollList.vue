@@ -131,14 +131,13 @@ const duration = computed(() => totalContentHeight.value / scrollSpeed.value)
 const containerStyle = computed(() => ({
   width: '100%',
   height: '100%',
-  background: bgColor.value,
-  background: 'transparent',
+  background: 'tranparent', // || bgColor.value,
   borderRadius: borderRadius.value + 'px',
   border: `${containerBorderWidth.value}px solid ${borderColor.value}`,
   boxShadow: shadow.value,
   overflow: 'hidden',
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'column' as const,
   fontFamily: "'PingFang SC', 'Microsoft YaHei', sans-serif",
   padding: `${containerPaddingTop.value}px ${containerPaddingRight.value}px ${containerPaddingBottom.value}px ${containerPaddingLeft.value}px`,
 }))
@@ -233,7 +232,7 @@ const riskSubStyle = computed(() => ({
   display: 'flex',
   alignItems: 'center',
   gap: '16px',
-  flexWrap: 'wrap',
+  flexWrap: 'wrap' as const,
   fontSize: subFontSize.value + 'px',
   color: subColor.value,
 }))

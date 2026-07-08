@@ -71,7 +71,7 @@ const cardStyle = computed(() => ({
   boxShadow: cardShadow.value,
   padding: cardPadding.value,
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'column' as const,
   justifyContent: 'flex-start',
   boxSizing: 'border-box' as const,
 }))

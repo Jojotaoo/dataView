@@ -78,7 +78,7 @@
 
     <div class="section-subtitle">Query Params</div>
     <div class="prop-form">
-      <div v-for="(val, key, idx) in request.requestParams.Params" :key="'qp-' + idx" class="kv-row">
+      <div v-for="(val, key, idx) in request.requestParams!.Params" :key="'qp-' + idx" class="kv-row">
         <input type="text" class="prop-input kv-key" placeholder="key" :value="key" @input="updateParamKey(idx, ($event.target as HTMLInputElement).value)" />
         <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateParamValue(idx, ($event.target as HTMLInputElement).value)" />
         <button class="kv-remove" @click="removeParam(key)">✕</button>
@@ -88,7 +88,7 @@
 
     <div class="section-subtitle">请求头 (Header) <span class="hint">（可选，覆盖全局同名项）</span></div>
     <div class="prop-form">
-      <div v-for="(val, key, idx) in request.requestParams.Header" :key="'h-' + idx" class="kv-row">
+      <div v-for="(val, key, idx) in request.requestParams!.Header" :key="'h-' + idx" class="kv-row">
         <input type="text" class="prop-input kv-key" placeholder="key" :value="key" @input="updateHeaderKey(idx, ($event.target as HTMLInputElement).value)" />
         <input type="text" class="prop-input kv-val" placeholder="value" :value="val" @input="updateHeaderValue(idx, ($event.target as HTMLInputElement).value)" />
         <button class="kv-remove" @click="removeHeader(key)">✕</button>
@@ -138,18 +138,18 @@ const isKvBody = computed(() => {
 
 const kvBodyEntries = computed(() => {
   const t = props.request.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  return props.request.requestParams?.Body[t] ?? {}
+  return props.request.requestParams!.Body[t] ?? {}
 })
 
 const bodyTextValue = computed({
   get: () => {
     const t = props.request.requestParamsBodyType as 'json' | 'xml'
-    return props.request.requestParams?.Body[t] ?? ''
+    return props.request.requestParams!.Body[t] ?? ''
   },
   set: (val: string) => {
     const t = props.request.requestParamsBodyType as 'json' | 'xml'
     if (props.request.requestParams) {
-      props.request.requestParams.Body[t] = val
+      props.request.requestParams!.Body[t] = val
     }
   },
 })
@@ -165,7 +165,7 @@ function updateInterval(value: string) {
 
 function updateHeaderKey(idx: number, newKey: string) {
   if (!props.request.requestParams) return
-  const header = props.request.requestParams.Header
+  const header = props.request.requestParams!.Header
   const keys = Object.keys(header)
   if (keys[idx] !== undefined) {
     const oldKey = keys[idx]
@@ -177,7 +177,7 @@ function updateHeaderKey(idx: number, newKey: string) {
 
 function updateHeaderValue(idx: number, value: string) {
   if (!props.request.requestParams) return
-  const header = props.request.requestParams.Header
+  const header = props.request.requestParams!.Header
   const keys = Object.keys(header)
   if (keys[idx] !== undefined) {
     header[keys[idx]] = value
@@ -186,18 +186,18 @@ function updateHeaderValue(idx: number, value: string) {
 
 function addHeader() {
   if (!props.request.requestParams) return
-  const header = props.request.requestParams.Header
+  const header = props.request.requestParams!.Header
   header[`header_${Object.keys(header).length + 1}`] = ''
 }
 
 function removeHeader(key: string) {
   if (!props.request.requestParams) return
-  delete props.request.requestParams.Header[key]
+  delete props.request.requestParams!.Header[key]
 }
 
 function updateParamKey(idx: number, newKey: string) {
   if (!props.request.requestParams) return
-  const params = props.request.requestParams.Params
+  const params = props.request.requestParams!.Params
   const keys = Object.keys(params)
   if (keys[idx] !== undefined) {
     const oldKey = keys[idx]
@@ -209,7 +209,7 @@ function updateParamKey(idx: number, newKey: string) {
 
 function updateParamValue(idx: number, value: string) {
   if (!props.request.requestParams) return
-  const params = props.request.requestParams.Params
+  const params = props.request.requestParams!.Params
   const keys = Object.keys(params)
   if (keys[idx] !== undefined) {
     params[keys[idx]] = value
@@ -218,19 +218,19 @@ function updateParamValue(idx: number, value: string) {
 
 function addParam() {
   if (!props.request.requestParams) return
-  const params = props.request.requestParams.Params
+  const params = props.request.requestParams!.Params
   params[`param_${Object.keys(params).length + 1}`] = ''
 }
 
 function removeParam(key: string) {
   if (!props.request.requestParams) return
-  delete props.request.requestParams.Params[key]
+  delete props.request.requestParams!.Params[key]
 }
 
 function updateBodyKvValue(idx: number, value: string) {
   if (!props.request.requestParams) return
   const t = props.request.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  const target = props.request.requestParams.Body[t]
+  const target = props.request.requestParams!.Body[t]
   if (!target) return
   const keys = Object.keys(target)
   if (keys[idx] !== undefined) {
@@ -241,7 +241,7 @@ function updateBodyKvValue(idx: number, value: string) {
 function addBodyKv() {
   if (!props.request.requestParams) return
   const t = props.request.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  const target = props.request.requestParams.Body[t]
+  const target = props.request.requestParams!.Body[t]
   if (!target) return
   target[`field_${Object.keys(target).length + 1}`] = ''
 }
@@ -249,7 +249,7 @@ function addBodyKv() {
 function removeBodyKv(key: string) {
   if (!props.request.requestParams) return
   const t = props.request.requestParamsBodyType as 'form-data' | 'x-www-form-urlencoded'
-  const target = props.request.requestParams.Body[t]
+  const target = props.request.requestParams!.Body[t]
   if (!target) return
   delete target[key]
 }
