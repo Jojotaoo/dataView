@@ -718,7 +718,7 @@ watch(currentCity, async (val) => {
   overflow: hidden;
   border: 1px solid rgba(0,200,255,0.25);
   box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  background: rgba(8,22,42,0.92);
+  background: rgba(7, 29, 59, 0.92);
   z-index: 10;
 }
 .minimap-chart-canvas {
