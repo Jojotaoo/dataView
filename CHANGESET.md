@@ -4,15 +4,15 @@
 
 | 包名 | `private` | 发版 | 说明 |
 |------|-----------|------|------|
-| `@demo/components` | ❌ | ✅ | 组件库：图表、store、composables |
-| `@demo/preview` | ❌ | ✅ | 预览页面：PreviewPage（依赖 components） |
-| `@demo/editor` | ✅ | ❌ | SPA 编辑器应用（不发版） |
+| `jojotaoo_components` | ❌ | ✅ | 组件库：图表、store、composables |
+| `jojotaoo_preview` | ❌ | ✅ | 预览页面：PreviewPage（依赖 components） |
+| `jojotaoo_editor` | ✅ | ❌ | SPA 编辑器应用（不发版） |
 
 ## 版本策略
 
-**独立版本** — `@demo/components` 和 `@demo/preview` 各自独立版本号。
+**独立版本** — `jojotaoo_components` 和 `jojotaoo_preview` 各自独立版本号。
 
-- `@demo/preview` 依赖 `@demo/components`（`workspace:*`），发布时 pnpm 自动替换为实际版本号
+- `jojotaoo_preview` 依赖 `jojotaoo_components`（`workspace:*`），发布时 pnpm 自动替换为实际版本号
 - 修改 components 时，只需要给 components 加 changeset；preview 如果同时改了，也加自己的 changeset
 
 ## 日常开发流程
@@ -50,7 +50,7 @@ pnpm changeset
 ```
 .changeset/tasty-bears-wave.md
 ---
-'@demo/components': minor
+'jojotaoo_components': minor
 ---
 
 添加地图呼吸灯功能
@@ -62,7 +62,7 @@ pnpm changeset
 
 ```bash
 pnpm changeset
-# 空格选中 @demo/components 和 @demo/preview
+# 空格选中 jojotaoo_components 和 jojotaoo_preview
 # 各选各自的变更类型
 # 写各自的 changelog
 ```
@@ -139,7 +139,7 @@ pnpm version-packages
 pnpm release
 ```
 
-发布后 npm 上出现 `@demo/components@0.0.1-beta.0`、`@demo/preview@0.0.1-beta.0`。
+发布后 npm 上出现 `jojotaoo_components@0.0.1-beta.0`、`jojotaoo_preview@0.0.1-beta.0`。
 
 ### 迭代修复
 
@@ -187,25 +187,25 @@ git checkout -b feat/dark-mode
 
 # 创建 changeset
 pnpm changeset
-# → select @demo/components → minor → "支持暗色模式"
+# → select jojotaoo_components → minor → "支持暗色模式"
 
 # === 打 beta 测试 ===
 pnpm changeset pre enter beta
 pnpm version-packages
 pnpm release
-# → npm 上出现 @demo/components@0.0.1-beta.0
+# → npm 上出现 jojotaoo_components@0.0.1-beta.0
 
 # === 修复 ===
 # 改代码 ...
 pnpm changeset
 pnpm version-packages
 pnpm release
-# → @demo/components@0.0.1-beta.1
+# → jojotaoo_components@0.0.1-beta.1
 
 # === 发正式版 ===
 pnpm changeset pre exit
 pnpm version-packages
-# → @demo/components@0.1.0
+# → jojotaoo_components@0.1.0
 git add . && git commit -m "chore: release v0.1.0"
 git push origin feat/dark-mode
 # 提 PR → 合并到 master
@@ -238,4 +238,4 @@ pnpm version-packages
 pnpm release
 ```
 
-> 首次发布前确保包名 `@demo/components` 在 npm 上未被占用（或属于您的 scope）。
+> 首次发布前确保包名 `jojotaoo_components` 在 npm 上未被占用（或属于您的 scope）。

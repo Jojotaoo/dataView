@@ -1,6 +1,6 @@
 import { type Ref, computed } from 'vue'
-import { useDashboardStore } from '@demo/components'
-import type { CanvasComponent } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
+import type { CanvasComponent } from 'jojotaoo_components'
 
 interface ContextMenuState {
   show: boolean

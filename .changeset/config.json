@@ -7,7 +7,7 @@
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
-  "ignore": ["@demo/editor"],
+  "ignore": ["jojotaoo_editor"],
   "privatePackages": {
     "tag": false,
     "version": false

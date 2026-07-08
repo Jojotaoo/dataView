@@ -14,7 +14,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'vue',
-        '@demo/components',
+        'jojotaoo_components',
       ],
       output: {
         globals: {

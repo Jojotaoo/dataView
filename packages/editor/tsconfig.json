@@ -6,8 +6,8 @@
     "rootDir": "./src",
     "skipLibCheck": true,
     "paths": {
-      "@demo/components": ["../components/src"],
-      "@demo/preview": ["../preview/src"]
+      "jojotaoo_components": ["../components/src"],
+      "jojotaoo_preview": ["../preview/src"]
     }
   },
   "include": ["src"],

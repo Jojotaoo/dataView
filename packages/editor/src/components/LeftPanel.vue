@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
 
 const store = useDashboardStore()
 const activeTab = ref('basic')

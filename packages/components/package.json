@@ -1,5 +1,5 @@
 {
-  "name": "@demo/components",
+  "name": "jojotaoo_components",
   "version": "0.0.0",
   "type": "module",
   "main": "src/index.ts",
@@ -8,11 +8,14 @@
     ".": "./src/index.ts",
     "./*": "./src/*"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "main": "./dist/index.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "access": "public",
     "exports": {
       ".": {
         "import": "./dist/index.js",

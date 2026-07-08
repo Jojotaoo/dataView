@@ -21,9 +21,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useDashboardStore } from '@demo/components'
-import type { RequestConfigType } from '@demo/components'
-import { executeRequest } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
+import type { RequestConfigType } from 'jojotaoo_components'
+import { executeRequest } from 'jojotaoo_components'
 import ComponentRequestConfig from './ComponentRequestConfig.vue'
 
 const store = useDashboardStore()

@@ -16,8 +16,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useDashboardStore } from '@demo/components'
-import type { ChartEditStorage } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
+import type { ChartEditStorage } from 'jojotaoo_components'
 import LeftPanel from '../components/LeftPanel.vue'
 import CanvasArea from '../components/CanvasArea.vue'
 import RightPanel from '../components/RightPanel/index.vue'

@@ -1,4 +1,4 @@
-// @demo/components - 组件库入口
+// jojotaoo_components - 组件库入口
 
 // Types
 export * from './types'

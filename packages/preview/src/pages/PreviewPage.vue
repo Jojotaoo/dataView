@@ -34,9 +34,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useDashboardStore, GroupPreview, DataFetchManager, componentMap, getComponentProps } from '@demo/components'
+import { useDashboardStore, GroupPreview, DataFetchManager, componentMap, getComponentProps } from 'jojotaoo_components'
 import { usePreviewScale } from '../composables/usePreviewScale'
-import type { ChartEditStorage, CreateComponentType, CanvasComponent } from '@demo/components'
+import type { ChartEditStorage, CreateComponentType, CanvasComponent } from 'jojotaoo_components'
 
 const STORAGE_KEY = 'preview_schema'
 

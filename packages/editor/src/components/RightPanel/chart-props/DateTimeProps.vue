@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
 
 const store = useDashboardStore()
 const comp = computed(() => store.selectedComponent!)

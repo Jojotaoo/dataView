@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import {} from 'jojotaoo_preview'
 
 const routes = [
   {
@@ -9,7 +10,7 @@ const routes = [
   {
     path: '/preview',
     name: 'Preview',
-    component: () => import('@demo/preview'),
+    component: () => import('jojotaoo_preview'),
   },
 ]
 

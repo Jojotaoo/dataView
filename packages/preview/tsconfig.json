@@ -8,7 +8,7 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
     "paths": {
-      "@demo/components": ["../components/src"]
+      "jojotaoo_components": ["../components/src"]
     }
   },
   "include": ["src"],

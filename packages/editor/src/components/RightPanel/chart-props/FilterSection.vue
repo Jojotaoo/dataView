@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
 import { useChartStyleEditor } from '../../../composables/useChartStyleEditor'
 
 const store = useDashboardStore()

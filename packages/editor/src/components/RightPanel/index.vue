@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
 import ComponentProps from './ComponentProps.vue'
 import ComponentDatasource from './ComponentDatasource.vue'
 import InteractionPanel from './InteractionPanel.vue'

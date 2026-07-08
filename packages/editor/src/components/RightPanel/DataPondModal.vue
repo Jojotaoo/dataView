@@ -101,9 +101,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import type { DataPondItem, RequestConfigType } from '@demo/components'
-import { useDashboardStore } from '@demo/components'
-import { useId } from '@demo/components'
+import type { DataPondItem, RequestConfigType } from 'jojotaoo_components'
+import { useDashboardStore } from 'jojotaoo_components'
+import { useId } from 'jojotaoo_components'
 import PondRequestBody from './request/PondRequestBody.vue'
 
 const props = defineProps<{

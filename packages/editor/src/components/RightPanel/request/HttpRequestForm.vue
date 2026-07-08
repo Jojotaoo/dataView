@@ -119,7 +119,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { RequestConfigType } from '@demo/components'
+import type { RequestConfigType } from 'jojotaoo_components'
 
 const props = defineProps<{
   request: RequestConfigType

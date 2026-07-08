@@ -23,8 +23,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useDashboardStore } from '@demo/components'
-import type { ChartEditStorage } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
+import type { ChartEditStorage } from 'jojotaoo_components'
 
 const store = useDashboardStore()
 const copied = ref(false)

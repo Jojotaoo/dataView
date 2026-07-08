@@ -77,8 +77,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useDashboardStore } from '@demo/components'
-import type { RequestConfigType } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
+import type { RequestConfigType } from 'jojotaoo_components'
 import HttpRequestForm from './request/HttpRequestForm.vue'
 import StaticDatasetEditor from './request/StaticDatasetEditor.vue'
 

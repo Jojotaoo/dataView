@@ -224,7 +224,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
 
 const rp = computed(() => store.selectedComponent?.props ?? {})
 

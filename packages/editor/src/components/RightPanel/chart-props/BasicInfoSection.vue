@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { useChartStyleEditor } from '../../../composables/useChartStyleEditor'
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
 
 const store = useDashboardStore()
 const { comp } = useChartStyleEditor()

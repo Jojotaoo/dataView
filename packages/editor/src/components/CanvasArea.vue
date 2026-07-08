@@ -104,8 +104,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useDashboardStore, GroupComponent, DataFetchManager, componentMap, getComponentProps } from '@demo/components'
-import type { CanvasComponent } from '@demo/components'
+import { useDashboardStore, GroupComponent, DataFetchManager, componentMap, getComponentProps } from 'jojotaoo_components'
+import type { CanvasComponent } from 'jojotaoo_components'
 import draggable from 'vuedraggable'
 import SketchRule from 'vue3-sketch-ruler'
 import 'vue3-sketch-ruler/lib/style.css'

@@ -77,9 +77,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useDashboardStore } from '@demo/components'
-import type { DataPondItem } from '@demo/components'
-import { executeRequest } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
+import type { DataPondItem } from 'jojotaoo_components'
+import { executeRequest } from 'jojotaoo_components'
 import DataPondModal from './DataPondModal.vue'
 
 const store = useDashboardStore()

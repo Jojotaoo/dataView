@@ -1,6 +1,6 @@
 import { computed } from 'vue'
-import { useDashboardStore } from '@demo/components'
-import { CHART_THEMES } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
+import { CHART_THEMES } from 'jojotaoo_components'
 
 export function useChartStyleEditor() {
   const store = useDashboardStore()

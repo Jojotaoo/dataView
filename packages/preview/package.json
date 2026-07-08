@@ -1,5 +1,5 @@
 {
-  "name": "@demo/preview",
+  "name": "jojotaoo_preview",
   "version": "0.0.0",
   "type": "module",
   "main": "src/index.ts",
@@ -7,11 +7,14 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "main": "./dist/index.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "access": "public",
     "exports": {
       ".": {
         "import": "./dist/index.js",
@@ -22,11 +25,11 @@
   },
   "peerDependencies": {
     "vue": "^3.5.0",
-    "@demo/components": "workspace:*"
+    "jojotaoo_components": "workspace:*"
   },
   "devDependencies": {
     "vue": "^3.5.35",
-    "@demo/components": "workspace:*",
+    "jojotaoo_components": "workspace:*",
     "typescript": "~6.0.2"
   }
 }

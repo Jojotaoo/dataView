@@ -155,7 +155,7 @@
 
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue'
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore } from 'jojotaoo_components'
 
 interface OverrideRow {
   key: string
