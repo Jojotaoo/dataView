@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+    "paths": {
+      "@demo/components": ["../components/src"]
+    }
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../components" }
+  ]
+}
