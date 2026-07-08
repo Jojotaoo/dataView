@@ -47,6 +47,9 @@ export {
 } from './composables/usePollingManager'
 export { useId, useIdGenerator } from './composables/useId'
 
+// Component registry & render helpers
+export { componentMap, getComponentProps } from './composables/useComponentRender'
+
 // Chart components (default exports)
 export { default as BarChart } from './components/charts/BarChart.vue'
 export { default as LineChart } from './components/charts/LineChart.vue'

@@ -16,101 +16,10 @@
             v-if="comp.key === 'group'"
             :component="comp"
           />
-          <BarChart
-            v-else-if="comp.key === 'BarCommon'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :chart-style="comp.chartStyle"
-          />
-          <LineChart
-            v-else-if="comp.key === 'LineCommon'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :chart-style="comp.chartStyle"
-          />
-          <PieChart
-            v-else-if="comp.key === 'PieCommon'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :chart-style="comp.chartStyle"
-          />
-          <PieGridChart
-            v-else-if="comp.key === 'PieGrid'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :chart-style="comp.chartStyle"
-          />
-          <ScrollList
-            v-else-if="comp.key === 'ScrollList'"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :scroll-props="comp.props"
-          />
-          <MapChart
-            v-else-if="comp.key === 'HeilongjiangMap'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :bg-color="comp.props?.bgColor"
-            :chart-style="comp.chartStyle"
-            geo-key="heilongjiang"
-          />
-          <TextDisplay
-            v-else-if="comp.key === 'TextDisplay'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :text-props="comp.props"
-          />
-          <BackgroundCard
-            v-else-if="comp.key === 'BackgroundCard'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :bg-props="comp.props"
-          />
-          <RiskScrollList
-            v-else-if="comp.key === 'RiskScrollList'"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :risk-props="comp.props"
-          />
-          <ImageDisplay
-            v-else-if="comp.key === 'ImageDisplay'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :image-props="comp.props"
-          />
-          <HeaderLineChart
-            v-else-if="comp.key === 'HeaderLine'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :line-props="comp.props"
-          />
-          <DateTimeDisplay
-            v-else-if="comp.key === 'DateTimeDisplay'"
-            :component-id="comp.id"
-            :option="comp.option"
-            :width="comp.attr.w"
-            :height="comp.attr.h"
-            :datetime-props="comp.props"
+          <component
+            v-else
+            :is="componentMap[comp.key]"
+            v-bind="getComponentProps(comp)"
           />
           <DataFetchManager :component-id="comp.id" mode="preview" />
         </div>
@@ -125,22 +34,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useDashboardStore } from '@demo/components'
+import { useDashboardStore, GroupPreview, DataFetchManager, componentMap, getComponentProps } from '@demo/components'
 import { usePreviewScale } from '../composables/usePreviewScale'
-import { BarChart } from '@demo/components'
-import { LineChart } from '@demo/components'
-import { PieChart } from '@demo/components'
-import { PieGridChart } from '@demo/components'
-import { ScrollList } from '@demo/components'
-import { MapChart } from '@demo/components'
-import { TextDisplay } from '@demo/components'
-import { BackgroundCard } from '@demo/components'
-import { RiskScrollList } from '@demo/components'
-import { ImageDisplay } from '@demo/components'
-import { HeaderLineChart } from '@demo/components'
-import { DateTimeDisplay } from '@demo/components'
-import { GroupPreview } from '@demo/components'
-import { DataFetchManager } from '@demo/components'
 import type { ChartEditStorage, CreateComponentType, CanvasComponent } from '@demo/components'
 
 const STORAGE_KEY = 'preview_schema'
