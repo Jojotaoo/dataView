@@ -1,9 +1,9 @@
 <template>
   <div class="map-chart" :style="{ backgroundColor: containerBg }">
     <div ref="chartRef" class="map-chart-canvas"></div>
-    <!-- <button v-if="isZoomed" class="map-back-btn" @click="handleResetView">
-      ← 返回全省
-    </button> -->
+    <div v-if="currentCity" ref="minimapRef" class="map-minimap" @click="handleResetView">
+      <div ref="minimapChartRef" class="minimap-chart-canvas" @click="handleResetView"></div>
+    </div>
   </div>
 </template>
 
@@ -53,6 +53,8 @@ const containerBg = computed(() => {
 
 const chartRef = ref<HTMLDivElement>()
 const chartInstance = shallowRef<echarts.ECharts>()
+const minimapChartRef = ref<HTMLDivElement>()
+const minimapInstance = shallowRef<echarts.ECharts>()
 
 const componentIdRef = toRef(props, 'componentId')
 const { dispatch } = useInteractDispatch(componentIdRef)
@@ -491,6 +493,7 @@ function updateChart() {
   if (currentCity.value) {
     applyBreath(currentCity.value)
   }
+  updateMinimap()
 }
 
 function handleResize() {
@@ -526,6 +529,88 @@ function handleResetView() {
   updateChart()
   isZoomed.value = false
   clearTargetInteractions(componentIdRef.value)
+}
+
+function buildMinimapOption(): any {
+  const cs = chartStyleRef.value ?? DEFAULT_CHART_STYLE
+  const s = cs.series
+  const source: any[] = (optionRef.value.dataset?.source ?? [])
+
+  const isActive = (n: string) => currentCity.value && n === currentCity.value
+  const isDimmed = (n: string) => currentCity.value && n !== currentCity.value
+
+  const series: any = {
+    type: 'map',
+    map: props.geoKey,
+    roam: false,
+    selectedMode: false,
+    zoom: DEFAULT_ZOOM,
+    animation: false,
+    animationDurationUpdate: 0,
+    label: { show: false },
+    itemStyle: {
+      areaColor: {
+        type: 'linear', x: 0, y: 0.5, x2: 0, y2: 0,
+        colorStops: [
+          { offset: 0, color: 'rgba(8,39,73,1)' },
+          { offset: 1, color: 'rgba(34,69,104,1)' },
+        ],
+        global: false,
+      },
+      borderColor: s.mapRegionBorderColor,
+      borderWidth: 0.5,
+    },
+    data: source.map((item: any) => {
+      const name = item?.[0] ?? ''
+      const isThisActive = isActive(name)
+      return {
+        name,
+        value: item?.[1] ?? 0,
+        itemStyle: isDimmed(name) ? {
+          areaColor: 'rgba(8,22,42,0.9)',
+          borderColor: 'rgba(0,60,120,0.15)',
+          borderWidth: 0.5,
+        } : (isThisActive ? {
+          areaColor: s.mapSelectColor,
+          borderColor: s.mapSelectBorderColor,
+          borderWidth: s.mapSelectBorderWidth,
+          shadowBlur: s.mapSelectShadowBlur,
+          shadowColor: s.mapSelectShadowColor,
+          shadowOffsetY: 0,
+          shadowOffsetX: 0,
+        } : undefined),
+      }
+    }),
+    markPoint: s.mapMarkPointShow ? {
+      symbol: 'circle',
+      symbolSize: 5,
+      z: 100,
+      itemStyle: { color: s.mapMarkPointColor },
+      data: GeoJSON.features.map((item: any) => ({
+        name: item.properties.name,
+        coord: item.properties.center,
+        symbolSize: isActive(item.properties.name) ? 7 : undefined,
+        itemStyle: isDimmed(item.properties.name) ? { color: 'rgba(0,128,255,0.05)' } : undefined,
+      })),
+    } : undefined,
+  }
+
+  return { backgroundColor: 'transparent', series: [series] }
+}
+
+function initMinimap() {
+  if (!minimapChartRef.value) return
+  minimapInstance.value?.dispose()
+  minimapInstance.value = echarts.init(minimapChartRef.value, undefined, { renderer: 'canvas' })
+  minimapInstance.value.setOption(buildMinimapOption())
+  minimapInstance.value.on('click', () => {
+    handleResetView()
+  })
+}
+
+function updateMinimap() {
+  if (!minimapInstance.value || !mapReady.value) return
+  minimapInstance.value.setOption(buildMinimapOption(), { notMerge: true })
 }
 
 const resizeObserver = new ResizeObserver(handleResize)
@@ -567,6 +652,7 @@ onUnmounted(() => {
   removeBreath()
   resizeObserver.disconnect()
   chartInstance.value?.dispose()
+  minimapInstance.value?.dispose()
 })
 
 watch(() => [widthRef.value, heightRef.value], () => {
@@ -575,6 +661,20 @@ watch(() => [widthRef.value, heightRef.value], () => {
 
 watch(() => optionRef.value, updateChart, { deep: true })
 watch(() => JSON.stringify(chartStyleRef.value), updateChart)
+
+watch(currentCity, async (val) => {
+  if (val) {
+    await nextTick()
+    if (!minimapInstance.value) {
+      initMinimap()
+    } else {
+      updateMinimap()
+    }
+  } else {
+    minimapInstance.value?.dispose()
+    minimapInstance.value = undefined
+  }
+})
 </script>
 
 <style scoped>
@@ -607,5 +707,23 @@ watch(() => JSON.stringify(chartStyleRef.value), updateChart)
   background: rgba(137, 180, 250, 0.9);
   color: #1e1e2e;
   border-color: #89b4fa;
+}
+.map-minimap {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 180px;
+  height: 135px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(0,200,255,0.25);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  background: rgba(8,22,42,0.92);
+  z-index: 10;
+}
+.minimap-chart-canvas {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 </style>
