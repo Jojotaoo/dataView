@@ -56,6 +56,7 @@ export default defineConfig({
         exports: 'named',
       },
     },
+    emptyOutDir: false,
     // 关键：确保 CommonJS 和 ESM 都能正确使用
     sourcemap: true,
     minify: false, // 开发阶段可以关闭方便调试

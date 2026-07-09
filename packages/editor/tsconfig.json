@@ -1,18 +1,12 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "composite": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "noEmit": true,
     "skipLibCheck": true,
     "paths": {
       "jojotaoo_components": ["../components/src"],
       "jojotaoo_preview": ["../preview/src"]
     }
   },
-  "include": ["src"],
-  "references": [
-    { "path": "../components" },
-    { "path": "../preview" }
-  ]
+  "include": ["src"]
 }
