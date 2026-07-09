@@ -1,5 +1,13 @@
 # jojotaoo_preview
 
+## 0.0.1-beta.4
+
+### Patch Changes
+
+- css export
+- Updated dependencies
+  - jojotaoo_components@0.0.1-beta.3
+
 ## 0.0.1-beta.3
 
 ### Patch Changes
