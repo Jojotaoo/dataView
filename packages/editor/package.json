@@ -16,8 +16,8 @@
     "vue3-sketch-ruler": "^3.1.4",
     "vuedraggable": "^4.1.0",
     "echarts": "^6.1.0",
-    "jojotaoo_components": "^0.0.1-beta.3",
-    "jojotaoo_preview": "^0.0.1-beta.4"
+    "jojotaoo_components": "workspace:*",
+    "jojotaoo_preview": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~6.0.2",
