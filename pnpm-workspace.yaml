@@ -1,5 +1,8 @@
 packages:
   - 'packages/*'
+allowBuilds:
+  '@parcel/watcher': false
+
 # minimumReleaseAgeExclude:
 #   - jojotaoo_components@0.0.1-beta.3
 #   - jojotaoo_preview@0.0.1-beta.4
