@@ -5,5 +5,7 @@ minimumReleaseAgeExclude:
   - jojotaoo_preview@0.0.1-beta.2
   - jojotaoo_components@0.0.1-beta.2
   - jojotaoo_preview@0.0.1-beta.3
+  - jojotaoo_components@0.0.1-beta.3
+  - jojotaoo_preview@0.0.1-beta.4
 onlyBuiltDependencies:
   - '@parcel/watcher'

@@ -57,11 +57,11 @@ importers:
         specifier: ^2.14.2
         version: 2.14.2(vue@3.5.39(typescript@6.0.3))
       jojotaoo_components:
-        specifier: ^0.0.1-beta.2
-        version: 0.0.1-beta.2(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3))
-      jojotaoo_preview:
         specifier: ^0.0.1-beta.3
-        version: 0.0.1-beta.3(jojotaoo_components@0.0.1-beta.2(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3))
+        version: 0.0.1-beta.3(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3))
+      jojotaoo_preview:
+        specifier: ^0.0.1-beta.4
+        version: 0.0.1-beta.4(jojotaoo_components@0.0.1-beta.3(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3))
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
@@ -779,17 +779,17 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  jojotaoo_components@0.0.1-beta.2:
-    resolution: {integrity: sha512-cJUHRBBhxKFEiAb5vSLl5ls+IEc0rvl2Bp73IGKRr6kAchI5PsUKG/gYHRPa7UGDZ7QpILaTFm1hP5vJgA5F3A==}
+  jojotaoo_components@0.0.1-beta.3:
+    resolution: {integrity: sha512-i/bHSNK7O7UapDymLOn8Mrf1f6FpeDe8Uc6aL0OH8z9Unz1TvUgrWNevL5D5G25wOTD5Xk5DUGspx8oNSxV4lw==}
     peerDependencies:
       echarts: ^6.0.0
       pinia: ^3.0.0
       vue: ^3.5.0
 
-  jojotaoo_preview@0.0.1-beta.3:
-    resolution: {integrity: sha512-irFSzsENU0Chjg7aKuTmxqMNYlRfLiT99iAqGNUbCq0vkOPY89vg8YazPUkPE5nMzad9RYzrxHfmp598wdCvLg==}
+  jojotaoo_preview@0.0.1-beta.4:
+    resolution: {integrity: sha512-5fcW00BoImRbayhtBWsqfxEUxnUlghbgC2iEOQARuWUP3MYGpWmdHZEvD10TFMKJYmoH6Izxy5fy43x5+I6doA==}
     peerDependencies:
-      jojotaoo_components: 0.0.1-beta.2
+      jojotaoo_components: 0.0.1-beta.3
       vue: ^3.5.0
 
   js-yaml@3.15.0:
@@ -2132,15 +2132,15 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  jojotaoo_components@0.0.1-beta.2(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)):
+  jojotaoo_components@0.0.1-beta.3(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)):
     dependencies:
       echarts: 6.1.0
       pinia: 3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
       vue: 3.5.39(typescript@6.0.3)
 
-  jojotaoo_preview@0.0.1-beta.3(jojotaoo_components@0.0.1-beta.2(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)):
+  jojotaoo_preview@0.0.1-beta.4(jojotaoo_components@0.0.1-beta.3(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3)):
     dependencies:
-      jojotaoo_components: 0.0.1-beta.2(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3))
+      jojotaoo_components: 0.0.1-beta.3(echarts@6.1.0)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(vue@3.5.39(typescript@6.0.3))
       vue: 3.5.39(typescript@6.0.3)
 
   js-yaml@3.15.0:

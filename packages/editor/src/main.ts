@@ -6,6 +6,8 @@ import App from './App.vue'
 import router from './router'
 import './style.css'
 import 'vue3-sketch-ruler/lib/style.css'
+import 'jojotaoo_components/index.css'
+import 'jojotaoo_preview/index.css'
 
 
 const app = createApp(App)
