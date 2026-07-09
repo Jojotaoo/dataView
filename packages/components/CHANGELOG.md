@@ -1,5 +1,11 @@
 # jojotaoo_components
 
+## 0.0.1-beta.2
+
+### Patch Changes
+
+- 更新构架
+
 ## 0.0.1-beta.1
 
 ### Patch Changes
