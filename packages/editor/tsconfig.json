@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true,
+    "paths": {
+      "jojotaoo_components": ["../components/src"],
+      "jojotaoo_preview": ["../preview/src"]
+    }
+  },
+  "include": ["src"]
+}

@@ -1,21 +1,22 @@
 {
-  "name": "demo",
+  "name": "demo-monorepo",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "dev": "vite packages/editor",
+    "build": "vue-tsc -b && vite build packages/editor",
+    "preview": "vite preview packages/editor",
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install",
+    "release": "pnpm build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@vitejs/plugin-vue": "^6.0.7",
+    "@vue/language-core": "^3.3.6",
+    "sass-embedded": "^1.100.0",
     "typescript": "~6.0.2",
-    "vite": "^8.0.12"
-  },
-  "dependencies": {
-    "echarts": "^6.1.0",
-    "pinia": "^3.0.4",
-    "vue": "^3.5.35"
+    "vite": "^8.0.12",
+    "vite-plugin-dts": "^5.0.3",
+    "vue-tsc": "^3.3.6"
   }
 }

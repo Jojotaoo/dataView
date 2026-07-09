@@ -1,158 +1,384 @@
 <template>
-  <div class="canvas-area">
-    <div
-      class="canvas-grid"
-      :style="{
-        width: store.pageConfig.width + 'px',
-        minHeight: store.pageConfig.height + 'px',
-        backgroundColor: store.pageConfig.bgColor,
-        backgroundImage: store.pageConfig.bgImage
-          ? `url(${store.pageConfig.bgImage}), radial-gradient(circle, #313244 1px, transparent 1px)`
-          : undefined,
-        backgroundSize: store.pageConfig.bgImage
-          ? 'cover, 20px 20px'
-          : undefined,
-      }"
-      @dragover.prevent
-      @drop="onDrop"
-      @click.self="store.selectComponent(null)"
+  <div ref="containerRef" class="canvas-area" @contextmenu.prevent="onContextMenu">
+    <SketchRule
+      :width="containerWidth || 800"
+      :height="containerHeight || 600"
+      :canvas-width="store.editCanvasConfig.width"
+      :canvas-height="store.editCanvasConfig.height"
+      v-model:scale="scale"
+      v-model:lines="lines"
+      :thick="20"
+      :min-zoom="0.1"
+      :max-zoom="10"
+      :zoom-mode="'pointer'"
+      :show-ruler="showRuler"
+      :is-show-refer-line="showReferLine"
+      :palette="rulerPalette"
+      :auto-center="true"
+      :snap-threshold="5"
+      :show-minor-ticks="true"
+      :shadow="shadow"
+      delete-label="放开删除"
     >
-      <div
-        v-for="comp in store.rootComponents"
-        :key="comp.id"
-        class="canvas-component"
-        :class="{ selected: comp.id === store.selectedId }"
-        :style="{
-          left: comp.x + 'px',
-          top: comp.y + 'px',
-          width: comp.width + 'px',
-          height: comp.height + 'px',
-        }"
-        @mousedown.stop="onMouseDown($event, comp.id)"
-        @click.stop="store.selectComponent(comp.id)"
+      <template #toolbar="{ tools, state }">
+        <div class="ruler-toolbar">
+          <button title="缩小" @click="tools.zoomOut">−</button>
+          <span class="zoom-pct">{{ Math.round(state.scale * 100) }}%</span>
+          <button title="放大" @click="tools.zoomIn">+</button>
+          <button title="重置缩放" @click="tools.reset">1:1</button>
+        </div>
+      </template>
+
+      <draggable
+        tag="div"
+        class="canvas-grid"
+        :style="gridStyle"
+        :list="store.components"
+        item-key="id"
+        :sort="false"
+        :group="{ name: 'canvas', pull: false, put: true }"
+        @change="onDraggableChange"
+        @mousedown.self="onCanvasMouseDown"
       >
-        <div class="comp-header">
-          <span class="comp-label">{{ comp.name }}</span>
-          <button class="remove-btn" @click.stop="store.removeComponent(comp.id)">✕</button>
-        </div>
-        <div class="comp-body">
-          <Container
-            v-if="comp.type === 'container'"
-            :bg-color="comp.props.bgColor"
-            :border-color="comp.props.borderColor"
-            :parent-id="comp.id"
-          />
-          <BarChart
-            v-else-if="comp.type === 'bar-chart'"
-            :title="comp.props.title"
-            :width="comp.width"
-            :height="comp.height - 32"
-            :bg-color="comp.props.bgColor"
-            :data="comp.props.data"
-          />
-        </div>
-        <div
-          class="resize-handle"
-          @mousedown.stop="onResizeStart($event, comp.id)"
-        ></div>
-      </div>
-      <div v-if="store.components.length === 0" class="empty-hint">
-        <div class="empty-icon">📋</div>
-        <p>从左侧组件库拖拽或点击添加组件</p>
-      </div>
-    </div>
+        <template #item="{ element: comp }">
+          <div
+            v-if="comp && comp.id"
+            class="canvas-component"
+            :class="{
+              selected: comp.id === store.selectedId,
+              'multi-selected': store.selectedIds.includes(comp.id) && comp.id !== store.selectedId,
+              locked: comp.status.lock,
+              hidden: comp.status.hide,
+            }"
+            :style="componentStyle(comp)"
+            :data-comp-id="comp.id"
+            @mousedown.stop="handleMouseDown($event, comp.id)"
+            @dragstart.prevent
+            @click.stop="onComponentClick($event, comp.id)"
+          >
+            <div class="comp-body">
+              <GroupComponent
+                v-if="comp.key === 'group'"
+                :component="comp"
+                :scale="scale"
+              />
+              <BarChart
+                v-else-if="comp.key === 'BarCommon'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+              />
+              <LineChart
+                v-else-if="comp.key === 'LineCommon'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+              />
+              <PieChart
+                v-else-if="comp.key === 'PieCommon'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+              />
+              <PieGridChart
+                v-else-if="comp.key === 'PieGrid'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+              />
+              <ScrollList
+                v-else-if="comp.key === 'ScrollList'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :scroll-props="comp.props"
+              />
+              <MapChart
+                v-else-if="comp.key === 'HeilongjiangMap'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :bg-color="comp.props?.bgColor"
+                :chart-style="comp.chartStyle"
+                geo-key="heilongjiang"
+              />
+              <TextDisplay
+                v-else-if="comp.key === 'TextDisplay'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :text-props="comp.props"
+              />
+              <BackgroundCard
+                v-else-if="comp.key === 'BackgroundCard'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :bg-props="comp.props"
+              />
+              <RiskScrollList
+                v-else-if="comp.key === 'RiskScrollList'"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :risk-props="comp.props"
+              />
+              <ImageDisplay
+                v-else-if="comp.key === 'ImageDisplay'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :image-props="comp.props"
+              />
+              <HeaderLineChart
+                v-else-if="comp.key === 'HeaderLine'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :line-props="comp.props"
+              />
+              <DateTimeDisplay
+                v-else-if="comp.key === 'DateTimeDisplay'"
+                :component-id="comp.id"
+                :option="comp.option"
+                :width="comp.attr.w"
+                :height="comp.attr.h"
+                :datetime-props="comp.props"
+              />
+            </div>
+            <div
+              v-if="!comp.status.lock && comp.key !== 'group'"
+              class="resize-handle"
+              @mousedown.stop="handleResizeStart($event, comp.id)"
+            ></div>
+            <DataFetchManager :component-id="comp.id" mode="design" />
+          </div>
+        </template>
+        <template #footer>
+          <div v-if="store.components.length === 0" class="empty-hint">
+            <div class="empty-icon">📋</div>
+            <p>从左侧组件库拖拽或点击添加组件</p>
+          </div>
+        </template>
+      </draggable>
+      <div v-if="selRect" class="selection-rect" :style="selRectStyle"></div>
+    </SketchRule>
+    <ContextMenu
+      v-if="ctxMenu.show"
+      :x="ctxMenu.x"
+      :y="ctxMenu.y"
+      :can-group="store.selectedIds.length >= 2"
+      :can-ungroup="ctxMenu.isGroup"
+      :can-duplicate="canDuplicate"
+      @group="handleGroup"
+      @ungroup="handleUngroup"
+      @duplicate="handleDuplicate"
+      @delete="handleDelete"
+      @close="ctxMenu.show = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import type { CSSProperties } from 'vue'
 import { useDashboardStore } from '../stores/dashboard'
+import type { CanvasComponent } from '../types'
+import draggable from 'vuedraggable'
+import SketchRule from 'vue3-sketch-ruler'
+import 'vue3-sketch-ruler/lib/style.css'
 import BarChart from './charts/BarChart.vue'
-import Container from './charts/Container.vue'
+import LineChart from './charts/LineChart.vue'
+import PieChart from './charts/PieChart.vue'
+import PieGridChart from './charts/PieGridChart.vue'
+import ScrollList from './charts/ScrollList.vue'
+import MapChart from './charts/MapChart.vue'
+import TextDisplay from './charts/TextDisplay.vue'
+import BackgroundCard from './charts/BackgroundCard.vue'
+import RiskScrollList from './charts/RiskScrollList.vue'
+import ImageDisplay from './charts/ImageDisplay.vue'
+import HeaderLineChart from './charts/HeaderLineChart.vue'
+import DateTimeDisplay from './charts/DateTimeDisplay.vue'
+import GroupComponent from './charts/GroupComponent.vue'
+import ContextMenu from './ContextMenu.vue'
+import DataFetchManager from './charts/DataFetchManager.vue'
+import { useCanvasDrag } from '../composables/useCanvasDrag'
+import { useCanvasResize } from '../composables/useCanvasResize'
+import { useBoxSelect } from '../composables/useBoxSelect'
+import { useCanvasInteraction } from '../composables/useCanvasInteraction'
 
 const store = useDashboardStore()
 
-let dragState: { id: string; startX: number; startY: number; compX: number; compY: number } | null = null
-let resizeState: { id: string; startX: number; startY: number; compW: number; compH: number } | null = null
+const containerRef = ref<HTMLElement | null>(null)
+const containerWidth = ref(0)
+const containerHeight = ref(0)
+const scale = ref(1)
+const showRuler = ref(true)
+const showReferLine = ref(true)
+const lines = ref<{ h: number[]; v: number[] }>({ h: [], v: [] })
+const ctxMenu = ref<{ show: boolean; x: number; y: number; isGroup: boolean; ctxId: string | null }>({ show: false, x: 0, y: 0, isGroup: false, ctxId: null })
 
-function onMouseDown(event: MouseEvent, id: string) {
+const { startDrag, cleanup: cleanupDrag } = useCanvasDrag(
+  scale,
+  (id, dx, dy, baseX, baseY) => {
+    store.moveComponentDelta(id, dx, dy, baseX, baseY, store.editCanvasConfig.width, store.editCanvasConfig.height)
+  },
+)
+
+const { startResize, cleanup: cleanupResize } = useCanvasResize(
+  scale,
+  (id, dw, dh, baseW, baseH) => {
+    const comp = store.components.find(c => c.id === id)
+    if (!comp) return
+    store.resizeComponentDelta(id, dw, dh, baseW, baseH, store.editCanvasConfig.width - comp.attr.x, store.editCanvasConfig.height - comp.attr.y)
+  },
+)
+
+const { selRect, onCanvasMouseDown, cleanup: cleanupBoxSelect } = useBoxSelect(
+  scale,
+  (x, y, w, h) => store.selectComponentsByRect(x, y, w, h),
+  () => store.clearSelection(),
+)
+
+const { onDraggableChange, onComponentClick, onContextMenu, handleGroup, handleUngroup, handleDelete, handleDuplicate, canDuplicate, findParentGroup } = useCanvasInteraction(ctxMenu)
+
+const selRectStyle = computed(() => {
+  if (!selRect.value) return {}
+  return {
+    left: selRect.value.x + 'px',
+    top: selRect.value.y + 'px',
+    width: selRect.value.w + 'px',
+    height: selRect.value.h + 'px',
+  }
+})
+
+const rulerPalette = {
+  bgColor: 'transparent',
+  tickColor: '#585b70',
+  labelColor: '#a6adc8',
+  guideLineColor: '#89b4fa',
+  guideLineLockedColor: '#45475a',
+  hoverBg: 'transparent',
+  hoverColor: '#cdd6f4',
+  borderColor: '#313244',
+  shadowColor: '#1e1e2e',
+  guideLineStyle: 'dashed',
+  guideLineWidth: 1,
+  labelEnabled: true,
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (entry) {
+        containerWidth.value = Math.floor(entry.contentRect.width)
+        containerHeight.value = Math.floor(entry.contentRect.height)
+      }
+    })
+    resizeObserver.observe(containerRef.value)
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+  cleanupDrag()
+  cleanupResize()
+  cleanupBoxSelect()
+})
+
+const gridStyle = computed((): CSSProperties => ({
+  width: store.editCanvasConfig.width + 'px',
+  height: store.editCanvasConfig.height + 'px',
+  backgroundColor: store.editCanvasConfig.background,
+  backgroundImage: store.editCanvasConfig.backgroundImage
+    ? `url(${store.editCanvasConfig.backgroundImage}), radial-gradient(circle, #585b70 1px, transparent 1px)`
+    : 'radial-gradient(circle, #585b70 1px, transparent 1px)',
+  backgroundSize: store.editCanvasConfig.backgroundImage
+    ? 'cover, 20px 20px'
+    : '20px 20px',
+  backgroundPosition: 'center, 0 0',
+  filter: store.editCanvasConfig.filterShow
+    ? `opacity(${store.editCanvasConfig.opacity}) saturate(${store.editCanvasConfig.saturate}) contrast(${store.editCanvasConfig.contrast}) hue-rotate(${store.editCanvasConfig.hueRotate}deg) brightness(${store.editCanvasConfig.brightness})`
+    : undefined,
+}))
+
+const shadow = computed(() => {
+  const selId = store.selectedId
+  if (!selId) return { x: 0, y: 0, width: 0, height: 0 }
+  const comp = store.findComponent(selId)
+  if (!comp) return { x: 0, y: 0, width: 0, height: 0 }
+
+  let x = comp.attr.x
+  let y = comp.attr.y
+  if (!store.components.find(c => c.id === selId)) {
+    const parentGroup = findParentGroup(selId)
+    if (parentGroup) {
+      x += parentGroup.attr.x
+      y += parentGroup.attr.y
+    }
+  }
+
+  return { x, y, width: comp.attr.w, height: comp.attr.h }
+})
+
+function componentStyle(comp: CanvasComponent): CSSProperties {
+  return {
+    left: comp.attr.x + 'px',
+    top: comp.attr.y + 'px',
+    width: comp.attr.w + 'px',
+    height: comp.attr.h + 'px',
+    zIndex: comp.attr.zIndex,
+    opacity: comp.styles.opacity,
+    transform: `rotateZ(${comp.styles.rotateZ}deg) rotateX(${comp.styles.rotateX}deg) rotateY(${comp.styles.rotateY}deg) skewX(${comp.styles.skewX}deg) skewY(${comp.styles.skewY}deg)`,
+    filter: comp.styles.filterShow
+      ? `saturate(${comp.styles.saturate}) contrast(${comp.styles.contrast}) hue-rotate(${comp.styles.hueRotate}deg) brightness(${comp.styles.brightness})`
+      : undefined,
+    mixBlendMode: comp.styles.blendMode !== 'normal' ? (comp.styles.blendMode as CSSProperties['mixBlendMode']) : undefined,
+    overflow: comp.preview.overFlowHidden ? 'hidden' : undefined,
+  }
+}
+
+function handleMouseDown(event: MouseEvent, id: string) {
   const comp = store.components.find(c => c.id === id)
-  if (!comp) return
-  dragState = {
-    id,
-    startX: event.clientX,
-    startY: event.clientY,
-    compX: comp.x,
-    compY: comp.y,
-  }
-  window.addEventListener('mousemove', onMouseMove)
-  window.addEventListener('mouseup', onMouseUp)
+  if (!comp || comp.status.lock) return
+  startDrag(event, id, comp.attr.x, comp.attr.y)
 }
 
-function onMouseMove(event: MouseEvent) {
-  if (!dragState) return
-  const dx = event.clientX - dragState.startX
-  const dy = event.clientY - dragState.startY
-  const comp = store.components.find(c => c.id === dragState!.id)
-  if (!comp) return
-  const pageW = store.pageConfig.width
-  const pageH = store.pageConfig.height
-  comp.x = Math.max(0, Math.min(dragState.compX + dx, pageW - comp.width))
-  comp.y = Math.max(0, Math.min(dragState.compY + dy, pageH - comp.height))
-}
-
-function onMouseUp() {
-  dragState = null
-  window.removeEventListener('mousemove', onMouseMove)
-  window.removeEventListener('mouseup', onMouseUp)
-}
-
-function onResizeStart(event: MouseEvent, id: string) {
+function handleResizeStart(event: MouseEvent, id: string) {
   const comp = store.components.find(c => c.id === id)
-  if (!comp) return
-  resizeState = {
-    id,
-    startX: event.clientX,
-    startY: event.clientY,
-    compW: comp.width,
-    compH: comp.height,
-  }
-  window.addEventListener('mousemove', onResizeMove)
-  window.addEventListener('mouseup', onResizeUp)
-}
-
-function onResizeMove(event: MouseEvent) {
-  if (!resizeState) return
-  const dx = event.clientX - resizeState.startX
-  const dy = event.clientY - resizeState.startY
-  const comp = store.components.find(c => c.id === resizeState!.id)
-  if (!comp) return
-  const pageW = store.pageConfig.width
-  const pageH = store.pageConfig.height
-  comp.width = Math.max(100, Math.min(resizeState.compW + dx, pageW - comp.x))
-  comp.height = Math.max(60, Math.min(resizeState.compH + dy, pageH - comp.y))
-}
-
-function onResizeUp() {
-  resizeState = null
-  window.removeEventListener('mousemove', onResizeMove)
-  window.removeEventListener('mouseup', onResizeUp)
-}
-
-function onDrop(event: DragEvent) {
-  const type = event.dataTransfer?.getData('text/plain')
-  if (type) {
-    store.addComponent(type)
-  }
+  if (!comp || comp.status.lock) return
+  startResize(event, id, comp.attr.w, comp.attr.h)
 }
 </script>
 
 <style scoped>
 .canvas-area {
   flex: 1;
-  background: #11111b;
+  background-color: #11111b;
+  background-image: radial-gradient(circle, #585b70 1px, transparent 1px);
+  background-size: 20px 20px;
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   min-height: 0;
 }
 
@@ -164,12 +390,12 @@ function onDrop(event: DragEvent) {
 
 .canvas-component {
   position: absolute;
-  background: #1e1e2e;
-  border: 2px solid #45475a;
+  background: transparent;
+  border: 2px solid transparent;
   border-radius: 6px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   transition: border-color 0.15s;
   cursor: default;
 }
@@ -179,38 +405,26 @@ function onDrop(event: DragEvent) {
   box-shadow: 0 0 12px rgba(137, 180, 250, 0.3);
 }
 
-.comp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 8px;
-  background: #313244;
-  user-select: none;
-  flex-shrink: 0;
-  cursor: move;
-  min-height: 28px;
+.canvas-component.multi-selected {
+  border-color: #a6e3a1;
+  box-shadow: 0 0 8px rgba(166, 227, 161, 0.3);
 }
 
-.comp-label {
-  font-size: 11px;
-  color: #a6adc8;
-  font-weight: 500;
+.canvas-component.locked {
+  border-color: #f38ba8;
+  opacity: 0.85;
 }
 
-.remove-btn {
-  background: none;
-  border: none;
-  color: #6c7086;
-  cursor: pointer;
-  font-size: 11px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: all 0.15s;
+.canvas-component.hidden {
+  display: none;
 }
 
-.remove-btn:hover {
-  background: #f38ba8;
-  color: #1e1e2e;
+.selection-rect {
+  position: absolute;
+  border: 1px dashed #89b4fa;
+  background: rgba(137, 180, 250, 0.08);
+  pointer-events: none;
+  z-index: 100;
 }
 
 .comp-body {
@@ -252,5 +466,78 @@ function onDrop(event: DragEvent) {
 .empty-hint p {
   font-size: 14px;
   margin: 0;
+}
+
+.ruler-toolbar {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.ruler-toolbar button {
+  background: none;
+  border: 1px solid #45475a;
+  color: #cdd6f4;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.ruler-toolbar button:hover {
+  background: #45475a;
+}
+
+.zoom-pct {
+  color: #a6adc8;
+  font-size: 12px;
+  min-width: 48px;
+  text-align: center;
+  user-select: none;
+}
+</style>
+
+<style>
+.sketch-ruler {
+  background: transparent !important;
+}
+
+.sketch-ruler .h-container .lines .line {
+  border-top: 1px dashed #89b4fa !important;
+}
+
+.sketch-ruler .v-container .lines .line {
+  border-left: 1px dashed #89b4fa !important;
+}
+
+.sketch-ruler .h-container .lines .line-locked {
+  border-top: 1px dashed #45475a !important;
+}
+
+.sketch-ruler .v-container .lines .line-locked {
+  border-left: 1px dashed #45475a !important;
+}
+
+.sketch-ruler .corner {
+  border-width: 0 !important;
+  background: transparent !important;
+}
+
+.sketch-ruler .indicator .value {
+  background-color: transparent !important;
+}
+
+.sketch-ruler .line-label {
+  background: transparent !important;
 }
 </style>

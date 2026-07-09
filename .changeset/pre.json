@@ -1,0 +1,16 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "jojotaoo_components": "0.0.0",
+    "jojotaoo_editor": "0.0.0",
+    "jojotaoo_preview": "0.0.0"
+  },
+  "changesets": [
+    "brave-jeans-hang",
+    "clever-actors-knock",
+    "fiery-dryers-admire",
+    "honest-swans-obey",
+    "three-planes-cough"
+  ]
+}
