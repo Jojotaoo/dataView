@@ -1,37 +1,65 @@
 # AGENTS.md
 
+## Monorepo Structure
+
+pnpm workspaces with 3 packages:
+
+| Package               | npm name              | Role                                                          |
+| --------------------- | --------------------- | ------------------------------------------------------------- |
+| `packages/components` | `jojotaoo_components` | Shared types, Pinia store, composables, chart components      |
+| `packages/editor`     | `jojotaoo_editor`     | Main editor app (three-column UI, drag/drop, property panels) |
+| `packages/preview`    | `jojotaoo_preview`    | Standalone preview container                                  |
+
+Editor depends on both components and preview via `workspace:*`. Changes to types/store/composables affect all packages.
+
 ## Commands
 
 ```bash
-npm run dev       # Vite dev server
-npm run build     # tsc && vite build (MUST pass both)
-npm run preview   # vite preview
+pnpm dev              # Vite dev server (serves packages/editor)
+pnpm build            # vue-tsc -b && vite build packages/editor
+pnpm preview          # vite preview packages/editor
+pnpm format           # Prettier: auto-format all files
+pnpm format:check     # Prettier: check formatting (CI-friendly)
+pnpm stylelint        # Stylelint: check CSS
+pnpm stylelint:fix    # Stylelint: auto-fix CSS
 ```
 
-Always run `npm run build` to check both TypeScript and Vite before committing. There are no separate test, lint, or typecheck commands.
+Root scripts target `packages/editor` directly. Each package also has its own build:
+
+- `packages/components`: `tsc --build --clean && tsc && vite build`
+- `packages/preview`: `tsc --build --clean && tsc && vite build`
+- `packages/editor`: `tsc && vite build`
+
+Always run `pnpm build` from root before committing — it checks TypeScript and Vite together. Pre-commit hooks run Prettier + lint-staged automatically.
+
+**Commit messages**: Must follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, etc.). Enforced by commitlint via `.husky/commit-msg`.
+
+Release workflow uses changesets: `pnpm changeset` → `pnpm version-packages` → `pnpm release`.
 
 ## Stack
 
-Vue 3 Composition API + `<script setup>` + Pinia + Vite + TypeScript. ECharts v6, vue3-sketch-ruler v3, vuedraggable v4. All styles scoped, Catppuccin Mocha palette. `tsconfig.json` enforces `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`. No test framework.
+Vue 3 Composition API + `<script setup>` + Pinia + Vite + TypeScript. ECharts v6, vue3-sketch-ruler v3, vuedraggable v4, Element Plus. All styles scoped, Catppuccin Mocha palette. `tsconfig.json` enforces `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`. No test framework.
 
 ## Architecture
 
 Three-column layout: **LeftPanel** (component library, drag source via vuedraggable clone) → **CanvasArea** (editing canvas with SketchRule ruler + zoom) → **RightPanel** (tabs: `props`/`request` when component selected, `page`/`schema`/`request` when none).
 
-All state mutations go through Pinia store (`src/stores/dashboard.ts`). No direct state manipulation outside store actions.
+Router (`packages/editor/src/router`): `/` → EditorPage, `/preview` → PreviewPage (from `jojotaoo_preview`).
 
-**Entrypoint**: `src/main.ts` mounts App with Pinia. `src/App.vue` orchestrates the three panels and preview overlay.
+All state mutations go through Pinia store (`packages/components/src/stores/dashboard.ts`). No direct state manipulation outside store actions.
+
+**Entrypoint**: `packages/editor/src/main.ts` mounts App with Pinia + Element Plus + vue-router.
 
 ## Critical Quirks
 
 ### Two parent-child models (DO NOT CONFUSE)
 
-| Model | Field | Storage | Rendering |
-|-------|-------|---------|-----------|
-| **Container** | `parentId: string` on child in flat array | `components[]` | `Container.vue` via `getChildren(parentId)` filters `components` |
-| **Group** | `isGroup: true` + nested `groupList: CreateComponentType[]` | Inside group component object | `GroupComponent.vue` iterates `component.groupList` |
+| Model         | Field                                                       | Storage                       | Rendering                                                        |
+| ------------- | ----------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------- |
+| **Container** | `parentId: string` on child in flat array                   | `components[]`                | `Container.vue` via `getChildren(parentId)` filters `components` |
+| **Group**     | `isGroup: true` + nested `groupList: CreateComponentType[]` | Inside group component object | `GroupComponent.vue` iterates `component.groupList`              |
 
-These are separate and non-interchangeable. Container children live in the flat `components` array. Group children live inside the group's `groupList`. Schema §4.11 is authoritative for group model.
+These are separate and non-interchangeable. Container children live in the flat `components` array. Group children live inside the group's `groupList`. Schema §4.11 (`.opencode/skills/schemadesign/SKILL.md`) is authoritative for group model.
 
 ### Group children are NOT draggable/resizable
 
@@ -45,19 +73,15 @@ Children in `groupList` have `attr.x/y` **relative to the group's top-left corne
 
 vue3-sketch-ruler applies `transform: matrix(...)` on `div.canvasedit`, which creates a new CSS containing block. Any `position: fixed` descendant (like ContextMenu) is positioned relative to that transformed element, not the viewport. **Always render `position: fixed` elements outside `<SketchRule>`, either as siblings or via `<Teleport to="body">`**.
 
-### Serializer field map duplication
+### Schema serialization is in SchemaPanel.vue only
 
-Both `src/components/RightPanel/SchemaPanel.vue` and `src/App.vue` build schema objects via **explicit field maps** inside `store.components.map(c => ({...}))`. Adding a new field to `CreateComponentType` requires updating **both** locations. Currently the map includes: `id`, `key`, `parentId`, `chartConfig`, `attr`, `styles`, `status`, `preview`, `filter`, `option`, `isGroup`, `groupList`.
+Schema field mapping lives in `packages/editor/src/components/RightPanel/SchemaPanel.vue`'s `currentSchema` computed. Currently maps: `id`, `key`, `chartConfig`, `attr`, `styles`, `status`, `preview`, `filter`, `option`, `chartStyle`, `isGroup`, `groupList`, `request`, `events`, `interactActions`, `props`.
 
-**Known missing**: `events`, `interactActions`, `request` — defined on `CreateComponentType` but NOT serialized. Adding them requires updating both files identically.
-
-### `skills/schema.skill.md` has documentation gaps
-
-The schema doc §2 (`editCanvasConfig`) only documents 5 of 12 fields. The code's `EditCanvasConfigType` has 7 additional canvas-level filter/transform fields (`filterShow`, `opacity`, `saturate`, `contrast`, `hueRotate`, `brightness`, `blendMode`) not mentioned in the doc. The `parentId` field on `CreateComponentType` is also undocumented in the schema.
+Adding a new field to `CreateComponentType` requires updating this map in SchemaPanel.vue AND the corresponding load logic in `store.loadSchema()`.
 
 ### `tech/README.md` shows an outdated schema format
 
-The schema illustrated in `tech/README.md` uses an old `page`/`pageConfig`/`components[].type` shape. The actual schema follows `ChartEditStorage`/`CreateComponentType` in `src/types/index.ts`. Do not treat `tech/README.md` as authoritative for schema structure.
+The schema illustrated in `tech/README.md` uses an old `page`/`pageConfig`/`components[].type` shape. The actual schema follows `ChartEditStorage`/`CreateComponentType` in `packages/components/src/types/index.ts`. Do not treat `tech/README.md` as authoritative for schema structure.
 
 ### ECharts first-row type inference
 
@@ -73,9 +97,12 @@ Functions like `updateComponentProp`, `updateComponentPosition`, `updateComponen
 
 ## Type System
 
-- **`CreateComponentType`** (`src/types/index.ts`): Base schema type. All fields: `id`, `key`, `parentId?`, `isGroup?`, `chartConfig`, `attr`, `styles`, `status`, `filter?`, `preview`, `events?`, `interactActions?`, `request?`, `option`, `groupList?`.
-- **`CanvasComponent`** (`src/stores/dashboard.ts`): Runtime extension of `CreateComponentType` adding **required** `parentId: string | null` and `props: Record<string, any>`. Used for components in the store's `components` ref. Group children in `groupList` are typed as `CreateComponentType[]` but at runtime may be `CanvasComponent`-equivalent objects (from spread).
-- **`ChartEditStorage`** (`src/types/index.ts`): Top-level schema shape `{ editCanvasConfig, requestGlobalConfig, componentList }`.
+All types live in `packages/components/src/types/`:
+
+- **`CreateComponentType`** (`component.ts`): Base schema type. Fields: `id`, `key`, `isGroup?`, `chartConfig`, `attr`, `styles`, `status`, `filter?`, `preview`, `events?`, `interactActions?`, `interactOverrides?`, `request?`, `option`, `chartStyle?`, `groupList?`.
+- **`CanvasComponent`** (`component.ts`): Extends `CreateComponentType` adding **required** `props: Record<string, any>`. Used for components in the store's `components` ref.
+- **`ChartEditStorage`** (`canvas.ts`): Top-level schema shape `{ editCanvasConfig, requestGlobalConfig, componentList }`.
+- **`EditCanvasConfigType`** (`canvas.ts`): Canvas config with `projectName`, `width`, `height`, `background`, `backgroundImage`, plus 7 filter/transform fields (`filterShow`, `opacity`, `saturate`, `contrast`, `hueRotate`, `brightness`, `blendMode`) and `customTheme`.
 
 ## Group Implementation Details
 
@@ -88,15 +115,18 @@ Functions like `updateComponentProp`, `updateComponentPosition`, `updateComponen
 
 ## Key Files
 
-| File | Role |
-|------|------|
-| `src/stores/dashboard.ts` | Pinia store, all actions, `CanvasComponent` type, recursive helpers |
-| `src/types/index.ts` | Schema type definitions (`CreateComponentType`, `ChartEditStorage`, etc.) |
-| `src/composables/useECharts.ts` | ECharts init/resize/update composable |
-| `src/components/CanvasArea.vue` | Canvas with ruler, drag/drop, box selection, context menu |
-| `src/components/charts/GroupComponent.vue` | Group rendering in editor (recursive) |
-| `src/components/charts/GroupPreview.vue` | Group rendering in preview |
-| `src/components/ContextMenu.vue` | Right-click Group/Ungroup menu |
-| `src/components/RightPanel/SchemaPanel.vue` | Schema serialization (clipboard copy) |
-| `src/App.vue` | Preview schema construction, three-panel layout |
-| `skills/schema.skill.md` | Authoritative schema reference (§4.11 for group model) |
+| File                                                           | Role                                                                  |
+| -------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `packages/components/src/stores/dashboard.ts`                  | Pinia store, all actions, recursive helpers                           |
+| `packages/components/src/types/component.ts`                   | `CreateComponentType`, `CanvasComponent`, `ChartStyleConfig`          |
+| `packages/components/src/types/canvas.ts`                      | `EditCanvasConfigType`, `ChartEditStorage`, `RequestGlobalConfigType` |
+| `packages/components/src/composables/useECharts.ts`            | ECharts init/resize/update composable                                 |
+| `packages/components/src/config/componentDefinitions.ts`       | Component registry (key → default config)                             |
+| `packages/editor/src/components/CanvasArea.vue`                | Canvas with ruler, drag/drop, box selection, context menu             |
+| `packages/editor/src/components/LeftPanel.vue`                 | Component library sidebar                                             |
+| `packages/editor/src/components/RightPanel/index.vue`          | Right panel with tabs                                                 |
+| `packages/editor/src/components/RightPanel/SchemaPanel.vue`    | Schema serialization (clipboard copy + apply)                         |
+| `packages/components/src/components/charts/GroupComponent.vue` | Group rendering in editor (recursive)                                 |
+| `packages/components/src/components/charts/GroupPreview.vue`   | Group rendering in preview                                            |
+| `packages/editor/src/components/ContextMenu.vue`               | Right-click Group/Ungroup menu                                        |
+| `.opencode/skills/schemadesign/SKILL.md`                       | Authoritative schema reference (§4.11 for group model)                |
