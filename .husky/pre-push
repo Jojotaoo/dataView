@@ -1,1 +1,3 @@
 vue-tsc --noEmit
+
+bash scripts/bump-version.sh "$1" "$2"
