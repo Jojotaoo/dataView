@@ -49,9 +49,9 @@
       <el-table-column label="操作" width="90" fixed="right">
         <template #default="{ row }">
           <div class="actions-cell">
-            <el-icon class="action-btn" @click="$emit('edit', row.id)"><Edit /></el-icon>
-            <el-icon class="action-btn"><View /></el-icon>
-            <el-icon class="action-btn delete"><Delete /></el-icon>
+            <el-icon class="action-btn" :size="24" @click="$emit('edit', row.id)"><Edit /></el-icon>
+            <el-icon class="action-btn" :size="24"><View /></el-icon>
+            <el-icon class="action-btn delete" :size="24"><Delete /></el-icon>
           </div>
         </template>
       </el-table-column>
