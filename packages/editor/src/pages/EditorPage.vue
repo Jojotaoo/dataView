@@ -1,7 +1,13 @@
 <template>
   <div class="app-container">
     <header class="app-header">
-      <h1 class="app-title">{{ store.editCanvasConfig.projectName || '可视化数据大屏搭建系统' }}</h1>
+      <div class="header-left">
+        <el-button text @click="goHome">
+          <el-icon><ArrowLeft /></el-icon>
+          首页
+        </el-button>
+        <h1 class="app-title">{{ store.editCanvasConfig.projectName || '可视化数据大屏搭建系统' }}</h1>
+      </div>
       <div class="header-actions">
         <button class="preview-btn" @click="enterPreview">👁 预览</button>
       </div>
@@ -16,14 +22,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDashboardStore } from 'jojotaoo_components'
 import type { ChartEditStorage } from 'jojotaoo_components'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import LeftPanel from '../components/LeftPanel.vue'
 import CanvasArea from '../components/CanvasArea.vue'
 import RightPanel from '../components/RightPanel/index.vue'
 
 const STORAGE_KEY = 'preview_schema'
 
+const router = useRouter()
 const store = useDashboardStore()
 
 const previewSchema = computed((): ChartEditStorage => ({
@@ -48,6 +57,10 @@ const previewSchema = computed((): ChartEditStorage => ({
     props: c.props ? JSON.parse(JSON.stringify(c.props)) : undefined,
   })),
 }))
+
+function goHome() {
+  router.push('/')
+}
 
 function enterPreview() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(previewSchema.value))
@@ -74,6 +87,12 @@ function enterPreview() {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .app-title {
