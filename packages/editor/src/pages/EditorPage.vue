@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <header class="app-header">
-      <h1 class="app-title">{{ store.editCanvasConfig.projectName || '可视化大屏搭建系统' }}</h1>
+      <h1 class="app-title">{{ store.editCanvasConfig.projectName || '可视化数据大屏搭建系统' }}</h1>
       <div class="header-actions">
         <button class="preview-btn" @click="enterPreview">👁 预览</button>
       </div>
@@ -29,7 +29,7 @@ const store = useDashboardStore()
 const previewSchema = computed((): ChartEditStorage => ({
   editCanvasConfig: { ...store.editCanvasConfig },
   requestGlobalConfig: { ...store.requestGlobalConfig },
-  componentList: store.components.map(c => ({
+  componentList: store.components.map((c) => ({
     id: c.id,
     key: c.key,
     chartConfig: { ...c.chartConfig },
