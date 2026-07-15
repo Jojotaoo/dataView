@@ -217,10 +217,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { fetchDataSourceEnum } from '../../../server/dataset'
-import { executeDatasetPreview, getColumnsFromRows, MOCK_TABLES } from 'jojotaoo_components'
+import { fetchDataSourceEnum, previewDataset } from '../../../server/dataset'
+import { useDashboardStore } from 'jojotaoo_components'
 import OperandEditor from './OperandEditor.vue'
 import type {
   DatasetConfig,
@@ -517,18 +517,37 @@ function syncSelectStep() {
   refreshPreview()
 }
 
+function serviceOpts() {
+  const g = useDashboardStore().requestGlobalConfig
+  return { mode: g.datasetMode ?? 'mock', requestOriginUrl: g.requestOriginUrl }
+}
+
+let previewTimer: ReturnType<typeof setTimeout> | null = null
 async function refreshPreview() {
   if (!baseColumns.value.length) return
-  const cfg = buildConfig()
-  preview.value = await executeDatasetPreview(cfg)
+  const opts = serviceOpts()
+  const run = async () => {
+    const cfg = buildConfig()
+    preview.value = await previewDataset(cfg, opts)
+  }
+  if (previewTimer) clearTimeout(previewTimer)
+  if (opts.mode === 'server') {
+    previewTimer = setTimeout(run, 300)
+  } else {
+    await run()
+  }
 }
+
+onUnmounted(() => {
+  if (previewTimer) clearTimeout(previewTimer)
+})
 
 async function pullData() {
   if (!baseConfig.value.dataSourceId) return
   pulling.value = true
   try {
-    const rows = MOCK_TABLES[baseConfig.value.dataSourceId] ?? []
-    baseColumns.value = getColumnsFromRows(rows)
+    const r = await previewDataset(baseConfig.value, serviceOpts())
+    baseColumns.value = r.columns
     await refreshPreview()
   } finally {
     pulling.value = false

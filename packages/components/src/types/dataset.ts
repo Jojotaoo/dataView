@@ -96,6 +96,7 @@ export interface DatasetConfig {
   dataSourceId: string // 仅引用数据源；连接 uri/凭证在服务端注册表，前端不持有
   sql: string // base SQL
   transform: DatasetTransform
+  generatedSql?: string // 前端用 buildDatasetSQL 组装好的完整可执行 SQL；服务端可直接使用或自行重拼
   createdAt?: number
   updatedAt?: number
 }
