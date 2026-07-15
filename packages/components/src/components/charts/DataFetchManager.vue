@@ -1,15 +1,27 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { useDashboardStore } from '../../stores/dashboard'
-import { mergeRequestConfig, executeRequest, doFetch, getPondCache, setPondCache, clearPondCache } from '../../composables/useRequestMerge'
-import type { RequestConfigType } from '../../types'
+import {
+  mergeRequestConfig,
+  executeRequest,
+  doFetch,
+  getPondCache,
+  setPondCache,
+  clearPondCache,
+  resolveUrl,
+} from '../../composables/useRequestMerge'
+import { fetchDatasetResult } from '../../services/datasetService'
+import type { RequestConfigType, DatasetConfig } from '../../types'
 
-const props = withDefaults(defineProps<{
-  componentId: string
-  mode?: 'design' | 'preview'
-}>(), {
-  mode: 'design',
-})
+const props = withDefaults(
+  defineProps<{
+    componentId: string
+    mode?: 'design' | 'preview'
+  }>(),
+  {
+    mode: 'design',
+  },
+)
 
 const store = useDashboardStore()
 
@@ -17,6 +29,12 @@ const comp = computed(() => store.findComponent(props.componentId))
 const request = computed(() => comp.value?.request)
 const globalConfig = computed(() => store.requestGlobalConfig)
 const interactOverrides = computed(() => comp.value?.interactOverrides)
+
+// mock 模式：由上层 provide 注入 datasetResolver；server 模式不使用
+const datasetResolver = inject<(id: string) => DatasetConfig | undefined>('datasetResolver')
+
+// 数据集按 datasetId 去重（仿 Pond）
+const datasetCache = new Map<string, any>()
 
 let pollingTimer: ReturnType<typeof setInterval> | null = null
 let fetchSeq = 0
@@ -26,7 +44,7 @@ function getRequestSource(): RequestConfigType | null {
   if (!config) return null
   if (config.requestDataType === 1) return config
   if (config.requestDataType === 2 && config.requestDataPondId) {
-    const pond = globalConfig.value.requestDataPond.find(p => p.dataPondId === config.requestDataPondId)
+    const pond = globalConfig.value.requestDataPond.find((p) => p.dataPondId === config.requestDataPondId)
     return pond?.dataPondRequestConfig ?? null
   }
   return null
@@ -36,9 +54,36 @@ function getPondId(): string | null {
   return request.value?.requestDataType === 2 ? (request.value.requestDataPondId ?? null) : null
 }
 
+async function fetchDataset() {
+  const config = request.value
+  if (!config || config.requestDataType !== 3 || !config.requestDatasetId) return
+  const id = config.requestDatasetId
+
+  if (datasetCache.has(id)) {
+    store.updateComponentOption(props.componentId, 'dataset', datasetCache.get(id)!)
+    return
+  }
+
+  try {
+    const ds = await fetchDatasetResult(id, {
+      mode: globalConfig.value.datasetMode,
+      requestOriginUrl: globalConfig.value.requestOriginUrl,
+      resolve: datasetResolver,
+    })
+    datasetCache.set(id, ds)
+    store.updateComponentOption(props.componentId, 'dataset', ds)
+  } catch (err) {
+    console.error('[DataFetch] dataset request failed:', err)
+  }
+}
+
 async function fetchData(isPolling = false, forceFresh = false) {
   const config = request.value
   if (!config || config.requestDataType === 0) return
+  if (config.requestDataType === 3) {
+    await fetchDataset()
+    return
+  }
 
   const source = getRequestSource()
   if (!source || source.requestDataType === 0) return

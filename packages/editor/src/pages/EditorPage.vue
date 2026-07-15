@@ -21,11 +21,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDashboardStore } from 'jojotaoo_components'
-import type { ChartEditStorage } from 'jojotaoo_components'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import { useChartSchema } from '../composables/useChartSchema'
 import LeftPanel from '../components/LeftPanel.vue'
 import CanvasArea from '../components/CanvasArea.vue'
 import RightPanel from '../components/RightPanel/index.vue'
@@ -34,29 +33,7 @@ const STORAGE_KEY = 'preview_schema'
 
 const router = useRouter()
 const store = useDashboardStore()
-
-const previewSchema = computed((): ChartEditStorage => ({
-  editCanvasConfig: { ...store.editCanvasConfig },
-  requestGlobalConfig: { ...store.requestGlobalConfig },
-  componentList: store.components.map((c) => ({
-    id: c.id,
-    key: c.key,
-    chartConfig: { ...c.chartConfig },
-    attr: { ...c.attr },
-    styles: { ...c.styles },
-    status: { ...c.status },
-    preview: { ...c.preview },
-    filter: c.filter,
-    option: c.option,
-    chartStyle: c.chartStyle,
-    isGroup: c.isGroup,
-    groupList: c.groupList ? JSON.parse(JSON.stringify(c.groupList)) : undefined,
-    request: c.request ? JSON.parse(JSON.stringify(c.request)) : undefined,
-    events: c.events ? JSON.parse(JSON.stringify(c.events)) : undefined,
-    interactActions: c.interactActions ? JSON.parse(JSON.stringify(c.interactActions)) : undefined,
-    props: c.props ? JSON.parse(JSON.stringify(c.props)) : undefined,
-  })),
-}))
+const { schema: previewSchema } = useChartSchema()
 
 function goHome() {
   router.push('/')

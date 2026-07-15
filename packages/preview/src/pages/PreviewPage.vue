@@ -1,10 +1,7 @@
 <template>
   <div class="preview-overlay">
     <div class="preview-wrap" ref="wrapRef" :style="wrapStyle">
-      <div
-        class="preview-stage"
-        :style="stageStyle"
-      >
+      <div class="preview-stage" :style="stageStyle">
         <div
           v-for="comp in rootComponents"
           :key="comp.id"
@@ -12,31 +9,22 @@
           :class="{ hidden: comp.status.hide }"
           :style="componentStyle(comp)"
         >
-          <GroupPreview
-            v-if="comp.key === 'group'"
-            :component="comp"
-          />
-          <component
-            v-else
-            :is="componentMap[comp.key]"
-            v-bind="getComponentProps(comp)"
-          />
+          <GroupPreview v-if="comp.key === 'group'" :component="comp" />
+          <component v-else :is="componentMap[comp.key]" v-bind="getComponentProps(comp)" />
           <DataFetchManager :component-id="comp.id" mode="preview" />
         </div>
-        <div v-if="rootComponents.length === 0" class="preview-empty">
-          暂无组件
-        </div>
+        <div v-if="rootComponents.length === 0" class="preview-empty">暂无组件</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, provide } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useDashboardStore, GroupPreview, DataFetchManager, componentMap, getComponentProps } from 'jojotaoo_components'
 import { usePreviewScale } from '../composables/usePreviewScale'
-import type { ChartEditStorage, CreateComponentType, CanvasComponent } from 'jojotaoo_components'
+import type { ChartEditStorage, CreateComponentType, CanvasComponent, DatasetConfig } from 'jojotaoo_components'
 
 const STORAGE_KEY = 'preview_schema'
 
@@ -44,12 +32,16 @@ const store = useDashboardStore()
 
 const schema = ref<ChartEditStorage | null>(null)
 
+// 独立预览：用 schema 内嵌的数据集快照提供解析函数（mock 模式前端计算用）
+provide('datasetResolver', (id: string): DatasetConfig | undefined =>
+  schema.value?.datasetBindings?.find((d) => d.id === id),
+)
+
 function handleBeforeUnload() {
   localStorage.removeItem(STORAGE_KEY)
 }
 
-function handleFullscreenChange() {
-}
+function handleFullscreenChange() {}
 
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && document.fullscreenElement) {
@@ -122,9 +114,7 @@ const stageStyle = computed((): CSSProperties => {
     transform: `scale(${scale.value})`,
     transformOrigin: 'center center',
     flexShrink: 0,
-    mixBlendMode: c.blendMode !== 'normal'
-      ? (c.blendMode as CSSProperties['mixBlendMode'])
-      : undefined,
+    mixBlendMode: c.blendMode !== 'normal' ? (c.blendMode as CSSProperties['mixBlendMode']) : undefined,
   }
 })
 
@@ -139,16 +129,13 @@ function componentStyle(comp: CreateComponentType): CSSProperties {
       ? `saturate(${comp.styles.saturate}) contrast(${comp.styles.contrast}) hue-rotate(${comp.styles.hueRotate}deg) brightness(${comp.styles.brightness})`
       : undefined,
     transform: `rotateZ(${comp.styles.rotateZ}deg) rotateX(${comp.styles.rotateX}deg) rotateY(${comp.styles.rotateY}deg) skewX(${comp.styles.skewX}deg) skewY(${comp.styles.skewY}deg)`,
-    mixBlendMode: comp.styles.blendMode !== 'normal'
-      ? (comp.styles.blendMode as CSSProperties['mixBlendMode'])
-      : undefined,
+    mixBlendMode:
+      comp.styles.blendMode !== 'normal' ? (comp.styles.blendMode as CSSProperties['mixBlendMode']) : undefined,
     overflow: comp.preview.overFlowHidden ? 'hidden' : undefined,
   }
 }
 
-const rootComponents = computed(() =>
-  schema.value?.componentList ?? []
-)
+const rootComponents = computed(() => schema.value?.componentList ?? [])
 </script>
 
 <style scoped>

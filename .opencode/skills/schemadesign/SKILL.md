@@ -15,6 +15,7 @@ description: 可视化搭建数据大屏的页面Schema规范，整个规范详�
 2. [画布配置模块](#2-画布配置模块-editcanvasconfig)
 3. [全局请求配置模块](#3全局请求配置模块requestglobalconfig)
 4. [组件列表模块](#4-组件列表模块-componentlist)
+5. [数据集规范](#5-数据集规范-dataset)
 
 ---
 
@@ -849,5 +850,113 @@ interface ChartEditStorage {
 | `fontSize` | `number` | `13` | 字号（px） |
 | `textColor` | `string` | `'#cdd6f4'` | 文字颜色 |
 | `highlightColor` | `string` | `'#89b4fa'` | 高亮颜色（预留） |
+
+---
+
+## 5. 数据集规范 (Dataset)
+
+**对应功能：首页「数据源管理 → 数据集」的全部创建与加工能力。**
+
+数据集是一份**可序列化的加工规范 `DatasetConfig`**，同时满足：① 服务端依据它拼装最终 SQL 拉取数据；② 前端依据它回填二次编辑 UI。数据集为**全局资源**（独立于某个项目，localStorage 持久化），可被任意组件通过 `requestDataType=3` 引用。
+
+### 5.1 完整结构
+
+```typescript
+interface DatasetConfig {
+  id: string
+  name: string
+  dataSourceId: string       // 仅引用远端数据源枚举项；连接 uri/凭证在服务端注册表，前端不持有
+  sql: string                // 创建阶段填写的 base SQL
+  transform: DatasetTransform
+  createdAt?: number
+  updatedAt?: number
+}
+
+interface DatasetTransform {
+  steps: TransformStep[]     // 加工步骤（联合类型）
+}
+```
+
+> **关键约束**：`DatasetConfig` 只存 `dataSourceId`，**不存任何连接 uri / 账号 / 凭证**；数据源连接由平台服务端按 id 解析。前端 dataset store 仅作为加工定义载体。
+
+### 5.2 远端数据源枚举
+
+```typescript
+interface DataSourceItem {
+  id: string
+  name: string
+  type: 'mysql' | 'postgres' | 'clickhouse' | 'api'
+}
+```
+
+### 5.3 加工步骤（TransformStep 联合类型）
+
+| 步骤 type | 作用 | 关键字段 |
+|-----------|------|----------|
+| `select` | 字段设置：决定最终输出列与别名 | `fields: { source, alias?, enabled }[]`，未勾选 `enabled:false` 的字段不出现在数据集 |
+| `filter` | 行级过滤 | `logic: 'and'\|'or'`，`conditions: { field, operator, value?, enabled? }[]` |
+| `formula` | 新增公式列 | `columns: { name, expression: FormulaExpr, type?, enabled? }[]` |
+| `summary` | 新增汇总列（窗口聚合，不减少行） | `columns: { name, function, field, partitionBy?, enabled? }[]` |
+| `sort` | 排序 | `rules: { field, order: 'asc'\|'desc', enabled? }[]` |
+
+#### 公式表达式（结构化、可序列化、可翻译为 SQL）
+
+```typescript
+type FormulaExpr =
+  | { kind: 'field'; field: string }
+  | { kind: 'const'; value: number | string }
+  | { kind: 'op'; op: '+' | '-' | '*' | '/'; left: FormulaExpr; right: FormulaExpr }
+  | { kind: 'func'; fn: 'ROUND' | 'UPPER' | 'LOWER' | 'CONCAT' | 'COALESCE'; args: FormulaExpr[] }
+```
+
+#### 过滤运算符
+
+`eq`=`=`, `neq`=`<>`（或 `!=`）, `gt`=`>`, `gte`=`>=`, `lt`=`<`, `lte`=`<=`, `like`=`LIKE`, `in`=`IN (...)`, `isNull`=`IS NULL`, `notNull`=`IS NOT NULL`。
+
+#### 汇总聚合函数
+
+`SUM` / `AVG` / `COUNT` / `MAX` / `MIN`，配合可选 `partitionBy` 生成窗口函数 `FUNC(field) OVER ([PARTITION BY ...])`。
+
+### 5.4 服务端拼装 SQL 合同（确定顺序，与数组存储顺序无关）
+
+```sql
+SELECT <enabled select fields, 别名>
+FROM (
+  SELECT *,
+         <formula: (expr) AS name>,
+         <summary: FUNC(field) OVER ([PARTITION BY ...]) AS name>
+  FROM (<base sql>) __src
+  WHERE <filter 条件, 按 logic 连接>
+) __t
+ORDER BY <sort rules>
+```
+
+- `filter` → 内层 `WHERE`（仅引用 base 字段，`value` 必须参数化/转义）。
+- `formula` / `summary` → 内层 `SELECT` 派生列。
+- `select` → 外层投影，决定最终列集合与别名；未勾选字段排除；派生列需在此勾选才出现。
+- `sort` → 最外层 `ORDER BY`。
+
+完整示例与实现见 `tech/dataset-design.md`。该规范事实来源：`packages/components/src/utils/datasetTransform.ts` 的 `buildDatasetSQL` / `applyTransformsInMemory`。
+
+### 5.5 组件绑定
+
+组件 `request` 新增 `requestDataType: 3`（DATASET）与 `requestDatasetId?: string`。**组件 schema 只存「方式 + 路径」**（`requestDataType=3` + `requestDatasetId`），绝不内嵌 `DatasetConfig`。
+
+运行时数据流（请求发送全在 components 的 DataFetchManager）：
+```
+组件 request { requestDataType:3, requestDatasetId }   // schema 只含 id + 方式
+  → 按 requestGlobalConfig.datasetMode 分支（默认 'mock'）：
+       server（且 requestOriginUrl 有值）:
+         POST {requestOriginUrl}/api/dataset/execute { datasetId }  // 服务端按 id 解析 dataSourceId 连接并拼装 SQL
+       mock:
+         inject('datasetResolver')(id) 取 DatasetConfig → executeDatasetPreview(config)
+         内部取 MOCK_TABLES[dataSourceId] 样本行加工（mock 数据源来自内置样本表，sql 不真正执行）
+  → 两路均经 datasetCache[datasetId] 去重
+  → rows 转 ECharts dataset { dimensions, source } 写入 option.dataset
+```
+> `datasetMode: 'mock' | 'server'` 存于 `RequestGlobalConfigType`（随项目 schema）。dataset store 归属 **editor 项目**，共享库不持有有状态 store。mock 场景由 editor / 预览在各自 app 根 `provide('datasetResolver', id => ...)` 注入解析函数（editor 指向 store，preview 指向 `datasetBindings`），深层 DataFetchManager `inject` 使用（详见 `tech/dataset-design.md` §六）。**真实后端不需要桥**。
+
+#### 独立预览可移植性（datasetBindings）
+`ChartEditStorage` 顶层新增 `datasetBindings?: DatasetConfig[]`（仅含组件实际引用到的数据集快照）。编辑器保存时写入被引用的数据集；独立预览器加载 schema 时（同处 hydrate `editCanvasConfig/requestGlobalConfig/components`）顺带 `datasetStore.hydrate(schema.datasetBindings)`，使 `requestDatasetId` 可被解析。组件 schema 仍只持引用，不重复定义。
 
 ---

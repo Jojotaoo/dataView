@@ -4,9 +4,7 @@
       <button class="action-btn" @click="copySchema">
         {{ copied ? '✓ 已复制' : '复制 Schema' }}
       </button>
-      <button class="action-btn primary" @click="applySchema">
-        应用到画布
-      </button>
+      <button class="action-btn primary" @click="applySchema">应用到画布</button>
     </div>
     <textarea
       ref="textareaRef"
@@ -22,38 +20,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useDashboardStore } from 'jojotaoo_components'
-import type { ChartEditStorage } from 'jojotaoo_components'
+import { useChartSchema } from '../../composables/useChartSchema'
+import { useDatasetStore } from '../../stores/dataset'
 
 const store = useDashboardStore()
+const datasetStore = useDatasetStore()
+const { schema: currentSchema } = useChartSchema()
 const copied = ref(false)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const message = ref('')
 const success = ref(false)
-
-const currentSchema = computed((): ChartEditStorage => ({
-  editCanvasConfig: { ...store.editCanvasConfig },
-  requestGlobalConfig: { ...store.requestGlobalConfig },
-  componentList: store.components.map(c => ({
-    id: c.id,
-    key: c.key,
-    chartConfig: c.chartConfig,
-    attr: { ...c.attr },
-    styles: { ...c.styles },
-    status: { ...c.status },
-    preview: { ...c.preview },
-    filter: c.filter,
-    option: c.option,
-    chartStyle: c.chartStyle,
-    isGroup: c.isGroup,
-    groupList: c.groupList ? JSON.parse(JSON.stringify(c.groupList)) : undefined,
-    request: c.request ? JSON.parse(JSON.stringify(c.request)) : undefined,
-    events: c.events ? JSON.parse(JSON.stringify(c.events)) : undefined,
-    interactActions: c.interactActions ? JSON.parse(JSON.stringify(c.interactActions)) : undefined,
-    props: c.props ? JSON.parse(JSON.stringify(c.props)) : undefined,
-  })),
-}))
 
 const schemaInput = ref(JSON.stringify(currentSchema.value, null, 2))
 
@@ -75,7 +53,9 @@ async function copySchema() {
     document.body.removeChild(ta)
   }
   copied.value = true
-  setTimeout(() => { copied.value = false }, 2000)
+  setTimeout(() => {
+    copied.value = false
+  }, 2000)
 }
 
 function applySchema() {
@@ -90,9 +70,12 @@ function applySchema() {
     }
 
     store.loadSchema(parsed)
+    datasetStore.hydrate(parsed.datasetBindings)
     message.value = '✓ 已应用到画布'
     success.value = true
-    setTimeout(() => { message.value = '' }, 3000)
+    setTimeout(() => {
+      message.value = ''
+    }, 3000)
   } catch (e: any) {
     message.value = 'JSON 解析错误：' + (e.message || '格式不正确')
     success.value = false

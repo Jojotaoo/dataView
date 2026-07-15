@@ -5,8 +5,15 @@ export interface RequestBodyType {
   xml: string
 }
 
+export const RequestDataTypeEnum = {
+  STATIC: 0,
+  AJAX: 1,
+  POND: 2,
+  DATASET: 3,
+} as const
+
 export interface ComponentRequestConfigType {
-  requestDataType: 0 | 1 | 2
+  requestDataType: 0 | 1 | 2 | 3
   requestUrl?: string
   requestHttpType?: 'get' | 'post' | 'put' | 'delete' | 'patch'
   requestContentType?: number
@@ -20,6 +27,7 @@ export interface ComponentRequestConfigType {
   requestInterval?: number | null
   requestIntervalUnit?: string
   requestDataPondId?: string
+  requestDatasetId?: string
 }
 
 export interface RequestConfigType extends ComponentRequestConfigType {}

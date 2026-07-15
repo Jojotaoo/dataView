@@ -1,7 +1,7 @@
 <template>
   <div class="list-toolbar">
     <div class="toolbar-left">
-      <el-button type="primary" @click="$emit('create')">
+      <el-button type="success" @click="$emit('create')">
         <el-icon><Plus /></el-icon>
         新建项目
       </el-button>

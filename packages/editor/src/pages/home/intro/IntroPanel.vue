@@ -33,7 +33,7 @@
       </p>
 
       <div class="hero-actions">
-        <el-button type="primary" size="large" @click="$emit('createProject')">
+        <el-button type="success" size="large" @click="$emit('createProject')">
           <el-icon><Position /></el-icon>
           开始创建
         </el-button>

@@ -11,6 +11,18 @@ export { componentDefinitions } from './config/componentDefinitions'
 export { CHART_THEMES, applyTheme } from './config/chartThemes'
 export type { ChartThemePreset } from './config/chartThemes'
 
+// Dataset runtime fetch + mock + transform utils（创建/保存/删除接口已迁移至 editor 的 server/dataset）
+export { executeDatasetPreview, applyTransformsInMemory, MOCK_TABLES } from './mock'
+export { fetchDatasetResult } from './services/datasetService'
+export {
+  buildDatasetSQL,
+  expressionToSQL,
+  getColumnsFromRows,
+  parseExpression,
+  rowsToEChartsDataset,
+} from './utils/datasetTransform'
+export type { EChartsDataset } from './utils/datasetTransform'
+
 // Composables
 export { useECharts } from './composables/useECharts'
 export { useInteractFilter } from './composables/useInteractFilter'

@@ -20,10 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, inject } from 'vue'
 import { useDashboardStore } from 'jojotaoo_components'
-import type { RequestConfigType } from 'jojotaoo_components'
-import { executeRequest } from 'jojotaoo_components'
+import type { RequestConfigType, DatasetConfig } from 'jojotaoo_components'
+import { executeRequest, fetchDatasetResult } from 'jojotaoo_components'
 import ComponentRequestConfig from './ComponentRequestConfig.vue'
 
 const store = useDashboardStore()
@@ -32,6 +32,8 @@ const comp = computed(() => store.selectedComponent!)
 const pondLoading = ref<Record<string, boolean>>({})
 const pondResponse = ref<Record<string, any>>({})
 const pondError = ref<Record<string, string | null>>({})
+
+const datasetResolver = inject<(id: string) => DatasetConfig | undefined>('datasetResolver')
 
 // ... existing functions ...
 
@@ -79,10 +81,28 @@ async function handleTestRequest() {
     source = config
   } else if (config.requestDataType === 2 && config.requestDataPondId) {
     pondId = config.requestDataPondId
-    const pond = store.requestGlobalConfig.requestDataPond.find(
-      p => p.dataPondId === config.requestDataPondId
-    )
+    const pond = store.requestGlobalConfig.requestDataPond.find((p) => p.dataPondId === config.requestDataPondId)
     if (pond) source = pond.dataPondRequestConfig
+  } else if (config.requestDataType === 3 && config.requestDatasetId) {
+    pondId = config.requestDatasetId
+    const key = pondId
+    pondLoading.value[key] = true
+    pondError.value[key] = null
+    pondResponse.value[key] = null
+    try {
+      const ds = await fetchDatasetResult(config.requestDatasetId, {
+        mode: store.requestGlobalConfig.datasetMode,
+        requestOriginUrl: store.requestGlobalConfig.requestOriginUrl,
+        resolve: datasetResolver,
+      })
+      store.updateComponentOption(store.selectedComponent!.id, 'dataset', ds)
+      pondResponse.value[key] = ds
+    } catch (err: any) {
+      pondError.value[key] = err?.message || '请求失败'
+    } finally {
+      pondLoading.value[key] = false
+    }
+    return
   }
 
   if (!source) return

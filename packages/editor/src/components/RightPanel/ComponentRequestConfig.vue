@@ -32,27 +32,66 @@
           @change="update('requestDataPondId', ($event.target as HTMLSelectElement).value)"
         >
           <option value="">请选择数据池</option>
-          <option
-            v-for="pond in globalConfig.requestDataPond"
-            :key="pond.dataPondId"
-            :value="pond.dataPondId"
-          >
+          <option v-for="pond in globalConfig.requestDataPond" :key="pond.dataPondId" :value="pond.dataPondId">
             {{ pond.dataPondName }}
           </option>
         </select>
-        <div v-if="globalConfig.requestDataPond.length === 0" class="empty-hint">
-          请先在全局配置中添加数据池
-        </div>
+        <div v-if="globalConfig.requestDataPond.length === 0" class="empty-hint">请先在全局配置中添加数据池</div>
       </div>
-      <button class="send-btn" @click="emit('testRequest')" :disabled="!request.requestDataPondId || pondLoading?.[request.requestDataPondId!]">
+      <button
+        class="send-btn"
+        @click="emit('testRequest')"
+        :disabled="!request.requestDataPondId || pondLoading?.[request.requestDataPondId!]"
+      >
         {{ pondLoading?.[request.requestDataPondId!] ? '请求中...' : '发送请求' }}
       </button>
-      <div v-if="pondError?.[request.requestDataPondId!]" class="pond-error">{{ pondError?.[request.requestDataPondId!] }}</div>
+      <div v-if="pondError?.[request.requestDataPondId!]" class="pond-error">
+        {{ pondError?.[request.requestDataPondId!] }}
+      </div>
       <div v-if="pondResponse?.[request.requestDataPondId!]" class="pond-data-table">
         <div class="table-header">
-          <span v-for="(dim, di) in getTableData(request.requestDataPondId!).dimensions" :key="di" class="th">{{ dim }}</span>
+          <span v-for="(dim, di) in getTableData(request.requestDataPondId!).dimensions" :key="di" class="th">{{
+            dim
+          }}</span>
         </div>
         <div v-for="(row, ri) in getTableData(request.requestDataPondId!).source" :key="ri" class="table-row">
+          <span v-for="(cell, ci) in row" :key="ci" class="cell">{{ cell }}</span>
+        </div>
+      </div>
+    </template>
+
+    <template v-else-if="request.requestDataType === 3">
+      <div class="prop-group">
+        <label class="prop-label">选择数据集</label>
+        <select
+          class="prop-select"
+          :value="request.requestDatasetId"
+          @change="update('requestDatasetId', ($event.target as HTMLSelectElement).value)"
+        >
+          <option value="">请选择数据集</option>
+          <option v-for="ds in datasetList" :key="ds.id" :value="ds.id">
+            {{ ds.name }}
+          </option>
+        </select>
+        <div v-if="datasetList.length === 0" class="empty-hint">请先在首页「数据源管理 - 数据集」中创建</div>
+      </div>
+      <button
+        class="send-btn"
+        @click="emit('testRequest')"
+        :disabled="!request.requestDatasetId || pondLoading?.[request.requestDatasetId!]"
+      >
+        {{ pondLoading?.[request.requestDatasetId!] ? '请求中...' : '发送请求' }}
+      </button>
+      <div v-if="pondError?.[request.requestDatasetId!]" class="pond-error">
+        {{ pondError?.[request.requestDatasetId!] }}
+      </div>
+      <div v-if="pondResponse?.[request.requestDatasetId!]" class="pond-data-table">
+        <div class="table-header">
+          <span v-for="(dim, di) in getTableData(request.requestDatasetId!).dimensions" :key="di" class="th">{{
+            dim
+          }}</span>
+        </div>
+        <div v-for="(row, ri) in getTableData(request.requestDatasetId!).source" :key="ri" class="table-row">
           <span v-for="(cell, ci) in row" :key="ci" class="cell">{{ cell }}</span>
         </div>
       </div>
@@ -81,6 +120,7 @@ import { useDashboardStore } from 'jojotaoo_components'
 import type { RequestConfigType } from 'jojotaoo_components'
 import HttpRequestForm from './request/HttpRequestForm.vue'
 import StaticDatasetEditor from './request/StaticDatasetEditor.vue'
+import { useDatasetStore } from '../../stores/dataset'
 
 const props = defineProps<{
   request: RequestConfigType
@@ -105,11 +145,14 @@ const emit = defineEmits<{
 
 const store = useDashboardStore()
 const globalConfig = computed(() => store.requestGlobalConfig)
+const datasetStore = useDatasetStore()
+const datasetList = computed(() => datasetStore.datasets)
 
 const dataSourceTypes = [
   { value: 0 as const, label: '静态' },
   { value: 1 as const, label: 'AJAX' },
   { value: 2 as const, label: '数据池' },
+  { value: 3 as const, label: '数据集' },
 ]
 
 function update(key: string, value: any) {
@@ -118,7 +161,7 @@ function update(key: string, value: any) {
 
 function updateDataType(value: number) {
   emit('update', {
-    requestDataType: value as 0 | 1 | 2,
+    requestDataType: value as 0 | 1 | 2 | 3,
     requestParamsBodyType: value === 1 ? 'none' : undefined,
   })
 }
@@ -130,14 +173,14 @@ function getTableData(pondId: string) {
   if (Array.isArray(data) && data.length > 0) {
     if (typeof data[0] === 'object' && data[0] !== null) {
       const dims = Object.keys(data[0])
-      const src = data.map((row: any) => dims.map(k => row[k]))
+      const src = data.map((row: any) => dims.map((k) => row[k]))
       return { dimensions: dims, source: src }
     }
     return { dimensions: ['数据'], source: data.map((v: any) => [v]) }
   }
   if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
     const dims = Object.keys(data)
-    const src = [dims.map(k => data[k])]
+    const src = [dims.map((k) => data[k])]
     return { dimensions: dims, source: src }
   }
   return { dimensions: ['数据'], source: [[data]] }
