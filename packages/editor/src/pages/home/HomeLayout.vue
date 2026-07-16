@@ -14,11 +14,12 @@
         </div>
       </header>
       <div class="content">
-        <IntroPanel v-if="activeMenu === 'intro'" @create-project="goToEditor" />
-        <ProjectList v-else-if="activeMenu === 'project'" @create-project="goToEditor" @edit-project="goToEditor" />
+        <IntroPanel v-if="activeMenu === 'intro'" @create-project="openCreate" />
+        <ProjectList v-else-if="activeMenu === 'project'" @create-project="openCreate" @edit-project="editProject" />
         <DataSourceManager v-else-if="activeMenu === 'datasource'" />
       </div>
     </div>
+    <ProjectCreateDialog ref="createRef" @created="onCreated" />
   </div>
 </template>
 
@@ -30,9 +31,12 @@ import HomeSidebar from './HomeSidebar.vue'
 import IntroPanel from './intro/IntroPanel.vue'
 import ProjectList from './project/ProjectList.vue'
 import DataSourceManager from './datasource/DataSourceManager.vue'
+import ProjectCreateDialog from './project/ProjectCreateDialog.vue'
+import type { ProjectItem } from '../../server/project'
 
 const router = useRouter()
 const activeMenu = ref('intro')
+const createRef = ref<InstanceType<typeof ProjectCreateDialog> | null>(null)
 
 const menuTitleMap: Record<string, string> = {
   intro: '大屏介绍',
@@ -42,8 +46,16 @@ const menuTitleMap: Record<string, string> = {
 
 const currentPageTitle = computed(() => menuTitleMap[activeMenu.value] || '大屏介绍')
 
-function goToEditor() {
-  router.push('/editor')
+function openCreate() {
+  createRef.value?.open()
+}
+
+function onCreated(item: ProjectItem) {
+  router.push('/editor/' + item.id)
+}
+
+function editProject(id: string) {
+  router.push('/editor/' + id)
 }
 </script>
 

@@ -8,12 +8,12 @@ const routes = [
     component: () => import('../pages/HomePage.vue'),
   },
   {
-    path: '/editor',
+    path: '/editor/:id',
     name: 'Editor',
     component: () => import('../pages/EditorPage.vue'),
   },
   {
-    path: '/preview',
+    path: '/preview/:projectId?',
     name: 'Preview',
     component: PreviewPage,
   },

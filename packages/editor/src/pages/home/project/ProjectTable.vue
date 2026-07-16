@@ -3,6 +3,7 @@
     <el-table
       :data="projects"
       style="width: 100%"
+      v-loading="loading"
       @selection-change="handleSelectionChange"
       :header-cell-style="{
         background: '#0F1728',
@@ -35,23 +36,27 @@
 
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
-          <el-tag v-if="row.status === 'published'" type="success" effect="dark" size="small" round> 已发布 </el-tag>
+          <el-tag v-if="row.status === 1" type="success" effect="dark" size="small" round> 已发布 </el-tag>
           <el-tag v-else type="info" effect="plain" size="small" round> 未发布 </el-tag>
         </template>
       </el-table-column>
 
       <el-table-column prop="creator" label="创建人" width="80" />
 
-      <el-table-column prop="createdAt" label="创建时间" width="110" />
+      <el-table-column label="创建时间" width="110">
+        <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
+      </el-table-column>
 
-      <el-table-column prop="updatedAt" label="最后编辑" width="100" />
+      <el-table-column label="最后编辑" width="100">
+        <template #default="{ row }">{{ formatTime(row.updatedAt) }}</template>
+      </el-table-column>
 
       <el-table-column label="操作" width="90" fixed="right">
         <template #default="{ row }">
           <div class="actions-cell">
             <el-icon class="action-btn" :size="24" @click="$emit('edit', row.id)"><Edit /></el-icon>
             <el-icon class="action-btn" :size="24"><View /></el-icon>
-            <el-icon class="action-btn delete" :size="24"><Delete /></el-icon>
+            <el-icon class="action-btn delete" :size="24" @click="$emit('delete', row.id)"><Delete /></el-icon>
           </div>
         </template>
       </el-table-column>
@@ -66,23 +71,32 @@ export interface ProjectItem {
   id: string
   name: string
   category: string
-  status: 'published' | 'unpublished'
+  status: 0 | 1
   creator: string
-  createdAt: string
-  updatedAt: string
+  createdAt: number
+  updatedAt: number
 }
 
 defineProps<{
   projects: ProjectItem[]
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{
   edit: [id: string]
+  delete: [id: string]
   selectionChange: [rows: ProjectItem[]]
 }>()
 
 function handleSelectionChange(rows: ProjectItem[]) {
   emit('selectionChange', rows)
+}
+
+function formatTime(ts?: number): string {
+  if (!ts) return '-'
+  const d = new Date(ts)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 </script>
 

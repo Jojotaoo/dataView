@@ -72,7 +72,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const generateId = useIdGenerator()
 
   function addComponent(key: string) {
-    const def = componentDefinitions.find(d => d.key === key)
+    const def = componentDefinitions.find((d) => d.key === key)
     if (!def) return
 
     const id = generateId()
@@ -116,7 +116,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   function removeComponent(id: string) {
-    const index = components.value.findIndex(c => c.id === id)
+    const index = components.value.findIndex((c) => c.id === id)
     if (index !== -1) {
       components.value.splice(index, 1)
       if (id === selectedId.value) {
@@ -164,8 +164,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function selectComponentsByRect(x: number, y: number, w: number, h: number) {
     const rect = { x, y, w, h }
     selectedIds.value = components.value
-      .filter(c => rectsIntersect(rect, { x: c.attr.x, y: c.attr.y, w: c.attr.w, h: c.attr.h }))
-      .map(c => c.id)
+      .filter((c) => rectsIntersect(rect, { x: c.attr.x, y: c.attr.y, w: c.attr.w, h: c.attr.h }))
+      .map((c) => c.id)
     if (selectedIds.value.length === 0) {
       selectedId.value = null
     } else {
@@ -268,7 +268,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         const updated = applyTheme(comp.chartStyle, preset)
         Object.assign(comp.chartStyle, updated)
       }
-      comp.groupList?.forEach(child => {
+      comp.groupList?.forEach((child) => {
         if (child.chartStyle) {
           const updated = applyTheme(child.chartStyle, preset)
           Object.assign(child.chartStyle, updated)
@@ -353,13 +353,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
   function groupSelectedComponents() {
     if (selectedIds.value.length < 2) return
     const ids = new Set(selectedIds.value)
-    const selected = components.value.filter(c => ids.has(c.id))
+    const selected = components.value.filter((c) => ids.has(c.id))
     if (selected.length < 2) return
 
-    const minX = Math.min(...selected.map(c => c.attr.x))
-    const minY = Math.min(...selected.map(c => c.attr.y))
-    const maxX = Math.max(...selected.map(c => c.attr.x + c.attr.w))
-    const maxY = Math.max(...selected.map(c => c.attr.y + c.attr.h))
+    const minX = Math.min(...selected.map((c) => c.attr.x))
+    const minY = Math.min(...selected.map((c) => c.attr.y))
+    const maxX = Math.max(...selected.map((c) => c.attr.x + c.attr.w))
+    const maxY = Math.max(...selected.map((c) => c.attr.y + c.attr.h))
 
     const id = generateId()
     const group: CanvasComponent = {
@@ -379,21 +379,26 @@ export const useDashboardStore = defineStore('dashboard', () => {
         image: '',
       },
       attr: {
-        x: minX, y: minY, w: maxX - minX, h: maxY - minY,
-        offsetX: 0, offsetY: 0, zIndex: components.value.length,
+        x: minX,
+        y: minY,
+        w: maxX - minX,
+        h: maxY - minY,
+        offsetX: 0,
+        offsetY: 0,
+        zIndex: components.value.length,
       },
       styles: { ...DEFAULT_STYLES },
       status: { ...DEFAULT_STATUS },
       preview: { ...DEFAULT_PREVIEW },
       option: {},
-      groupList: selected.map(c => ({
+      groupList: selected.map((c) => ({
         ...c,
         attr: { ...c.attr, x: c.attr.x - minX, y: c.attr.y - minY },
       })) as CanvasComponent[],
     }
 
-    const idSet = new Set(selected.map(c => c.id))
-    components.value = components.value.filter(c => !idSet.has(c.id))
+    const idSet = new Set(selected.map((c) => c.id))
+    components.value = components.value.filter((c) => !idSet.has(c.id))
     components.value.push(group)
 
     selectedIds.value = [id]
@@ -401,16 +406,16 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   function ungroupComponent(groupId: string) {
-    const comp = components.value.find(c => c.id === groupId)
+    const comp = components.value.find((c) => c.id === groupId)
     if (!comp || !comp.isGroup || !comp.groupList) return
 
-    const absChildren = comp.groupList.map(child => ({
+    const absChildren = comp.groupList.map((child) => ({
       ...child,
       props: (child as any).props ?? {},
       attr: { ...child.attr, x: child.attr.x + comp.attr.x, y: child.attr.y + comp.attr.y },
     })) as CanvasComponent[]
 
-    const idx = components.value.findIndex(c => c.id === groupId)
+    const idx = components.value.findIndex((c) => c.id === groupId)
     if (idx >= 0) {
       components.value.splice(idx, 1, ...absChildren)
     }
@@ -419,14 +424,30 @@ export const useDashboardStore = defineStore('dashboard', () => {
     selectedId.value = null
   }
 
-  function moveComponentDelta(id: string, dx: number, dy: number, baseX: number, baseY: number, pageW?: number, pageH?: number) {
+  function moveComponentDelta(
+    id: string,
+    dx: number,
+    dy: number,
+    baseX: number,
+    baseY: number,
+    pageW?: number,
+    pageH?: number,
+  ) {
     const comp = findComponent(id)
     if (!comp) return
     comp.attr.x = Math.round(Math.max(0, Math.min(baseX + dx, (pageW ?? 9999) - comp.attr.w)))
     comp.attr.y = Math.round(Math.max(0, Math.min(baseY + dy, (pageH ?? 9999) - comp.attr.h)))
   }
 
-  function resizeComponentDelta(id: string, dw: number, dh: number, baseW: number, baseH: number, maxW?: number, maxH?: number) {
+  function resizeComponentDelta(
+    id: string,
+    dw: number,
+    dh: number,
+    baseW: number,
+    baseH: number,
+    maxW?: number,
+    maxH?: number,
+  ) {
     const comp = findComponent(id)
     if (!comp) return
     comp.attr.w = Math.max(100, Math.min(baseW + dw, maxW ?? 9999))
@@ -438,14 +459,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   function updateDataPond(id: string, item: Partial<DataPondItem>) {
-    const pond = requestGlobalConfig.value.requestDataPond.find(p => p.dataPondId === id)
+    const pond = requestGlobalConfig.value.requestDataPond.find((p) => p.dataPondId === id)
     if (pond) {
       Object.assign(pond, item)
     }
   }
 
   function removeDataPond(id: string) {
-    const idx = requestGlobalConfig.value.requestDataPond.findIndex(p => p.dataPondId === id)
+    const idx = requestGlobalConfig.value.requestDataPond.findIndex((p) => p.dataPondId === id)
     if (idx >= 0) {
       requestGlobalConfig.value.requestDataPond.splice(idx, 1)
     }
@@ -646,6 +667,51 @@ export const useDashboardStore = defineStore('dashboard', () => {
     selectedIds.value = []
   }
 
+  // 恢复已保存项目：原样保留组件 id（含 group 子组件），避免交互引用(interactComponentIds 等)失效。
+  // 组件 id 只需在本项目内唯一，项目由外部 projectId 区分，无需重新生成。
+  function restoreProject(schema: { editCanvasConfig?: any; requestGlobalConfig?: any; componentList?: any[] }) {
+    if (schema.editCanvasConfig) {
+      Object.assign(editCanvasConfig.value, schema.editCanvasConfig)
+    }
+    if (schema.requestGlobalConfig) {
+      Object.assign(requestGlobalConfig.value, schema.requestGlobalConfig)
+    }
+
+    const restored: CanvasComponent[] = (schema.componentList ?? []).map((item: any, index: number) => ({
+      id: item.id,
+      key: item.key,
+      isGroup: item.isGroup,
+      chartConfig: item.chartConfig,
+      attr: { ...DEFAULT_ATTR, ...item.attr, zIndex: index },
+      styles: { ...DEFAULT_STYLES, ...(item.styles ?? {}) },
+      status: { ...DEFAULT_STATUS, ...(item.status ?? {}) },
+      preview: { ...DEFAULT_PREVIEW, ...(item.preview ?? {}) },
+      filter: item.filter,
+      option: item.option ?? {},
+      chartStyle: item.chartStyle ?? { ...DEFAULT_CHART_STYLE },
+      props: deepClone(item.props ?? {}),
+      events: item.events,
+      interactActions: item.interactActions,
+      request: item.request,
+      groupList: item.groupList
+        ? item.groupList.map((child: any) => ({
+            ...child,
+            id: child.id,
+            attr: { ...DEFAULT_ATTR, ...child.attr },
+            styles: { ...DEFAULT_STYLES, ...(child.styles ?? {}) },
+            status: { ...DEFAULT_STATUS, ...(child.status ?? {}) },
+            preview: { ...DEFAULT_PREVIEW, ...(child.preview ?? {}) },
+            props: deepClone(child.props ?? {}),
+            chartStyle: child.chartStyle ?? { ...DEFAULT_CHART_STYLE },
+          }))
+        : undefined,
+    }))
+
+    components.value = restored
+    selectedId.value = null
+    selectedIds.value = []
+  }
+
   return {
     components,
     selectedId,
@@ -702,5 +768,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     clearInteractFilters,
     duplicateComponent,
     loadSchema,
+    restoreProject,
   }
 })
