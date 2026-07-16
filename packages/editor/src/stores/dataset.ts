@@ -51,6 +51,11 @@ export const useDatasetStore = defineStore('dataset', () => {
     datasets.value = datasets.value.filter((d) => d.id !== id)
   }
 
+  // server 模式下，用接口返回的全量列表整体覆盖本地镜像（不同步追加单条，避免语义混乱）
+  function setDatasets(list: DatasetConfig[]): void {
+    datasets.value = list
+  }
+
   // 供独立预览 hydrate：用项目内嵌的数据集快照覆盖内存（仅 mock 本地解析用）
   function hydrate(snapshots: DatasetConfig[] | undefined): void {
     if (!snapshots || !snapshots.length) return
@@ -61,5 +66,5 @@ export const useDatasetStore = defineStore('dataset', () => {
     }
   }
 
-  return { datasets, getDataset, addDataset, updateDataset, removeDataset, hydrate }
+  return { datasets, getDataset, addDataset, updateDataset, removeDataset, setDatasets, hydrate }
 })
