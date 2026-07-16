@@ -30,10 +30,12 @@
   },
   "peerDependencies": {
     "vue": "^3.5.0",
+    "vue-router": "^4.6.4",
     "jojotaoo_components": "workspace:*"
   },
   "devDependencies": {
     "vue": "^3.5.35",
+    "vue-router": "^4.6.4",
     "jojotaoo_components": "workspace:*",
     "typescript": "~6.0.2"
   }

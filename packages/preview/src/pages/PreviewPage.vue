@@ -22,13 +22,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, provide } from 'vue'
 import type { CSSProperties } from 'vue'
+import { useRoute } from 'vue-router'
 import { useDashboardStore, GroupPreview, DataFetchManager, componentMap, getComponentProps } from 'jojotaoo_components'
 import { usePreviewScale } from '../composables/usePreviewScale'
+import { getPreviewMode, fetchPreviewSchema } from '../previewConfig'
 import type { ChartEditStorage, CreateComponentType, CanvasComponent, DatasetConfig } from 'jojotaoo_components'
 
 const STORAGE_KEY = 'preview_schema'
 
 const store = useDashboardStore()
+const route = useRoute()
 
 const schema = ref<ChartEditStorage | null>(null)
 
@@ -56,20 +59,41 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-onMounted(() => {
+function applySchema(s: ChartEditStorage) {
+  schema.value = s
+  store.editCanvasConfig = { ...store.editCanvasConfig, ...s.editCanvasConfig }
+  store.requestGlobalConfig = { ...store.requestGlobalConfig, ...s.requestGlobalConfig }
+  store.components = (s.componentList ?? []) as unknown as CanvasComponent[]
+}
+
+async function loadSchema() {
+  const projectId = route.params.projectId as string | undefined
+  const mode = getPreviewMode(location.search)
+
+  // 路由带 id 且非显式 mock → 优先从服务端拉取 schema
+  if (projectId && mode === 'server') {
+    const fromServer = await fetchPreviewSchema(projectId)
+    if (fromServer) {
+      applySchema(fromServer)
+      return
+    }
+  }
+
+  // 兜底：从 localStorage 读取（编辑器写入的预览 schema），无则关闭
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) {
     window.close()
     return
   }
-  schema.value = JSON.parse(raw)
   localStorage.removeItem(STORAGE_KEY)
-
-  if (schema.value) {
-    store.editCanvasConfig = { ...store.editCanvasConfig, ...schema.value.editCanvasConfig }
-    store.requestGlobalConfig = { ...store.requestGlobalConfig, ...schema.value.requestGlobalConfig }
-    store.components = (schema.value.componentList ?? []) as unknown as CanvasComponent[]
+  const parsed = JSON.parse(raw) as ChartEditStorage
+  if (parsed) {
+    applySchema(parsed)
   }
+}
+
+onMounted(() => {
+  loadSchema()
 
   store.setPreviewMode(true)
   document.documentElement.requestFullscreen().catch(() => {})
